@@ -1,0 +1,376 @@
+te class="filename">"/usr/local/lib/python2.7/dist-packages/flask/app.py"</cite>,
+      line <em class="line">1461</em>,
+      in <code class="function">dispatch_request</code></h4>
+  <pre>return self.view_functions[rule.endpoint](**req.view_args)</pre>
+</div>
+
+<li><div class="frame" id="frame-140315591321104">
+  <h4>File <cite class="filename">"/root/catkin_ws/src/burger_war/judge/judgeServer.py"</cite>,
+      line <em class="line">357</em>,
+      in <code class="function">reset</code></h4>
+  <pre>return jsonify(res)</pre>
+</div>
+
+<li><div class="frame" id="frame-140315591320464">
+  <h4>File <cite class="filename">"/usr/local/lib/python2.7/dist-packages/flask/json.py"</cite>,
+      line <em class="line">237</em>,
+      in <code class="function">jsonify</code></h4>
+  <pre>return current_app.response_class(dumps(dict(*args, **kwargs),</pre>
+</div>
+</ul>
+  <blockquote>ValueError: dictionary update sequence element #0 has length 1; 2 is required</blockquote>
+</div>
+
+<div class="plain">
+  <form action="/?__debugger__=yes&amp;cmd=paste" method="post">
+    <p>
+      <input type="hidden" name="language" value="pytb">
+      This is the Copy/Paste friendly version of the traceback.  <span
+      class="pastemessage">You can also paste this traceback into
+      a <a href="https://gist.github.com/">gist</a>:
+      <input type="submit" value="create paste"></span>
+    </p>
+    <textarea cols="50" rows="10" name="code" readonly>Traceback (most recent call last):
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1836, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1820, in wsgi_app
+    response = self.make_response(self.handle_exception(e))
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1403, in handle_exception
+    reraise(exc_type, exc_value, tb)
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1817, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1477, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1381, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1475, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1461, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/root/catkin_ws/src/burger_war/judge/judgeServer.py", line 357, in reset
+    return jsonify(res)
+  File "/usr/local/lib/python2.7/dist-packages/flask/json.py", line 237, in jsonify
+    return current_app.response_class(dumps(dict(*args, **kwargs),
+ValueError: dictionary update sequence element #0 has length 1; 2 is required</textarea>
+  </form>
+</div>
+<div class="explanation">
+  The debugger caught an exception in your WSGI application.  You can now
+  look at the traceback which led to the error.  <span class="nojavascript">
+  If you enable JavaScript you can also use additional features such as code
+  execution (if the evalex feature is enabled), automatic pasting of the
+  exceptions and much more.</span>
+</div>
+      <div class="footer">
+        Brought to you by <strong class="arthur">DON'T PANIC</strong>, your
+        friendly Werkzeug powered traceback interpreter.
+      </div>
+    </div>
+  </body>
+</html>
+
+<!--
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1836, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1820, in wsgi_app
+    response = self.make_response(self.handle_exception(e))
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1403, in handle_exception
+    reraise(exc_type, exc_value, tb)
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1817, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1477, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1381, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1475, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1461, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/root/catkin_ws/src/burger_war/judge/judgeServer.py", line 357, in reset
+    return jsonify(res)
+  File "/usr/local/lib/python2.7/dist-packages/flask/json.py", line 237, in jsonify
+    return current_app.response_class(dumps(dict(*args, **kwargs),
+ValueError: dictionary update sequence element #0 has length 1; 2 is required
+
+-->
+=================STATE initial======================
+{
+  "players": {
+    "b": "NoPlayer", 
+    "r": "NoPlayer"
+  }, 
+  "ready": {
+    "b": false, 
+    "r": false
+  }, 
+  "scores": {
+    "b": 0, 
+    "r": 0
+  }, 
+  "state": "end", 
+  "targets": [], 
+  "time": 0.0
+}=================REGIST targets======================
+BL_B
+5
+0052
+{"name":BL_B, "id":0052, "point":5}
+{
+  "name": "BL_B"
+}
+BL_L
+3
+0050
+{"name":BL_L, "id":0050, "point":3}
+{
+  "name": "BL_L"
+}
+BL_R
+3
+0051
+{"name":BL_R, "id":0051, "point":3}
+{
+  "name": "BL_R"
+}
+RE_B
+5
+0042
+{"name":RE_B, "id":0042, "point":5}
+{
+  "name": "RE_B"
+}
+RE_L
+3
+0040
+{"name":RE_L, "id":0040, "point":3}
+{
+  "name": "RE_L"
+}
+RE_R
+3
+0041
+{"name":RE_R, "id":0041, "point":3}
+{
+  "name": "RE_R"
+}
+Tomato_N
+1
+0009
+{"name":Tomato_N, "id":0009, "point":1}
+{
+  "name": "Tomato_N"
+}
+Tomato_S
+1
+0010
+{"name":Tomato_S, "id":0010, "point":1}
+{
+  "name": "Tomato_S"
+}
+Omelette_N
+1
+0005
+{"name":Omelette_N, "id":0005, "point":1}
+{
+  "name": "Omelette_N"
+}
+Omelette_S
+1
+0006
+{"name":Omelette_S, "id":0006, "point":1}
+{
+  "name": "Omelette_S"
+}
+Pudding_N
+1
+0011
+{"name":Pudding_N, "id":0011, "point":1}
+{
+  "name": "Pudding_N"
+}
+Pudding_S
+1
+0012
+{"name":Pudding_S, "id":0012, "point":1}
+{
+  "name": "Pudding_S"
+}
+OctopusWiener_N
+1
+0007
+{"name":OctopusWiener_N, "id":0007, "point":1}
+{
+  "name": "OctopusWiener_N"
+}
+OctopusWiener_S
+1
+0008
+{"name":OctopusWiener_S, "id":0008, "point":1}
+{
+  "name": "OctopusWiener_S"
+}
+FriedShrimp_N
+1
+0001
+{"name":FriedShrimp_N, "id":0001, "point":1}
+{
+  "name": "FriedShrimp_N"
+}
+FriedShrimp_E
+1
+0003
+{"name":FriedShrimp_E, "id":0003, "point":1}
+{
+  "name": "FriedShrimp_E"
+}
+FriedShrimp_W
+1
+0004
+{"name":FriedShrimp_W, "id":0004, "point":1}
+{
+  "name": "FriedShrimp_W"
+}
+FriedShrimp_S
+1
+0002
+{"name":FriedShrimp_S, "id":0002, "point":1}
+{
+  "name": "FriedShrimp_S"
+}
+=================REGIST players======================
+{
+  "name": "you", 
+  "side": "r"
+}{
+  "name": "enemy", 
+  "side": "b"
+}=================set ready players======================
+{
+  "error": "success set ready", 
+  "mutch": true, 
+  "new": false, 
+  "target": null
+}{
+  "error": "success set ready", 
+  "mutch": true, 
+  "new": false, 
+  "target": null
+}+ roslaunch burger_war setup_sim.launch
+... logging to /root/.ros/log/d096986c-97f6-11ea-b872-0242ac110002/roslaunch-843b51320bda-19023.log
+Checking log directory for disk usage. This may take awhile.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+
+started roslaunch server http://843b51320bda:33031/
+
+SUMMARY
+========
+
+PARAMETERS
+ * /aruco_marker_publisher/use_camera_info: False
+ * /enemy_bot/aruco_marker_publisher/use_camera_info: False
+ * /enemy_bot/robot_description: <?xml version="1....
+ * /enemy_bot/send_id_to_judge/judge_url: http://127.0.0.1:...
+ * /enemy_bot/send_id_to_judge/side: b
+ * /robot_description: <?xml version="1....
+ * /rosdistro: kinetic
+ * /rosversion: 1.12.14
+ * /send_id_to_judge/judge_url: http://127.0.0.1:...
+ * /send_id_to_judge/side: r
+ * /use_sim_time: True
+
+NODES
+  /enemy_bot/
+    aruco_marker_publisher (aruco_ros/marker_publisher)
+    send_id_to_judge (burger_war/sendIdToJudge.py)
+    spawn_urdf (gazebo_ros/spawn_model)
+    speed_limitter (burger_war/speedLimitter.py)
+  /
+    aruco_marker_publisher (aruco_ros/marker_publisher)
+    gazebo (gazebo_ros/gzserver)
+    gazebo_gui (gazebo_ros/gzclient)
+    send_id_to_judge (burger_war/sendIdToJudge.py)
+    spawn_urdf (gazebo_ros/spawn_model)
+    speed_limitter (burger_war/speedLimitter.py)
+
+auto-starting new master
+process[master]: started with pid [19039]
+ROS_MASTER_URI=http://localhost:11311
+
+setting /run_id to d096986c-97f6-11ea-b872-0242ac110002
+process[rosout-1]: started with pid [19052]
+started core service [/rosout]
+process[gazebo-2]: started with pid [19060]
+process[gazebo_gui-3]: started with pid [19081]
+[ INFO] [1589689693.206014700]: Finished loading Gazebo ROS API Plugin.
+[ INFO] [1589689693.219281100]: waitForService: Service [/gazebo/set_physics_properties] has not been advertised, waiting...
+process[spawn_urdf-4]: started with pid [19119]
+[ INFO] [1589689693.796161400]: Finished loading Gazebo ROS API Plugin.
+[ INFO] [1589689693.814601000]: waitForService: Service [/gazebo/set_physics_properties] has not been advertised, waiting...
+process[speed_limitter-5]: started with pid [19176]
+[ INFO] [1589689694.852690600, 0.027000000]: waitForService: Service [/gazebo/set_physics_properties] is now available.
+[ INFO] [1589689694.861970100, 0.035000000]: waitForService: Service [/gazebo/set_physics_properties] is now available.
+process[aruco_marker_publisher-6]: started with pid [19213]
+process[send_id_to_judge-7]: started with pid [19373]
+[ INFO] [1589689696.268220600, 0.527000000]: Camera Plugin: Using the 'robotNamespace' param: '/'
+[ INFO] [1589689696.285045900, 0.527000000]: Camera Plugin (ns = /)  <tf_prefix_>, set to ""
+[ WARN] [1589689696.285136000, 0.527000000]: dynamic reconfigure is not enabled for this image topic [image_raw] becuase <cameraName> is not specified
+Send 0000 as init code To http://127.0.0.1:5000/submits
+<Response [200]>
+process[enemy_bot/spawn_urdf-8]: started with pid [19467]
+[ INFO] [1589689696.992283400, 0.527000000]: Laser Plugin: Using the 'robotNamespace' param: '/'
+[ INFO] [1589689696.992829300, 0.527000000]: Starting Laser Plugin (ns = /)
+[ INFO] [1589689697.018737000, 0.527000000]: Laser Plugin (ns = /)  <tf_prefix_>, set to ""
+[ INFO] [1589689697.020966200, 0.527000000]: Starting plugin DiffDrive(ns = //)
+[ INFO] [1589689697.022057100, 0.527000000]: DiffDrive(ns = //): <rosDebugLevel> = na
+[ INFO] [1589689697.038557300, 0.527000000]: DiffDrive(ns = //): <tf_prefix> = 
+[ INFO] [1589689697.052407500, 0.527000000]: DiffDrive(ns = //): Advertise joint_states
+[ INFO] [1589689697.066467000, 0.527000000]: DiffDrive(ns = //): Try to subscribe to limited_cmd_vel
+[ INFO] [1589689697.171567000, 0.527000000]: DiffDrive(ns = //): Subscribe to limited_cmd_vel
+[ INFO] [1589689697.199510400, 0.527000000]: DiffDrive(ns = //): Advertise odom on odom 
+[ INFO] [1589689697.337849200, 0.595000000]: Physics dynamic reconfigure ready.
+[ INFO] [1589689697.349033300, 0.601000000]: Physics dynamic reconfigure ready.
+Unhandled exception in thread started by 
+sys.excepthook is missing
+lost sys.stderr
+[spawn_urdf-4] process has finished cleanly
+log file: /root/.ros/log/d096986c-97f6-11ea-b872-0242ac110002/spawn_urdf-4*.log
+process[enemy_bot/speed_limitter-9]: started with pid [19584]
+gzserver: /build/ogre-1.9-mqY1wq/ogre-1.9-1.9.0+dfsg1/OgreMain/src/OgreRenderSystem.cpp:546: virtual void Ogre::RenderSystem::setDepthBufferFor(Ogre::RenderTarget*): Assertion `bAttached && "A new DepthBuffer for a RenderTarget was created, but after creation" "it says it's incompatible with that RT"' failed.
+Aborted
+[gazebo-2] process has died [pid 19060, exit code 134, cmd /opt/ros/kinetic/lib/gazebo_ros/gzserver -e ode /root/catkin_ws/src/burger_war/burger_war/world/burger_field.world __name:=gazebo __log:=/root/.ros/log/d096986c-97f6-11ea-b872-0242ac110002/gazebo-2.log].
+log file: /root/.ros/log/d096986c-97f6-11ea-b872-0242ac110002/gazebo-2*.log
+process[enemy_bot/aruco_marker_publisher-10]: started with pid [19643]
+process[enemy_bot/send_id_to_judge-11]: started with pid [19664]
+Send 0000 as init code To http://127.0.0.1:5000/submits
+<Response [200]>
+[gazebo_gui-3] process has finished cleanly
+log file: /root/.ros/log/d096986c-97f6-11ea-b872-0242ac110002/gazebo_gui-3*.log
+
+
+^C[enemy_bot/send_id_to_judge-11] killing on exit
+[enemy_bot/aruco_marker_publisher-10] killing on exit
+[enemy_bot/speed_limitter-9] killing on exit
+[enemy_bot/spawn_urdf-8] killing on exit
+[send_id_to_judge-7] killing on exit
+[aruco_marker_publisher-6] killing on exit
+[speed_limitter-5] killing on exit
+Traceback (most recent call last):
+  File "/opt/ros/kinetic/lib/gazebo_ros/spawn_model", line 313, in <module>
+    sm.callSpawnService()
+  File "/opt/ros/kinetic/lib/gazebo_ros/spawn_model", line 271, in callSpawnService
+    initial_pose, self.reference_frame, self.gazebo_namespace)
+  File "/opt/ros/kinetic/lib/python2.7/dist-packages/gazebo_ros/gazebo_interface.py", line 28, in spawn_urdf_model_client
+    rospy.wait_for_service(gazebo_namespace+'/spawn_urdf_model')
+  File "/opt/ros/kinetic/lib/python2.7/dist-packages/rospy/impl/tcpros_service.py", line 159, in wait_for_service
+    raise ROSInterruptException("rospy shutdown")
+rospy.exceptions.ROSInterruptException: rospy shutdown
+[rosout-1] killing on exit
+[master] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+done
+root@843b51320bda:~/catkin_ws/src/burger
+:
