@@ -1,0 +1,40 @@
+#利用するUbuntuのイメージ
+FROM ubuntu:16.04　
+
+RUN apt-get update;
+
+# install ros-kinetic
+RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu xenial main" > /etc/apt/sources.list.d/ros-latest.list';\
+    apt-key adv --keyserver 'hkp://ha.pool.sks-keyservers.net:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654;\
+    apt-get update;\
+    apt-get update --fix-missing;\
+    apt-get update;\
+    apt-get install -y ros-kinetic-desktop; \
+    rosdep init; \
+    rosdep update; \
+    apt-get install -y python-rosinstall; 
+
+# install tools
+RUN apt-get install -y emacs24; \
+    apt-get install -y openssh-server; 
+
+# install ros turtlebot3
+RUN apt-get install -y emacs24; \
+    apt-get install -y python-pip; \
+    pip install requests flask; \
+    apt-get install -y ros-kinetic-turtlebot3 ros-kinetic-turtlebot3-msgs ros-kinetic-turtlebot3-simulations; \
+    apt-get install -y ros-kinetic-aruco-ros; \
+    # docker run時に実行する
+    # workspace作成
+    rosdep init; \
+    rosdep update; \
+    rosdep fix-permissions; \
+    rosdep update; \
+    echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc; \
+    source ~/.bashrc; \
+    mkdir -p ~/catkin_ws/src; \
+    cd ~/catkin_ws/src; \
+    catkin_init_workspace; \
+    cd ~/catkin_ws; \
+    catkin_make;
+
