@@ -15,7 +15,7 @@ def check(text):
     return ret
 
 with open('file.txt', 'w') as txt:
-    txt.write("textblob result\n")
+    txt.write("enchant result\n")
 
 # get flist
 with open('flist.log', 'r') as flist:
