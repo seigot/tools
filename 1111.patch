@@ -1,0 +1,41 @@
+diff --git a/burger_war_dev/scripts/seigoRun2.py b/burger_war_dev/scripts/seigoRun2.py
+index bda6fb2..01866a3 100755
+--- a/burger_war_dev/scripts/seigoRun2.py
++++ b/burger_war_dev/scripts/seigoRun2.py
+@@ -424,10 +424,10 @@ class SeigoBot2:
+             # while heading to current target
+             # goalまでにtargetを取得したら次の的を取りに行く
+             current_target_number = self.waypoint.get_current_target_number()
+-            if current_target_number == self.my_get_target_no :
+-                print("get current_target, go next : ", current_target_number)
+-                self.cancel_goal()
+-                self.move_base_client.wait_for_result(rospy.Duration(10))
++            #if current_target_number == self.my_get_target_no :
++            #    print("get current_target, go next : ", current_target_number)
++            #    self.cancel_goal()
++            #    self.move_base_client.wait_for_result(rospy.Duration(10))
+ 
+         elif self.status == actionlib.GoalStatus.SUCCEEDED:
+             # goal到着 or cancel時の処理
+diff --git a/burger_war_dev/scripts/waypoints_20210222.csv b/burger_war_dev/scripts/waypoints_20210222.csv
+index b8de534..13b7077 100755
+--- a/burger_war_dev/scripts/waypoints_20210222.csv
++++ b/burger_war_dev/scripts/waypoints_20210222.csv
+@@ -1,13 +1,14 @@
+ -0.8,-0.45,-30,13,6
+ -0.5,0,0,17,14
+ -0.9,0.45,30,11,8
+--0.9,0.45,45,-1,-1
++-0.9,0.5,45,-1,-1
+ -0.4,0.9,-20,-1,-1
+ 0.1,0.7,-20,7,12
+-0,0.73,-90,16,15
+-0.0,0.73,-160,10,9
++0,0.7,-90,16,15
++0.0,0.7,-160,10,9
+ 0.5,0.9,-45,-1,-1
+ 0.9,0.5,-180,6,13
++0.9,0.5,-180,6,13
+ 0.5,0,-180,14,17
+ 0.9,-0.5,-180,8,11
+ 0.9,-0.5,-135,-1,-1

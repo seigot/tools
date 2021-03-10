@@ -1,0 +1,44 @@
+diff --git a/burger_war_dev/scripts/seigoRun2.py b/burger_war_dev/scripts/seigoRun2.py
+index bda6fb2..dcfcc9a 100755
+--- a/burger_war_dev/scripts/seigoRun2.py
++++ b/burger_war_dev/scripts/seigoRun2.py
+@@ -69,8 +69,6 @@ class SeigoBot2:
+         def load_waypoint():
+             path = os.environ['HOME'] + \
+                 '/catkin_ws/src/burger_war_dev/burger_war_dev/scripts/waypoints_20210222.csv'
+-                #'/catkin_ws/src/burger_war_dev/burger_war_dev/scripts/waypoints.csv'
+-                # '/catkin_ws/src/burger_war_dev/burger_war_dev/scripts/waypoints_20210222_preliminary.csv'
+ 
+             return Waypoints(path, self.my_side)
+ 
+diff --git a/burger_war_dev/scripts/waypoints_20210222.csv b/burger_war_dev/scripts/waypoints_20210222.csv
+index b8de534..e4d4418 100755
+--- a/burger_war_dev/scripts/waypoints_20210222.csv
++++ b/burger_war_dev/scripts/waypoints_20210222.csv
+@@ -1,17 +1,17 @@
+ -0.8,-0.45,-30,13,6
+ -0.5,0,0,17,14
+ -0.9,0.45,30,11,8
+--0.9,0.45,45,-1,-1
++-0.9,0.5,45,-1,-1
+ -0.4,0.9,-20,-1,-1
+-0.1,0.7,-20,7,12
+-0,0.73,-90,16,15
+-0.0,0.73,-160,10,9
++0.1,0.8,-20,7,12
++0,0.8,-90,16,15
++0.0,0.8,-160,10,9
+ 0.5,0.9,-45,-1,-1
+ 0.9,0.5,-180,6,13
+ 0.5,0,-180,14,17
+ 0.9,-0.5,-180,8,11
+ 0.9,-0.5,-135,-1,-1
+ 0.4,-0.9,160,-1,-1
+--0.1,-0.7,160,12,7
+-0,-0.73,90,15,16
+-0,-0.73,20,9,10
+\ No newline at end of file
++-0.1,-0.8,160,12,7
++0,-0.8,90,15,16
++0,-0.8,20,9,10
+\ No newline at end of file
