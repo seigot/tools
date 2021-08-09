@@ -1,0 +1,16 @@
+diff --git a/creversi_cpp/board.hpp b/creversi_cpp/board.hpp
+index bdd90f6..1cf6f24 100644
+--- a/creversi_cpp/board.hpp
++++ b/creversi_cpp/board.hpp
+@@ -43,8 +43,9 @@ unsigned char _bittestandreset64(long long *a, long long b)
+ #define _mm256_set_m128i(v0, v1)  _mm256_insertf128_si256(_mm256_castsi128_si256(v1), (v0), 1)
+ #define _mm256_setr_m128i(v0, v1) _mm256_set_m128i((v1), (v0))
+ 
+-#include <byteswap.h>
+-#define _byteswap_uint64(x) bswap_64(x)
++#include <machine/endian.h>
++//#include <byteswap.h>
++#define _byteswap_uint64(x) _bswap64(x)
+ 
+ #define _rotr64 __rorq
+ #endif
