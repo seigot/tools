@@ -1,5 +1,10 @@
 import creversi
 
+# https://tadaoyamaoka.hatenablog.com/entry/2019/11/15/235232
+# $ pip install git+https://github.com/TadaoYamaoka/creversi
+# pip install -e . -v
+# 
+
 board = creversi.Board()
 
 def is_Turn(board):
