@@ -17,13 +17,14 @@ from time import sleep
 class Window(QMainWindow): 
   
     def __init__(self): 
-        super().__init__() 
-
+        #super().__init__() 
+        super(QMainWindow, self).__init__()
+        
         #app = QApplication([])
         # ファイルを読み込み
         #self.image = QImage(1000, 1000, QImage.Format_ARGB32)     #500*500ピクセルの画像を作成
         #self.image = QImage("/Users/seigo/Downloads/20211031.png")
-        self.image = QImage("/Users/seigo/Downloads/20211031_3.png") # 事前に1440*900などのサイズにリサイズしておくと後処理が楽
+        self.image = QImage("/home/ubuntu/Downloads/20211031.png") # 事前に1440*900などのサイズにリサイズしておくと後処理が楽
 
         self.window = QWidget()
         self.window.setWindowTitle('Image View')
@@ -35,8 +36,9 @@ class Window(QMainWindow):
         self.layout = QVBoxLayout()
 
         # creating a timer object 
-        self.TimerUpdate_mSec = 200
+        self.TimerUpdate_mSec = 30
         self.TimerUpdate_cnt = 0
+        self.TimerUpdate_cnt_step = 0        
         timer = QTimer(self) 
         timer.timeout.connect(self.callback_draw)
         timer.start(self.TimerUpdate_mSec)
@@ -50,10 +52,52 @@ class Window(QMainWindow):
         # 塗りつぶし範囲指定
         img_width  = self.image.width()
         img_height = self.image.height()
-        x_size = img_width/10  #100
-        y_size = img_height/10 #100
-        x_pos  = int(self.TimerUpdate_cnt * x_size % img_width)
-        y_pos  = int(self.TimerUpdate_cnt * x_size / img_width) * y_size
+        block_ratio = 13 #10
+        x_size = img_width/block_ratio  #100
+        y_size = img_height/block_ratio  #100
+
+        ## 0
+        current_position=int(self.TimerUpdate_cnt_step%4) #0,1,2,3
+        loop_cnt=int(self.TimerUpdate_cnt_step/4)
+        #print(str(current_position)+" "+str(loop_cnt))
+
+        if current_position == 0:
+            x_pos  = int((self.TimerUpdate_cnt+loop_cnt) * x_size % img_width)
+            y_pos  = int(loop_cnt * y_size % img_height)
+            #y_pos  = int(self.TimerUpdate_cnt * x_size / img_width) * y_size
+            if self.TimerUpdate_cnt >= block_ratio-1-loop_cnt:
+                self.TimerUpdate_cnt = 0
+                self.TimerUpdate_cnt_step += 1
+            self.TimerUpdate_cnt += 1
+
+        ## 1
+        elif current_position == 1:
+            x_pos  = int((block_ratio-1-loop_cnt) * x_size % img_width)
+            y_pos  = int((self.TimerUpdate_cnt+loop_cnt) * y_size % img_height)
+            if self.TimerUpdate_cnt >= block_ratio-1-loop_cnt+1:
+                self.TimerUpdate_cnt = 0
+                self.TimerUpdate_cnt_step += 1
+            self.TimerUpdate_cnt += 1
+
+        ## 2
+        elif current_position == 2:
+            x_pos  = int((block_ratio-1-self.TimerUpdate_cnt-loop_cnt) * x_size % img_width)
+            y_pos  = int((block_ratio-1-loop_cnt) * y_size % img_height)
+            if (block_ratio-1-self.TimerUpdate_cnt <= loop_cnt):
+                self.TimerUpdate_cnt = 0
+                self.TimerUpdate_cnt_step += 1
+            self.TimerUpdate_cnt += 1
+
+        ## 3
+        elif current_position == 3:
+            x_pos  = int(loop_cnt * x_size % img_width)
+            y_pos  = int((block_ratio-1-self.TimerUpdate_cnt-loop_cnt) * y_size % img_height)
+            if (block_ratio-1-self.TimerUpdate_cnt <= loop_cnt+1):
+                self.TimerUpdate_cnt = 0
+                self.TimerUpdate_cnt_step += 1
+            else:
+                self.TimerUpdate_cnt += 1
+
         print(str(x_pos) + " " + str(y_pos))
         self.painter.fillRect(x_pos, y_pos, x_size, y_size, Qt.black)
         self.painter.end()
@@ -78,9 +122,10 @@ class Window(QMainWindow):
         #self.window.showNormal()
         #app.exec_()
 
-        self.TimerUpdate_cnt += 1
-        if self.TimerUpdate_cnt > (img_width/100)*(img_height/100):
-            time.sleep(self.TimerUpdate_mSec*0.001)
+        #self.TimerUpdate_cnt += 1
+        if self.TimerUpdate_cnt_step >= 25:
+            print("end")
+            time.sleep(self.TimerUpdate_mSec*0.001/4)
             sys.exit(0)
 
 if __name__ == '__main__':
