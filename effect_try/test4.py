@@ -24,8 +24,11 @@ class Window(QMainWindow):
         # ファイルを読み込み
         #self.image = QImage(1000, 1000, QImage.Format_ARGB32)     #500*500ピクセルの画像を作成
         #self.image = QImage("/Users/seigo/Downloads/20211031.png")
-        self.image = QImage("/home/ubuntu/Downloads/20211031.png") # 事前に1440*900などのサイズにリサイズしておくと後処理が楽
-
+        #self.image = QImage("/home/ubuntu/Downloads/20211031.png") # 事前に任意のサイズにリサイズしておくと後処理が楽
+        self.image = QImage("./test.png")
+        # 事前に任意のサイズにリサイズしておくと後処理が楽
+        # gnome-screenshot -f test.png などでキャプチャ
+        
         self.window = QWidget()
         self.window.setWindowTitle('Image View')
         self.window.setFixedSize(self.image.width(), self.image.height())
