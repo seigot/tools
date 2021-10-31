@@ -36,7 +36,7 @@ class Window(QMainWindow):
         self.layout = QVBoxLayout()
 
         # creating a timer object 
-        self.TimerUpdate_mSec = 30
+        self.TimerUpdate_mSec = 15
         self.TimerUpdate_cnt = 0
         self.TimerUpdate_cnt_step = 0        
         timer = QTimer(self) 
