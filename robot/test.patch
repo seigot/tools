@@ -1,0 +1,476 @@
+diff --git a/burger_war_dev/launch/your_burger.launch b/burger_war_dev/launch/your_burger.launch
+index 362d4e9..341694e 100644
+--- a/burger_war_dev/launch/your_burger.launch
++++ b/burger_war_dev/launch/your_burger.launch
+@@ -7,17 +7,17 @@
+ 
+     <include file="$(find burger_navigation)/launch/burger_navigation.launch" />
+ 
+-    <group if="$(eval self_play==0)"> 
++    <group if="$(eval self_play==1)"> 
+       <node pkg="burger_war_dev" type="dqn_operation.py" name="DQNRun" output="screen">
+         <param name="side" value="$(arg side)"/>
+       </node>
+     </group>
+ 
+-    <group if="$(eval self_play==1)"> 
++    <group if="$(eval self_play==0)"> 
+       <node pkg="burger_war_dev" type="dqn_self_play.py" name="DQNRun" output="screen">
+         <param name="side" value="$(arg side)"/>
+       </node>
+     </group>
+ 
+     <!-- End of your space  -->
+-</launch>
+\ No newline at end of file
++</launch>
+diff --git a/burger_war_dev/scripts/agents/agent.py b/burger_war_dev/scripts/agents/agent.py
+index 5801616..842a703 100644
+--- a/burger_war_dev/scripts/agents/agent.py
++++ b/burger_war_dev/scripts/agents/agent.py
+@@ -3,6 +3,7 @@
+ 
+ from brain import Brain
+ 
++print("agent.pyを実行する")
+ 
+ class Agent:
+     """
+@@ -16,6 +17,7 @@ class Agent:
+             capacity (int): capacity of memory
+             gamma (int): discount rate
+         """
++	print("Agentの初期化を行う")
+         self.brain = Brain(num_actions, batch_size, capacity, gamma, prioritized, lr)  # エージェントが行動を決定するための頭脳を生成
+ 
+     def update_policy_network(self):
+@@ -24,6 +26,7 @@ class Agent:
+         Args:
+             
+         """
++	print("Policy network modelの更新")
+         self.brain.replay()
+ 
+     def get_action(self, state, episode, policy_mode, debug):
+@@ -35,9 +38,10 @@ class Agent:
+         Return:
+             action (Tensor): action (number)
+         """
++	print("Actionを取得する")
+         action = self.brain.decide_action(state, episode, policy_mode, debug)
+         return action
+-
++	
+     def memorize(self, state, action, state_next, reward):
+         """
+         memorize current state, action, next state and reward
+@@ -47,6 +51,7 @@ class Agent:
+             state_next (dict): next state
+             reward (int): reward
+         """
++	print("現在の状態、行動、次の状態、報酬を記憶する")
+         self.brain.memory.push(state, action, state_next, reward)
+ 
+     def save_model(self, path):
+@@ -55,6 +60,7 @@ class Agent:
+         Args:
+             path (str): path to save
+         """
++	print("Modelを保存する")
+         self.brain.save_model(path)
+ 
+     def load_model(self, path):
+@@ -63,6 +69,7 @@ class Agent:
+         Args:
+             path (str): path to load
+         """
++	print("Modelをloadする")
+         self.brain.load_model(path)
+ 
+     def save_memory(self, path):
+@@ -71,6 +78,7 @@ class Agent:
+         Args:
+             path (str): path to save
+         """
++	print("Save Memory")
+         self.brain.save_memory(path)
+ 
+     def load_memory(self, path):
+@@ -79,16 +87,19 @@ class Agent:
+         Args:
+             path (str): path to load
+         """
++	print("Load Memory")
+         self.brain.load_memory(path)
+ 
+     def update_target_network(self):
+         """
+         update target network model
+         """
++	print("Target neweork modelを更新する")
+         self.brain.update_target_network()
+     
+     def detach(self):
+         """
+         detach agent (for server-client implementation)
+         """
++	print("エージェントのデタッチ（サーバークライアント実装用）")
+         pass
+diff --git a/burger_war_dev/scripts/agents/brain.py b/burger_war_dev/scripts/agents/brain.py
+index e3d3892..c51ab16 100644
+--- a/burger_war_dev/scripts/agents/brain.py
++++ b/burger_war_dev/scripts/agents/brain.py
+@@ -21,16 +21,19 @@ from utils.permemory import PERMemory
+ from networks.maskNet import MaskNet
+ import pickle
+ 
++print("brain.pyを実行する")
+ #------------------------------------------------
+ 
+ class Brain:
+     TARGET_UPDATE = 10
+     def __init__(self, num_actions, batch_size=32, capacity=10000, gamma=0.99, prioritized=True, lr=0.0005):
++	print("Brainの初期化")
+         self.batch_size = batch_size
+         self.gamma = gamma
+         self.num_actions = num_actions
+         self.prioritized = prioritized
+ 
++
+         # Instantiate memory object
+         if self.prioritized:
+             print('* Prioritized Experience Replay Mode')
+@@ -46,8 +49,9 @@ class Brain:
+ 
+         # Set device type; GPU or CPU (Use GPU if available)
+         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+-        #self.device = torch.device('cpu')
++        self.device = torch.device('cpu') #temporary setting
+         self.policy_net = self.policy_net.to(self.device)
++
+         self.target_net = self.target_net.to(self.device)
+ 
+         print('using device:', self.device)
+@@ -58,7 +62,7 @@ class Brain:
+ 
+     def replay(self):
+         """Experience Replayでネットワークの重みを学習 """
+-
++	print("Experience Replayでネットワークの重みを学習 ")
+         # Do nothing while size of memory is lower than batch size
+         if len(self.memory) < self.batch_size:
+             return
+@@ -157,7 +161,6 @@ class Brain:
+     def decide_action(self, state, episode, policy_mode="epsilon", debug=True):
+         """
+         policy
+-
+         Args:
+             state (State): state object
+             episode (int): current episode
+@@ -169,7 +172,7 @@ class Brain:
+ 
+         if not debug:
+             self.policy_net.eval()  # ネットワークを推論モードに切り替える
+-
++            print("推論を行う")
+             # Set device type; GPU or CPU
+             input_pose = Variable(state.pose).to(self.device)
+             input_lidar = Variable(state.lidar).to(self.device)
+@@ -185,6 +188,7 @@ class Brain:
+         if policy_mode == "epsilon":
+             # ε-greedy法で徐々に最適行動のみを採用する
+             # epsilon = 0.5 * (1 / (episode + 1))
++            print("ε-greedy法を採用する")
+             if episode < 50:
+                 epsilon = 0.25
+             elif episode < 100:
+@@ -194,7 +198,6 @@ class Brain:
+ 
+             if epsilon <= np.random.uniform(0, 1):
+                 self.policy_net.eval()  # ネットワークを推論モードに切り替える
+-
+                 # Set device type; GPU or CPU
+                 input_pose = Variable(state.pose).to(self.device)
+                 input_lidar = Variable(state.lidar).to(self.device)
+@@ -213,6 +216,7 @@ class Brain:
+                 print("Random action: {}".format(action.item()))
+ 
+         elif policy_mode == "boltzmann":
++            print("boltzmann法を採用する")
+             self.policy_net.eval()  # ネットワークを推論モードに切り替える
+ 
+             # Set device type; GPU or CPU
+diff --git a/burger_war_dev/scripts/agents/connection.py b/burger_war_dev/scripts/agents/connection.py
+index 7c26738..31a7fd1 100644
+--- a/burger_war_dev/scripts/agents/connection.py
++++ b/burger_war_dev/scripts/agents/connection.py
+@@ -31,7 +31,6 @@ import queue
+ import select
+ import multiprocessing as mp
+ 
+-
+ def send_recv(conn, sdata):
+     conn.send(sdata)
+     rdata = conn.recv()
+diff --git a/burger_war_dev/scripts/dqn_learning.py b/burger_war_dev/scripts/dqn_learning.py
+index f6aa9c8..5e3557b 100755
+--- a/burger_war_dev/scripts/dqn_learning.py
++++ b/burger_war_dev/scripts/dqn_learning.py
+@@ -3,6 +3,7 @@
+ 
+ from agents.agent_conn import AgentServer
+ 
++print("dqn_learning.py")
+ PORT = 5010
+ 
+ agent_server = AgentServer(PORT)
+diff --git a/burger_war_dev/scripts/dqn_operation.py b/burger_war_dev/scripts/dqn_operation.py
+index 179ed62..f370387 100755
+--- a/burger_war_dev/scripts/dqn_operation.py
++++ b/burger_war_dev/scripts/dqn_operation.py
+@@ -32,6 +32,8 @@ from utils.lidar_transform import lidar_transform
+ 
+ import cv2
+ 
++print("dqn_operation.pyを実行")
++
+ # config
+ FIELD_SCALE = 2.4
+ FIELD_MARKERS = [
+@@ -45,7 +47,6 @@ ROBOT_MARKERS = {
+ 
+ JUDGE_URL = ""
+ 
+-
+ # functions
+ def send_to_judge(url, data):
+     res = requests.post(url,
+@@ -465,7 +466,7 @@ class DQNBot:
+ 
+     
+ if __name__ == "__main__":
+-
++    print("dqn_operation.py_mainを開始")
+     rospy.init_node('dqn_run')
+     JUDGE_URL = rospy.get_param('/send_id_to_judge/judge_url')
+ 
+diff --git a/burger_war_dev/scripts/dqn_self_play.py b/burger_war_dev/scripts/dqn_self_play.py
+index 5427ffb..cef50ee 100755
+--- a/burger_war_dev/scripts/dqn_self_play.py
++++ b/burger_war_dev/scripts/dqn_self_play.py
+@@ -31,6 +31,7 @@ from utils.wallAvoid import punish_by_count, punish_by_min_dist, manual_avoid_wa
+ from utils.lidar_transform import lidar_transform
+ from agents.agent import Agent
+ 
++print("dqn_self_play.pyを実行")
+ 
+ # config
+ FIELD_SCALE = 2.4
+@@ -472,7 +473,7 @@ class DQNBot:
+ 
+     
+ if __name__ == "__main__":
+-
++    print("dqn_self_play_main_.pyを実行")
+     rospy.init_node('dqn_run')
+     JUDGE_URL = rospy.get_param('/send_id_to_judge/judge_url')
+ 
+@@ -487,7 +488,7 @@ if __name__ == "__main__":
+     print("name: {}, server: {}".format(ROBOT_NAME, JUDGE_URL))
+ 
+     # parameters
+-
++    print("parametersの設定")
+     ONLINE = True
+     POLICY = "epsilon"
+     DEBUG = False
+@@ -496,10 +497,12 @@ if __name__ == "__main__":
+     MANUAL_AVOID = False
+ 
+     # wall avoidance
++    print("wall avoidanceの設定")
+     DIST_TO_WALL_TH = 0.18
+     NUM_LASER_CLOSE_TO_WALL_TH = 30
+ 
+     # action lists
++    print("action lists設定")
+     VEL = 0.2
+     OMEGA = 30 * 3.14/180
+     ACTION_LIST = [
+@@ -511,6 +514,7 @@ if __name__ == "__main__":
+     ]
+ 
+     # agent config
++    print("agent config設定")
+     UPDATE_Q_FREQ = 10
+     BATCH_SIZE = 16
+     MEM_CAPACITY = 2000
+diff --git a/burger_war_dev/scripts/networks/net.py b/burger_war_dev/scripts/networks/net.py
+index 85e6397..6eb310a 100755
+--- a/burger_war_dev/scripts/networks/net.py
++++ b/burger_war_dev/scripts/networks/net.py
+@@ -2,6 +2,7 @@ import torch
+ import torch.nn as nn
+ import torch.nn.functional as F
+ 
++print("net.pyを実行する")
+ class Net(nn.Module):
+     def __init__(self, output_size):
+         """
+diff --git a/burger_war_dev/scripts/networks/net2.py b/burger_war_dev/scripts/networks/net2.py
+index ddb8e1c..77ccb1f 100755
+--- a/burger_war_dev/scripts/networks/net2.py
++++ b/burger_war_dev/scripts/networks/net2.py
+@@ -2,6 +2,7 @@ import torch
+ import torch.nn as nn
+ import torch.nn.functional as F
+ 
++print("net2.pyを実行する")
+ class Net(nn.Module):
+     def __init__(self, output_size):
+         """
+diff --git a/burger_war_dev/scripts/utils/lidar_transform.py b/burger_war_dev/scripts/utils/lidar_transform.py
+index b3cc3b4..4764312 100644
+--- a/burger_war_dev/scripts/utils/lidar_transform.py
++++ b/burger_war_dev/scripts/utils/lidar_transform.py
+@@ -1,6 +1,5 @@
+ import numpy as np
+ 
+-
+ def lidar_transform(lidar, debug=True):
+ 
+     if debug:
+@@ -30,4 +29,4 @@ def lidar_transform(lidar, debug=True):
+ 
+                     zero_idx = []
+ 
+-    return lidar
+\ No newline at end of file
++    return lidar
+diff --git a/burger_war_dev/scripts/utils/permemory.py b/burger_war_dev/scripts/utils/permemory.py
+index 86e17d3..53f5768 100644
+--- a/burger_war_dev/scripts/utils/permemory.py
++++ b/burger_war_dev/scripts/utils/permemory.py
+@@ -8,6 +8,8 @@ from transition import Transition
+ import numpy as np
+ from replaymemory import ReplayMemory
+ 
++print("permemory.pyを実行する")
++
+ class PERMemory(ReplayMemory):
+     epsilon = 0.0001
+     alpha = 0.6
+diff --git a/burger_war_dev/scripts/utils/random_replaymemory.py b/burger_war_dev/scripts/utils/random_replaymemory.py
+index 77f12ed..46a05c4 100644
+--- a/burger_war_dev/scripts/utils/random_replaymemory.py
++++ b/burger_war_dev/scripts/utils/random_replaymemory.py
+@@ -6,6 +6,8 @@ from state import State
+ from transition import Transition
+ from replaymemory import ReplayMemory
+ 
++print("random_replaymemory.pyを実行する")
++
+ class RandomReplayMemory(ReplayMemory):
+ 
+     def push(self, state, action, state_next, reward):
+diff --git a/burger_war_dev/scripts/utils/replaymemory.py b/burger_war_dev/scripts/utils/replaymemory.py
+index db3c89c..b791c6c 100644
+--- a/burger_war_dev/scripts/utils/replaymemory.py
++++ b/burger_war_dev/scripts/utils/replaymemory.py
+@@ -4,6 +4,7 @@
+ from state import State
+ from transition import Transition
+ 
++print("replaymemory.pyを実行する")
+ class ReplayMemory(object):
+ 
+     def __init__(self, CAPACITY):
+diff --git a/burger_war_dev/scripts/utils/state.py b/burger_war_dev/scripts/utils/state.py
+index bc0c5bb..fd13776 100755
+--- a/burger_war_dev/scripts/utils/state.py
++++ b/burger_war_dev/scripts/utils/state.py
+@@ -3,6 +3,8 @@
+ 
+ from collections import namedtuple
+ 
++print("state.pyを実行する")
++
+ State = namedtuple (
+     'State', ('pose', 'lidar', 'image', 'mask')
+-)
+\ No newline at end of file
++)
+diff --git a/burger_war_dev/scripts/utils/sumtree.py b/burger_war_dev/scripts/utils/sumtree.py
+index 221a03d..f6ee926 100755
+--- a/burger_war_dev/scripts/utils/sumtree.py
++++ b/burger_war_dev/scripts/utils/sumtree.py
+@@ -7,6 +7,8 @@
+ # and add some functions
+ import numpy
+ 
++print("sumtree.pyを実行する")
++
+ class SumTree:
+     write = 0
+ 
+@@ -62,4 +64,4 @@ class SumTree:
+         idx = self._retrieve(0, s)
+         dataIdx = idx - self.capacity + 1
+ 
+-        return (idx, self.tree[idx], self.data[dataIdx])
+\ No newline at end of file
++        return (idx, self.tree[idx], self.data[dataIdx])
+diff --git a/burger_war_dev/scripts/utils/transition.py b/burger_war_dev/scripts/utils/transition.py
+index 5ad4d2d..e3b2595 100755
+--- a/burger_war_dev/scripts/utils/transition.py
++++ b/burger_war_dev/scripts/utils/transition.py
+@@ -3,6 +3,8 @@
+ 
+ from collections import namedtuple
+ 
++print("transition.pyを実行する")
++
+ Transition = namedtuple(
+     'Transition', ('state', 'action', 'next_state', 'reward')
+-)
+\ No newline at end of file
++)
+diff --git a/burger_war_dev/scripts/utils/wallAvoid.py b/burger_war_dev/scripts/utils/wallAvoid.py
+index 8513bba..af75118 100644
+--- a/burger_war_dev/scripts/utils/wallAvoid.py
++++ b/burger_war_dev/scripts/utils/wallAvoid.py
+@@ -3,6 +3,7 @@
+ 
+ import torch
+ 
++print("wallAvoid.pyを実行する")
+ 
+ def punish_by_count(lidar, dist_th=0.2, count_th=90):
+     # Check LiDAR data to punish for AMCL failure
+@@ -18,7 +19,7 @@ def punish_by_count(lidar, dist_th=0.2, count_th=90):
+ 
+         # Punish if too many lasers close to obstacle
+         if count_too_close > count_th:
+-            print("### Too close to the wall, get penalty ###")
++            print("### Too close to the wall, get penalty1 ###")
+             punish = -0.5
+ 
+     return punish
+@@ -30,7 +31,7 @@ def punish_by_min_dist(lidar, dist_th=0.15):
+     if lidar is not None:
+         lidar_1d = lidar.squeeze()
+         if lidar_1d.min() < dist_th:
+-            print("### Too close to the wall, get penalty ###")
++            print("### Too close to the wall, get penalty2 ###")
+             punish = -0.5
+ 
+     return punish
+@@ -58,6 +59,7 @@ def manual_avoid_wall(lidar, dist_th=0.2, count_th=90):
+         ], key=lambda e: e[0])
+             
+     else:
++	print("safety_for_wall")
+         avoid = False
+         linear_x = None
+         angular_z = None
