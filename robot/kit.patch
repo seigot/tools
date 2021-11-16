@@ -1,0 +1,94 @@
+diff --git a/burger_war/launch/sim_robot_run.launch b/burger_war/launch/sim_robot_run.launch
+index 8510c95..9e3178d 100644
+--- a/burger_war/launch/sim_robot_run.launch
++++ b/burger_war/launch/sim_robot_run.launch
+@@ -2,10 +2,24 @@
+ <launch>
+   <arg name="enemy_level" default="1"/>
+   <arg name="side" default="r" />
++  <arg name="batch_size" default="16"/>
++  <arg name="capacity" default="1000"/>
++  <arg name="episode" default="0"/>
++  <arg name="gamma" default="0.99"/>
++  <arg name="learning_rate" default="0.0005"/>
++  <arg name="model_path" default="/tmp/model.pth"/>
++  <arg name="memory_path" default="/tmp/memory.pth"/>
+ 
+ <!-- Your robot control node run  red side-->
+   <include file="$(find burger_war_dev)/launch/your_burger.launch">
+     <arg name="side" value="r" />
++    <arg name="batch_size" value="$(arg batch_size)"/>
++    <arg name="capacity" value="$(arg capacity)"/>
++    <arg name="episode" value="$(arg episode)"/>
++    <arg name="gamma" value="$(arg gamma)"/>
++    <arg name="learning_rate" value="$(arg learning_rate)"/>
++    <arg name="model_path" value="$(arg model_path)"/>
++    <arg name="memory_path" value="$(arg memory_path)"/>
+   </include>
+ 
+ <!-- enemy bot run  blue side-->
+diff --git a/scripts/start.sh b/scripts/start.sh
+index ba6b724..f427b59 100644
+--- a/scripts/start.sh
++++ b/scripts/start.sh
+@@ -3,13 +3,27 @@
+ # set default level 1
+ VALUE_L="1"
+ IS_AUTOTEST="FALSE"
++BATCH_SIZE=16
++CAPACITY=1000
++EPISODE=0
++GAMMA=0.99
++LEARNING_RATE=0.0005
++MODEL_PATH="/tmp/model.pth"
++MEMORY_PATH="/tmp/memory.pickle"
+ 
+ # get args level setting
+-while getopts l:a OPT
++while getopts l:ab:c:e:g:r: OPT
+ do
+   case $OPT in
+       "l" ) FLG_L="TRUE" ; VALUE_L="$OPTARG" ;;
+       "a" ) IS_AUTOTEST="TRUE";;
++      "b" ) BATCH_SIZE=$OPTARG;;
++      "c" ) CAPACITY=$OPTARG;;
++      "e" ) EPISODE=$OPTARG;;
++      "g" ) GAMMA=$OPTARG;;
++      "r" ) LEARNING_RATE=$OPTARG;;
++      "m" ) MODEL_PATH=$OPTARG;;
++      "p" ) MEMORY_PATH=$OPTARG;;
+   esac
+ done
+ 
+@@ -17,7 +31,18 @@ done
+ bash judge/test_scripts/set_running.sh localhost:5000
+ 
+ # launch robot control node
+-declare -a ROSLAUNCH_OPTIONS=("enemy_level:=${VALUE_L}")
++# declare -a ROSLAUNCH_OPTIONS=("enemy_level:=${VALUE_L}")
++declare -a ROSLAUNCH_OPTIONS=(
++    "enemy_level:=${VALUE_L}"
++    "batch_size:=${BATCH_SIZE}"
++    "capacity:=${CAPACITY}"
++    "episode:=${EPISODE}"
++    "gamma:=${GAMMA}"
++    "learning_rate:=${LEARNING_RATE}"
++    "model_path:=${MODEL_PATH}"
++    "memory_path:=${MEMORY_PATH}"
++)
++echo "${ROSLAUNCH_OPTIONS[@]}"
+ #if [ "${IS_AUTOTEST}" = "TRUE" ]; then
+ #    ROSLAUNCH_OPTIONS+=("rviz_file:=burger_navigation_autotest.rviz")
+ #fi
+diff --git a/scripts/stop.sh b/scripts/stop.sh
+index 1e0787d..864bcd1 100755
+--- a/scripts/stop.sh
++++ b/scripts/stop.sh
+@@ -67,6 +67,7 @@ function stop_process(){
+     try_kill_process "recordmydesktop"
+     try_kill_process "gazebo"
+     try_kill_process "gzserver"
++    try_kill_process "burger_navigation.rviz"
+ }
+ 
+ stop_process
