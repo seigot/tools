@@ -1,0 +1,107 @@
+diff --git a/autotest/autotest.sh b/autotest/autotest.sh
+index 3757626..aaee04c 100755
+--- a/autotest/autotest.sh
++++ b/autotest/autotest.sh
+@@ -36,8 +36,21 @@ function search_window() {
+     xdotool search --sync --onlyvisible --name "$1"
+ }
+ 
++function battle_start_effect() {
++    pushd ${BURGER_WAR_KIT_REPOSITORY}/autotest
++    gnome-terminal -- bash effect.sh
++    popd
++}
++
+ function adjust_layout() {
+-    local -ir UNIT=700
++    local -ir UNIT=500
++    local IMAGE_NAME=$1
++
++    # rviz
++    local -r RVIZ=$(search_window "RViz")
++    #wmctrl -i -r ${RVIZ} -e 0,${UNIT},0,${UNIT},$((2*${UNIT}))
++    wmctrl -i -r ${RVIZ} -e 0,${UNIT},0,${UNIT},$((${UNIT}))
++    xdotool windowactivate --sync ${RVIZ}
+ 
+     # Gazebo window is shown with maximized
+     # Ref: https://stackoverflow.com/questions/23850499/how-to-move-or-resize-x11-windows-even-if-they-are-maximized
+@@ -45,16 +58,21 @@ function adjust_layout() {
+     wmctrl -i -r ${GAZEBO} -b remove,maximized_vert,maximized_horz
+     xdotool windowunmap --sync ${GAZEBO}
+     xdotool windowmap --sync ${GAZEBO}
+-    wmctrl -i -r ${GAZEBO} -e 0,0,0,${UNIT},${UNIT}
++    wmctrl -i -r ${GAZEBO} -e 0,200,0,${UNIT},${UNIT}
+     xdotool windowactivate --sync ${GAZEBO}
+ 
+     local -r SCORE_BOARD=$(search_window "burger war")
+-    wmctrl -i -r ${SCORE_BOARD} -e 0,0,${UNIT},${UNIT},${UNIT}
++    #wmctrl -i -r ${SCORE_BOARD} -e 0,0,${UNIT},${UNIT},${UNIT}
++    wmctrl -i -r ${SCORE_BOARD} -e 0,0,100,100,100
+     xdotool windowactivate --sync ${SCORE_BOARD}
+ 
+-    local -r RVIZ=$(search_window "RViz")
+-    wmctrl -i -r ${RVIZ} -e 0,${UNIT},0,${UNIT},$((2*${UNIT}))
+-    xdotool windowactivate --sync ${RVIZ}
++    eog /home/ubuntu/Downloads/poke/$IMAGE_NAME &
++    sleep 4
++    WINDOWID=`xdotool search --onlyvisible --name "${IMAGE_NAME}"`
++    xdotool windowmove ${WINDOWID} -100 400
++    #local -r SCORE_BOARD=$(search_window "poke")
++    #wmctrl -i -r ${SCORE_BOARD} -e 0,200,100,100,100
++    #xdotool windowactivate --sync ${SCORE_BOARD}
+ }
+ 
+ function rename_log(){
+@@ -89,12 +107,17 @@ function do_game(){
+ 	sleep 30
+     fi
+     # start
++    battle_start_effect
++    SOUNDFILE_PATH="/home/ubuntu/Downloads/poke/poke2.wav"
++    play ${SOUNDFILE_PATH} &
++    PID_PLAY_SOUND=$!
+     gnome-terminal -- bash scripts/start.sh -l ${ENEMY_LEVEL} -a # -s ${MY_SIDE}
+     # adjust window layout
+-    #adjust_layout
++    adjust_layout "poke${ENEMY_LEVEL}_IMGP.png"
+ 
+     # wait game finish
+     sleep $GAME_TIME
++    wait ${PID_PLAY_SOUND}
+ 
+     # get result
+     timeout 30s python autotest/get_score.py > out.log
+@@ -275,13 +298,13 @@ do
+     #do_push
+ 
+     # practice
+-    do_game ${i} 1 225 # 180 * 5/4 #
+-    do_game ${i} 2 225 # 180 * 5/4 # 
+-    do_game ${i} 3 225 # 180 * 5/4 #
+-    do_game ${i} 7 225 # 180 * 5/4 #
+-    do_game ${i} 5 225 # 180 * 5/4 #
+-    do_game ${i} 11 225 # 180 * 5/4 #
+-    do_game ${i} 9 225 # 180 * 5/4 #
+-    #do_game ${i} 12 225 # 180 * 5/4 #     
++    #do_game ${i} 1 225 # 180 * 5/4 #
++    #do_game ${i} 2 225 # 180 * 5/4 # 
++    #do_game ${i} 3 225 # 180 * 5/4 #
++    #do_game ${i} 7 225 # 180 * 5/4 #
++    #do_game ${i} 5 225 # 180 * 5/4 #
++    #do_game ${i} 11 225 # 180 * 5/4 #
++    #do_game ${i} 9 225 # 180 * 5/4 #
++    do_game ${i} 12 225 # 180 * 5/4 #     
+ done
+ 
+diff --git a/scripts/stop.sh b/scripts/stop.sh
+index 1e0787d..3c167f0 100755
+--- a/scripts/stop.sh
++++ b/scripts/stop.sh
+@@ -67,6 +67,7 @@ function stop_process(){
+     try_kill_process "recordmydesktop"
+     try_kill_process "gazebo"
+     try_kill_process "gzserver"
++    try_kill_process "poke"
+ }
+ 
+ stop_process
