@@ -1,5 +1,5 @@
 diff --git a/autotest/autotest.sh b/autotest/autotest.sh
-index 3757626..804f817 100755
+index 3757626..15b1cfd 100755
 --- a/autotest/autotest.sh
 +++ b/autotest/autotest.sh
 @@ -14,7 +14,7 @@ LATEST_GITLOG_HASH="xxxx"
@@ -61,12 +61,15 @@ index 3757626..804f817 100755
  }
  
  function rename_log(){
-@@ -89,12 +107,22 @@ function do_game(){
+@@ -89,12 +107,27 @@ function do_game(){
  	sleep 30
      fi
      # start
 +    battle_start_effect
 +    SOUNDFILE_PATH="/home/ubuntu/Downloads/poke/poke2.wav"
++    if [ "${ENEMY_LEVEL}" == "12" ];then
++	SOUNDFILE_PATH="/home/ubuntu/Downloads/poke/poke_boss.wav"
++    fi
 +    play ${SOUNDFILE_PATH} &
 +    PID_PLAY_SOUND=$!
      gnome-terminal -- bash scripts/start.sh -l ${ENEMY_LEVEL} -a # -s ${MY_SIDE}
@@ -74,6 +77,8 @@ index 3757626..804f817 100755
 -    #adjust_layout
 -
 +    adjust_layout "poke${ENEMY_LEVEL}_IMGP.png"
++    SOUNDFILE_PATH="/home/ubuntu/Downloads/poke/poke${ENEMY_LEVEL}_growl.wav"
++    play ${SOUNDFILE_PATH} &
 +    #gz physics -u 800
 +    pushd $BURGER_WAR_DEV_REPOSITORY
 +    REPOSITORY_OWNER=`git remote -v | head -1 | cut -d'/' -f4`
@@ -86,7 +91,7 @@ index 3757626..804f817 100755
  
      # get result
      timeout 30s python autotest/get_score.py > out.log
-@@ -121,7 +149,7 @@ function do_game(){
+@@ -121,7 +154,7 @@ function do_game(){
      TODAY=`date +"%Y%m%d"`
      VIDEO_DIRECTORY_PATH="${HOME}/video/${TODAY}/"
      mkdir -p ${VIDEO_DIRECTORY_PATH}
@@ -95,7 +100,7 @@ index 3757626..804f817 100755
      local -r VIDEO_NAME="${VIDEO_DIRECTORY_PATH}/${FILE_BASE_NAME}.mp4"
      do_capture "stop" "$VIDEO_NAME"
  
-@@ -172,9 +200,10 @@ function do_capture(){
+@@ -172,9 +205,10 @@ function do_capture(){
  
      pushd ${BURGER_WAR_KIT_REPOSITORY}
      if [ ${CAPTURE_OPTION} == "start" ]; then    
@@ -108,7 +113,7 @@ index 3757626..804f817 100755
      else
  	echo "invalid option: ${CAPTURE_OPTION}"
      fi
-@@ -275,13 +304,13 @@ do
+@@ -275,13 +309,13 @@ do
      #do_push
  
      # practice
@@ -120,14 +125,14 @@ index 3757626..804f817 100755
 -    do_game ${i} 11 225 # 180 * 5/4 #
 -    do_game ${i} 9 225 # 180 * 5/4 #
 -    #do_game ${i} 12 225 # 180 * 5/4 #     
-+    do_game ${i} 1 200 #225 # 180 * 5/4 #
-+    do_game ${i} 2 200 #225 # 180 * 5/4 # 
-+    do_game ${i} 3 200 #225 # 180 * 5/4 #
-+    #do_game ${i} 7 200 #225 # 180 * 5/4 #
-+    #do_game ${i} 5 200 #225 # 180 * 5/4 #
-+    #do_game ${i} 11 200 #225 # 180 * 5/4 #
-+    #do_game ${i} 9 200 #225 # 180 * 5/4 #
-+    #do_game ${i} 12 200 #225 # 180 * 5/4 #     
++    do_game ${i} 1 190 #225 # 180 * 5/4 #
++    #do_game ${i} 2 190 #225 # 180 * 5/4 # 
++    #do_game ${i} 3 190 #225 # 180 * 5/4 #
++    #do_game ${i} 7 190 #225 # 180 * 5/4 #
++    #do_game ${i} 5 190 #225 # 180 * 5/4 #
++    #do_game ${i} 11 190 #225 # 180 * 5/4 #
++    #do_game ${i} 9 190 #225 # 180 * 5/4 #
++    #do_game ${i} 12 190 #225 # 180 * 5/4 #     
  done
  
 diff --git a/scripts/capture.sh b/scripts/capture.sh
