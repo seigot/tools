@@ -24,7 +24,7 @@ function common(){
 
     # autotest
     cd $HOME/catkin_ws/src/burger_war_kit
-    bash autotest/autotest.sh 
+    bash autotest/autotest.sh #-c "true"
 }
 
 # takino-san
