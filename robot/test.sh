@@ -1,3 +1,4 @@
+#!/bin/bash
 
 CATKIN_WS_SRC=${HOME}/catkin_ws/src
 
@@ -10,9 +11,12 @@ function common(){
     fi
 
     cd $HOME/catkin_ws/src
-    sudo rm -r burger_war_dev
+    rm -rf burger_war_dev
     git clone ${REPOSITORY_URL}
-
+    pushd burger_war_dev
+    git remote -v
+    popd
+    
     # catkin build
     cd $HOME/catkin_ws
     catkin build
@@ -50,7 +54,7 @@ function ce31062(){
 
 #common
 takinoon
-#nanka-nemuiyo
-#KoutaOhishi
-#k-onishi
-#ce31062
+nanka-nemuiyo
+KoutaOhishi
+k-onishi
+ce31062
