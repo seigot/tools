@@ -24,7 +24,7 @@ function common(){
 
     # autotest
     cd $HOME/catkin_ws/src/burger_war_kit
-    bash autotest/autotest.sh #-c "true"
+    bash autotest/autotest.sh #-c "true" #-c "true"
 }
 
 # takino-san
@@ -53,8 +53,8 @@ function ce31062(){
 }
 
 #common
-takinoon
-nanka-nemuiyo
-KoutaOhishi
+#takinoon
+#nanka-nemuiyo
+#KoutaOhishi
 k-onishi
-ce31062
+#ce31062
