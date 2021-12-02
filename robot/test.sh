@@ -25,6 +25,12 @@ function common(){
     # autotest
     cd $HOME/catkin_ws/src/burger_war_kit
     bash autotest/autotest.sh #-c "true" #-c "true"
+
+    # result
+    REPOSITORY_OWNER=`echo ${REPOSITORY_URL} | head -1 | cut -d'/' -f4`
+    cp autotest/result.log ~/tmp/result_${REPOSITORY_OWNER}.log
+    python autotest/result_analyzer.py > ~/tmp/result_analyze_${REPOSITORY_OWNER}.log
+
 }
 
 # takino-san
@@ -53,8 +59,8 @@ function ce31062(){
 }
 
 #common
-#takinoon
-#nanka-nemuiyo
-#KoutaOhishi
+takinoon
+KoutaOhishi
 k-onishi
-#ce31062
+nanka-nemuiyo
+ce31062

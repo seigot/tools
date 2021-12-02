@@ -1,0 +1,264 @@
+diff --git a/autotest/autotest.sh b/autotest/autotest.sh
+index 3757626..0d99c01 100755
+--- a/autotest/autotest.sh
++++ b/autotest/autotest.sh
+@@ -14,7 +14,7 @@ LATEST_GITLOG_HASH="xxxx"
+ echo "iteration, enemy_level, game_time(s), date, my_score, enemy_score, battle_result, my_side" > $RESULTLOG
+ 
+ # get option
+-LOOP_TIMES=10
++LOOP_TIMES=5
+ IS_CAPTURE_VIDEO="false"
+ while getopts l:c: OPT
+ do
+@@ -36,8 +36,21 @@ function search_window() {
+     xdotool search --sync --onlyvisible --name "$1"
+ }
+ 
++function battle_start_effect() {
++    pushd ${BURGER_WAR_KIT_REPOSITORY}/autotest
++    gnome-terminal -- bash effect.sh
++    popd
++}
++
+ function adjust_layout() {
+-    local -ir UNIT=700
++    local -ir UNIT=500
++    local IMAGE_NAME=$1
++
++    # rviz
++    local -r RVIZ=$(search_window "RViz")
++    #wmctrl -i -r ${RVIZ} -e 0,${UNIT},0,${UNIT},$((2*${UNIT}))
++    wmctrl -i -r ${RVIZ} -e 0,${UNIT},0,${UNIT},$((${UNIT}))
++    xdotool windowactivate --sync ${RVIZ}
+ 
+     # Gazebo window is shown with maximized
+     # Ref: https://stackoverflow.com/questions/23850499/how-to-move-or-resize-x11-windows-even-if-they-are-maximized
+@@ -45,16 +58,21 @@ function adjust_layout() {
+     wmctrl -i -r ${GAZEBO} -b remove,maximized_vert,maximized_horz
+     xdotool windowunmap --sync ${GAZEBO}
+     xdotool windowmap --sync ${GAZEBO}
+-    wmctrl -i -r ${GAZEBO} -e 0,0,0,${UNIT},${UNIT}
++    wmctrl -i -r ${GAZEBO} -e 0,200,0,${UNIT},${UNIT}
+     xdotool windowactivate --sync ${GAZEBO}
+ 
+     local -r SCORE_BOARD=$(search_window "burger war")
+-    wmctrl -i -r ${SCORE_BOARD} -e 0,0,${UNIT},${UNIT},${UNIT}
++    #wmctrl -i -r ${SCORE_BOARD} -e 0,0,${UNIT},${UNIT},${UNIT}
++    wmctrl -i -r ${SCORE_BOARD} -e 0,0,100,100,100
+     xdotool windowactivate --sync ${SCORE_BOARD}
+ 
+-    local -r RVIZ=$(search_window "RViz")
+-    wmctrl -i -r ${RVIZ} -e 0,${UNIT},0,${UNIT},$((2*${UNIT}))
+-    xdotool windowactivate --sync ${RVIZ}
++    eog /home/ubuntu/Downloads/poke/$IMAGE_NAME &
++    sleep 1
++    WINDOWID=`xdotool search --onlyvisible --name "${IMAGE_NAME}"`
++    xdotool windowmove ${WINDOWID} -100 400
++    #local -r SCORE_BOARD=$(search_window "poke")
++    #wmctrl -i -r ${SCORE_BOARD} -e 0,200,100,100,100
++    #xdotool windowactivate --sync ${SCORE_BOARD}
+ }
+ 
+ function rename_log(){
+@@ -89,12 +107,33 @@ function do_game(){
+ 	sleep 30
+     fi
+     # start
+-    gnome-terminal -- bash scripts/start.sh -l ${ENEMY_LEVEL} -a # -s ${MY_SIDE}
++    pushd $BURGER_WAR_DEV_REPOSITORY
++    REPOSITORY_OWNER=`git remote -v | head -1 | cut -d'/' -f4`
++    popd
++    battle_start_effect
++    SOUNDFILE_PATH="/home/ubuntu/Downloads/poke/poke2.wav"
++    if [ "${ENEMY_LEVEL}" == "12" ];then
++	SOUNDFILE_PATH="/home/ubuntu/Downloads/poke/poke_boss.wav"
++    fi
++    play ${SOUNDFILE_PATH} &
++    PID_PLAY_SOUND=$!
++    if [ ${REPOSITORY_OWNER} == "k-onishi" ];then
++	START_OPTION="-m /home/ubuntu/Downloads/poke/key_of_the_good_taste.pth"
++    else
++	START_OPTION=""
++    fi
++    gnome-terminal -- bash scripts/start.sh -l ${ENEMY_LEVEL} -a ${START_OPTION}# -s ${MY_SIDE}
+     # adjust window layout
+-    #adjust_layout
++    adjust_layout "poke${ENEMY_LEVEL}_IMGP.png"
++    SOUNDFILE_PATH="/home/ubuntu/Downloads/poke/poke${ENEMY_LEVEL}_growl.wav"
++    play ${SOUNDFILE_PATH} &
++    #gz physics -u 800
++    timeout 200s python3 ${BURGER_WAR_KIT_REPOSITORY}/autotest/display.py --player_name ${REPOSITORY_OWNER} &
+ 
++    
+     # wait game finish
+     sleep $GAME_TIME
++    wait ${PID_PLAY_SOUND}
+ 
+     # get result
+     timeout 30s python autotest/get_score.py > out.log
+@@ -121,7 +160,7 @@ function do_game(){
+     TODAY=`date +"%Y%m%d"`
+     VIDEO_DIRECTORY_PATH="${HOME}/video/${TODAY}/"
+     mkdir -p ${VIDEO_DIRECTORY_PATH}
+-    local -r FILE_BASE_NAME="GAME_${DATE}_${ITERATION}_${ENEMY_LEVEL}_${GAME_TIME}_${MY_SCORE}_${ENEMY_SCORE}_${BATTLE_RESULT}_${MY_SIDE}"
++    local -r FILE_BASE_NAME="GAME_${REPOSITORY_OWNER}_${DATE}_${ITERATION}_${ENEMY_LEVEL}_${GAME_TIME}_${MY_SCORE}_${ENEMY_SCORE}_${BATTLE_RESULT}_${MY_SIDE}"
+     local -r VIDEO_NAME="${VIDEO_DIRECTORY_PATH}/${FILE_BASE_NAME}.mp4"
+     do_capture "stop" "$VIDEO_NAME"
+ 
+@@ -172,9 +211,10 @@ function do_capture(){
+ 
+     pushd ${BURGER_WAR_KIT_REPOSITORY}
+     if [ ${CAPTURE_OPTION} == "start" ]; then    
+-	bash scripts/capture.sh -m "start"
++	bash scripts/capture.sh -m "start" -f 25
+     elif [ ${CAPTURE_OPTION} == "stop" ]; then
+-	bash scripts/capture.sh -m "stop" -n ${VIDEO_NAME}
++	echo "VIDEO_NAME: ${VIDEO_NAME}"
++	bash scripts/capture.sh -m "stop" -n ${VIDEO_NAME} -f 25
+     else
+ 	echo "invalid option: ${CAPTURE_OPTION}"
+     fi
+@@ -275,13 +315,13 @@ do
+     #do_push
+ 
+     # practice
+-    do_game ${i} 1 225 # 180 * 5/4 #
+-    do_game ${i} 2 225 # 180 * 5/4 # 
+-    do_game ${i} 3 225 # 180 * 5/4 #
+-    do_game ${i} 7 225 # 180 * 5/4 #
+-    do_game ${i} 5 225 # 180 * 5/4 #
+-    do_game ${i} 11 225 # 180 * 5/4 #
+-    do_game ${i} 9 225 # 180 * 5/4 #
+-    #do_game ${i} 12 225 # 180 * 5/4 #     
++    do_game ${i} 1 190 #225 # 180 * 5/4 #
++    do_game ${i} 2 190 #225 # 180 * 5/4 # 
++    do_game ${i} 3 190 #225 # 180 * 5/4 #
++    do_game ${i} 7 190 #225 # 180 * 5/4 #
++    do_game ${i} 5 190 #225 # 180 * 5/4 #
++    do_game ${i} 11 190 #225 # 180 * 5/4 #
++    do_game ${i} 9 190 #225 # 180 * 5/4 #
++    do_game ${i} 12 190 #225 # 180 * 5/4 #     
+ done
+ 
+diff --git a/autotest/result_analyzer.py b/autotest/result_analyzer.py
+index ad19996..1112cee 100755
+--- a/autotest/result_analyzer.py
++++ b/autotest/result_analyzer.py
+@@ -148,6 +148,7 @@ def main():
+     enemy_bot_level9 = fight_result()
+     enemy_bot_level10 = fight_result()
+     enemy_bot_level11 = fight_result()
++    enemy_bot_level12 = fight_result()
+ 
+     for line in data[2:-1]:
+         if 'commit' in line:
+@@ -163,6 +164,7 @@ def main():
+             enemy_bot_level9.set_commit_seq()
+             enemy_bot_level10.set_commit_seq()            
+             enemy_bot_level11.set_commit_seq()
++            enemy_bot_level12.set_commit_seq()            
+             continue
+ 
+         result = line.split(',')
+@@ -192,6 +194,8 @@ def main():
+             enemy_bot_level10.add_score(float(result[4]), float(result[5]))
+         elif int(result[1]) == 11:
+             enemy_bot_level11.add_score(float(result[4]), float(result[5]))
++        elif int(result[1]) == 12:
++            enemy_bot_level12.add_score(float(result[4]), float(result[5]))
+         else:
+             print('unknown enemy')
+             continue
+@@ -277,31 +281,36 @@ def main():
+           + '{:.2f}'.format(enemy_bot_level8.enemy_average()).rjust(len('vs enemy_bot_level8')))
+ 
+     print('--')
+-    print('              vs enemy_bot_level9    vs enemy_bot_level10    vs enemy_bot_level11')
++    print('              vs enemy_bot_level9    vs enemy_bot_level10    vs enemy_bot_level11    vs enemy_bot_level12')
+     print('winning rate: '
+           + '{:.2f}'.format(enemy_bot_level9.winning_rate()).rjust(len('vs enemy_bot_level9'))+'    '
+-          + '{:.2f}'.format(enemy_bot_level9.winning_rate()).rjust(len('vs enemy_bot_level10'))+'    '
+-          + '{:.2f}'.format(enemy_bot_level10.winning_rate()).rjust(len('vs enemy_bot_level11')))
++          + '{:.2f}'.format(enemy_bot_level10.winning_rate()).rjust(len('vs enemy_bot_level10'))+'    '
++          + '{:.2f}'.format(enemy_bot_level11.winning_rate()).rjust(len('vs enemy_bot_level11'))+'    '
++          + '{:.2f}'.format(enemy_bot_level12.winning_rate()).rjust(len('vs enemy_bot_level12')))
+ 
+     print('onekill win : '
+           + '{:.2f}'.format(enemy_bot_level9.onekillwin_rate()).rjust(len('vs enemy_bot_level9'))+'    '
+-          + '{:.2f}'.format(enemy_bot_level9.onekillwin_rate()).rjust(len('vs enemy_bot_level10'))+'    '
+-          + '{:.2f}'.format(enemy_bot_level10.onekillwin_rate()).rjust(len('vs enemy_bot_level11')))
++          + '{:.2f}'.format(enemy_bot_level10.onekillwin_rate()).rjust(len('vs enemy_bot_level10'))+'    '
++          + '{:.2f}'.format(enemy_bot_level11.onekillwin_rate()).rjust(len('vs enemy_bot_level11'))+'    '
++          + '{:.2f}'.format(enemy_bot_level12.onekillwin_rate()).rjust(len('vs enemy_bot_level12')))
+ 
+     print('onekill lose: '
+           + '{:.2f}'.format(enemy_bot_level9.onekilllose_rate()).rjust(len('vs enemy_bot_level9'))+'    '
+-          + '{:.2f}'.format(enemy_bot_level9.onekilllose_rate()).rjust(len('vs enemy_bot_level10'))+'    '
+-          + '{:.2f}'.format(enemy_bot_level10.onekilllose_rate()).rjust(len('vs enemy_bot_level11')))
++          + '{:.2f}'.format(enemy_bot_level10.onekilllose_rate()).rjust(len('vs enemy_bot_level10'))+'    '
++          + '{:.2f}'.format(enemy_bot_level11.onekilllose_rate()).rjust(len('vs enemy_bot_level11'))+'    '
++          + '{:.2f}'.format(enemy_bot_level12.onekilllose_rate()).rjust(len('vs enemy_bot_level12')))
+ 
+     print('my_score:     '
+           + '{:.2f}'.format(enemy_bot_level9.my_average()).rjust(len('vs enemy_bot_level9'))+'    '
+-          + '{:.2f}'.format(enemy_bot_level9.my_average()).rjust(len('vs enemy_bot_level10'))+'    '
+-          + '{:.2f}'.format(enemy_bot_level10.my_average()).rjust(len('vs enemy_bot_level11')))
++          + '{:.2f}'.format(enemy_bot_level10.my_average()).rjust(len('vs enemy_bot_level10'))+'    '
++          + '{:.2f}'.format(enemy_bot_level11.my_average()).rjust(len('vs enemy_bot_level11'))+'    '
++          + '{:.2f}'.format(enemy_bot_level12.my_average()).rjust(len('vs enemy_bot_level12')))
+ 
+     print('enemy_score:  '
+           + '{:.2f}'.format(enemy_bot_level9.enemy_average()).rjust(len('vs enemy_bot_level9'))+'    '
+-          + '{:.2f}'.format(enemy_bot_level9.enemy_average()).rjust(len('vs enemy_bot_level10'))+'    '
+-          + '{:.2f}'.format(enemy_bot_level10.enemy_average()).rjust(len('vs enemy_bot_level11')))
++          + '{:.2f}'.format(enemy_bot_level10.enemy_average()).rjust(len('vs enemy_bot_level10'))+'    '
++          + '{:.2f}'.format(enemy_bot_level11.enemy_average()).rjust(len('vs enemy_bot_level11'))+'    '
++          + '{:.2f}'.format(enemy_bot_level12.enemy_average()).rjust(len('vs enemy_bot_level12')))
+ 
+     print('\nnumber of games: '+str(len(enemy_bot_level5.result)))
+     print('# each enemy_bot is maybe following... in detail, please see enemy_bot/README.md')
+@@ -313,6 +322,7 @@ def main():
+     print('#  - level9: YusukeMori3250(Tokuyo-Unagi)')
+     print('#  - level10: Arthur-MA2(X-ranger)')
+     print('#  - level11: shunsuke-f(sampleprogram)')
++    print('#  - level12: maou')
+     
+ if __name__ == "__main__":
+     main()
+diff --git a/scripts/capture.sh b/scripts/capture.sh
+index 2334c24..a4b1342 100755
+--- a/scripts/capture.sh
++++ b/scripts/capture.sh
+@@ -49,7 +49,8 @@ output_warning
+ 
+ if [ $MODE == "start" ];then
+     # capture start
+-    gnome-terminal -- recordmydesktop --no-sound --no-cursor --fps ${FPS} --width 1400 --height 1400
++    #gnome-terminal -- recordmydesktop --no-sound --no-cursor --fps ${FPS} --width 1366 --height 768 #--width 1400 --height 1400
++    gnome-terminal -- recordmydesktop --no-cursor
+ 
+ elif [ $MODE == "stop" ];then
+     #capture stop
+@@ -75,7 +76,8 @@ elif [ $MODE == "stop" ];then
+     # save video
+     #ffmpeg -i $TMP_FNAME_OGV -vf scale=1024:-1 $TMP_FNAME_MP4
+     #ffmpeg -i $TMP_FNAME_MP4 -vf setpts=PTS/3.3 -af atempo=2.0 $TMP2_FNAME_MP4
+-    ffmpeg -i $TMP_FNAME_OGV -vf setpts=PTS/${PLAYBACK_SPEED} -af atempo=2.0 $TMP2_FNAME_MP4
++    #ffmpeg -i $TMP_FNAME_OGV -vf setpts=PTS/${PLAYBACK_SPEED} -af atempo=2.0 $TMP2_FNAME_MP4
++    ffmpeg -i $TMP_FNAME_OGV $TMP2_FNAME_MP4
+     mv $TMP2_FNAME_MP4 ${CAPTURE_NAME}
+     rm -f $TMP_FNAME_OGV
+     rm -f $TMP_FNAME_MP4
+diff --git a/scripts/stop.sh b/scripts/stop.sh
+index 1e0787d..3c167f0 100755
+--- a/scripts/stop.sh
++++ b/scripts/stop.sh
+@@ -67,6 +67,7 @@ function stop_process(){
+     try_kill_process "recordmydesktop"
+     try_kill_process "gazebo"
+     try_kill_process "gzserver"
++    try_kill_process "poke"
+ }
+ 
+ stop_process
