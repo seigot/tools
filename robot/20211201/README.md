@@ -1,14 +1,14 @@
 ### 20211201 実行結果
 https://github.com/seigot/tools/tree/master/robot/20211201
 
-### 勝率などの統計情報
+### 統計情報（敵8体と5回づつ対戦した結果）
 https://github.com/seigot/tools/blob/master/robot/20211201/result_analyze_KoutaOhishi.log  
 https://github.com/seigot/tools/blob/master/robot/20211201/result_analyze_ce31062.log  
 https://github.com/seigot/tools/blob/master/robot/20211201/result_analyze_k-onishi.log  
 https://github.com/seigot/tools/blob/master/robot/20211201/result_analyze_nanka-nemuiyo.log  
 https://github.com/seigot/tools/blob/master/robot/20211201/result_analyze_takinoon.log  
 
-### lv1,2,3-四天王-maou 対戦動画
+### lv1,2,3、四天王、maou 対戦動画
 takinoon_lv1lv3       https://youtu.be/weZVPqqTCHM  
 takinoon lv4lv6       https://youtu.be/9fiy7_uBT5U  
 takinoon_lv7lv8       https://youtu.be/fFrjNZGLxyE  
