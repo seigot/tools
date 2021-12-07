@@ -1,6 +1,9 @@
-## usb ssd に tetris 環境構築できるかどうかのトライアル用
+## usb ssd に tetris環境構築できるかどうかのトライアル用
 
 ## 準備
+
+tetris環境
+> https://github.com/seigot/tetris
 
 usb ssd
 > [バッファロー SSD 外付け 250GB 超小型 コンパクト ポータブル PS5/PS4対応(メーカー動作確認済) USB3.2Gen1 ブラック SSD-PUT250U3-B/N](https://www.amazon.co.jp/gp/product/B08N4F3CVY/ref=ppx_yo_dt_b_asin_title_o02_s01?ie=UTF8&psc=1)  
