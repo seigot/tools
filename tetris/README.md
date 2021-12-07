@@ -46,6 +46,8 @@ $ sudo fdisk -l
 /dev/sda3  16580355 500097584 483517230 230.6G Linux ファイルシステム
 ```
 
+`Timing buffered disk reads`が`100MB/sec`を超えていればとりあえずよし？
+
 ```
 $ sudo hdparm -tT /dev/sda
 /dev/sda:
