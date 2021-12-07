@@ -32,6 +32,27 @@ xxx
 
 xxx
 
+## Disk I/O の確認
+
+`/dev/sda`の例
+
+```
+$ sudo fdisk -l
+ディスク /dev/sda: 238.49 GiB, 256060514304 バイト, 500118192 セクタ
+...
+デバイス   開始位置  最後から    セクタ サイズ タイプ
+/dev/sda1     65535    983024    917490   448M EFI システム
+/dev/sda2    983025  16580354  15597330   7.4G Linux スワップ
+/dev/sda3  16580355 500097584 483517230 230.6G Linux ファイルシステム
+```
+
+```
+$ sudo hdparm -tT /dev/sda
+/dev/sda:
+ Timing cached reads: 39954 MB in  1.98 seconds = 20131.94 MB/sec
+ Timing buffered disk reads: 1020 MB in  3.04 seconds = 335.62 MB/sec
+```
+
 ## 参考
 [Ubuntu 20.04 LTS インストール方法（外付けドライブ用）](https://qiita.com/koba-jon/items/019a3b4eac4f60ca89c9)  
 [Ubuntu20.04LTSのブートUSBをMacで作成する](https://qiita.com/seigot/items/faea0998e17c40b3a63e)  
