@@ -33,6 +33,6 @@ xxx
 xxx
 
 ## 参考
-[Ubuntu 20.04 LTS インストール方法（外付けドライブ用）](https://qiita.com/koba-jon/items/019a3b4eac4f60ca89c9)
-[Ubuntu20.04LTSのブートUSBをMacで作成する](https://qiita.com/seigot/items/faea0998e17c40b3a63e)
-[HDDのパーティションを完全削除する方法](https://qiita.com/ricrowl/items/4cc3aa1727a08c8d8413)
+[Ubuntu 20.04 LTS インストール方法（外付けドライブ用）](https://qiita.com/koba-jon/items/019a3b4eac4f60ca89c9)  
+[Ubuntu20.04LTSのブートUSBをMacで作成する](https://qiita.com/seigot/items/faea0998e17c40b3a63e)  
+[HDDのパーティションを完全削除する方法](https://qiita.com/ricrowl/items/4cc3aa1727a08c8d8413)  
