@@ -4,11 +4,12 @@
 
 ## 事前準備
 
+- 作業用のPCを用意する（Mac/Windows）
 - usb ssd を入手する（Ubuntuをインストールする用）  
 (例)
 > [バッファロー SSD 外付け 250GB 超小型 コンパクト ポータブル PS5/PS4対応(メーカー動作確認済) USB3.2Gen1 ブラック SSD-PUT250U3-B/N](https://www.amazon.co.jp/gp/product/B08N4F3CVY/ref=ppx_yo_dt_b_asin_title_o02_s01?ie=UTF8&psc=1)  
 
-- usb メモリ を入手する（Ubuntuのインストーラを書き込む用）  
+- usb メモリ を入手する（Ubuntuのインストーラを書き込む用、16GB以上あればOK）  
 (例)
 > [バッファロー【国内メーカー】 USBメモリ 16GB USB3.2(Gen1)/3.1(Gen 1)/3.0/2.0 充実サポート RUF3-K16GA-WH/N【Amazon.co.jp限定】](https://www.amazon.co.jp/gp/product/B087CHWZ33/ref=ppx_yo_dt_b_asin_title_o04_s00?ie=UTF8&psc=1)  
 
@@ -25,17 +26,20 @@ usb ssd に Ubuntuをインストールする（+tetris環境を起動する）
 
 ### ダウンロード
 
-```
-以下からOSイメージ（ubuntu-20.04-desktop-amd64.iso）をダウンロードします
+以下からOSイメージ（ubuntu-20.04-desktop-amd64.iso）をダウンロードして作業用のPCに保存する。  
 
 [日本国内のダウンロードサイト](https://www.ubuntulinux.jp/ubuntu/mirrors)
 →Ubuntuのリリースイメージから、http://で始まるミラーサイトへアクセス
 ※ Ubuntuのパッケージアーカイブミラーではなくリリースイメージから選ぶ
 →Ubuntu 20.04 LTS (Focal Fossa)
 →64-bit PC (AMD64) desktop image
-```
 
-### 
+### Ubuntuのインストーラを書き込む用のusb メモリにOSイメージを書き込む
+
+以下のツールを利用する  
+
+> [Ethcer](https://qiita.com/seigot/items/faea0998e17c40b3a63e)を使い、  
+> ダウンロードしたOSイメージ（ubuntu-20.04-desktop-amd64.iso）を書き込む
 
 ## usb ssd へubuntu環境をインストールする
 
