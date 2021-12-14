@@ -21,7 +21,19 @@
 
 ## ubuntuのインストーラを準備する
 
-xxx
+### ダウンロード
+
+```
+以下からOSイメージ（ubuntu-20.04-desktop-amd64.iso）をダウンロードします
+
+[日本国内のダウンロードサイト](https://www.ubuntulinux.jp/ubuntu/mirrors)
+→Ubuntuのリリースイメージから、http://で始まるミラーサイトへアクセス
+※ Ubuntuのパッケージアーカイブミラーではなくリリースイメージから選ぶ
+→Ubuntu 20.04 LTS (Focal Fossa)
+→64-bit PC (AMD64) desktop image
+```
+
+### 
 
 ## usb ssd へubuntu環境をインストールする
 
