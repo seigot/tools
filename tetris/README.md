@@ -51,6 +51,9 @@ windowsの場合
 起動直後にF2ボタン（or F何かのボタン）を押す？  
 --> BIOS画面に遷移して、USBメモリから起動する設定をする  
   
+以下を参考  
+[Ubuntu 20.04 LTS インストール方法（外付けドライブ用）](https://qiita.com/koba-jon/items/019a3b4eac4f60ca89c9)  
+  
 ## usb ssd からubuntuを起動する
   
 起動直後にF2ボタン（or F何かのボタン）を押す？  
