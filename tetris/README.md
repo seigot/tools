@@ -69,8 +69,9 @@ cd tetris
 bash start.sh
 ```
 
-## Disk I/O の確認
-
+## (任意) Disk I/O の確認
+  
+アクセス速度を測定する場合  
 `/dev/sda`の例
 
 ```
