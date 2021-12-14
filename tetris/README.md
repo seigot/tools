@@ -28,11 +28,11 @@ usb ssd に Ubuntuをインストールする（+tetris環境を起動する）
 
 以下からOSイメージ（ubuntu-20.04-desktop-amd64.iso）をダウンロードして作業用のPCに保存する。  
 
-[日本国内のダウンロードサイト](https://www.ubuntulinux.jp/ubuntu/mirrors)
-→Ubuntuのリリースイメージから、http://で始まるミラーサイトへアクセス
-※ Ubuntuのパッケージアーカイブミラーではなくリリースイメージから選ぶ
-→Ubuntu 20.04 LTS (Focal Fossa)
-→64-bit PC (AMD64) desktop image
+[日本国内のダウンロードサイト](https://www.ubuntulinux.jp/ubuntu/mirrors)  
+→Ubuntuのリリースイメージから、http://で始まるミラーサイトへアクセス  
+※ Ubuntuのパッケージアーカイブミラーではなくリリースイメージから選ぶ  
+→Ubuntu 20.04 LTS (Focal Fossa)  
+→64-bit PC (AMD64) desktop image  
 
 ### Ubuntuのインストーラを書き込む用のusb メモリにOSイメージを書き込む
 
