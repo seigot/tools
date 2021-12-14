@@ -41,18 +41,30 @@ usb ssd に Ubuntuをインストールする（+tetris環境を起動する）
 > [Ethcer](https://www.balena.io/etcher/)を使い、  
 > ダウンロードしたOSイメージ（ubuntu-20.04-desktop-amd64.iso）を書き込む
 
+--> Flash from file: ubuntu
+    Select target  : USBメモリ
+
 ## usb ssd へubuntu環境をインストールする
 
-xxx
+windowsの場合
 
+起動直後にF2ボタン（or F何かのボタン）を押す？
+--> BIOS画面に遷移して、USBメモリから起動する設定をする
 
 ## usb ssd からubuntuを起動する
 
-xxx
+起動直後にF2ボタン（or F何かのボタン）を押す？
+--> BIOS画面に遷移して、usb ssd から起動する設定をする
 
 ## tetrisを動かす
 
-xxx
+terminalから以下を実行する
+
+```
+git clone https://github.com/seigot/tetris
+cd tetris
+bash start.sh
+```
 
 ## Disk I/O の確認
 
