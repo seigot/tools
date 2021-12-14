@@ -41,8 +41,9 @@ usb ssd に Ubuntuをインストールする（+tetris環境を起動する）
 > [Ethcer](https://www.balena.io/etcher/)を使い、    
 > ダウンロードしたOSイメージ（ubuntu-20.04-desktop-amd64.iso）を書き込む  
   
---> Flash from file: ubuntu    
-    Select target  : USBメモリ  
+-->  
+Flash from file: ダウンロードしたOSイメージ  
+Select target  : USBメモリ  
   
 ## usb ssd へubuntu環境をインストールする
 
