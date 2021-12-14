@@ -47,8 +47,7 @@ Select target  : USBメモリ
   
 ## usb ssd へubuntu環境をインストールする
 
-windowsの場合  
-  
+ASUSの場合  [ASUS製 ノートパソコンでの BIOS へのアクセス方法](https://www.asus.com/jp/support/FAQ/1008829/)  
 起動直後にF2ボタン（or F何かのボタン）を押す？  
 --> BIOS画面に遷移して、USBメモリから起動する設定をする  
   
@@ -57,6 +56,7 @@ windowsの場合
   
 ## usb ssd からubuntuを起動する
   
+ASUSの場合  [ASUS製 ノートパソコンでの BIOS へのアクセス方法](https://www.asus.com/jp/support/FAQ/1008829/)  
 起動直後にF2ボタン（or F何かのボタン）を押す？  
 --> BIOS画面に遷移して、usb ssd から起動する設定をする  
   
