@@ -1,0 +1,44 @@
+diff --git a/autotest/autotest.sh b/autotest/autotest.sh
+index da14ef7..1baa33c 100755
+--- a/autotest/autotest.sh
++++ b/autotest/autotest.sh
+@@ -14,7 +14,7 @@ LATEST_GITLOG_HASH="xxxx"
+ echo "iteration, enemy_level, game_time(s), date, my_score, enemy_score, battle_result, my_side" > $RESULTLOG
+ 
+ # get option
+-LOOP_TIMES=10
++LOOP_TIMES=1000000
+ IS_CAPTURE_VIDEO="false"
+ while getopts l:c: OPT
+ do
+@@ -259,20 +259,21 @@ function do_push(){
+ # main loop
+ for ((i=0; i<${LOOP_TIMES}; i++));
+ do
++    echo "LOOP_TIMES: ${i}/${LOOP_TIMES}"
+     #check_latest_hash
+-    do_game ${i} 1 225 # 180 * 5/4 
++    #do_game ${i} 1 225 # 180 * 5/4 
+     do_game ${i} 2 225 # 180 * 5/4 
+-    do_game ${i} 3 225 # 180 * 5/4
++    #do_game ${i} 3 225 # 180 * 5/4
+     #do_game ${i} 1 225 "b" # 180 * 5/4 # only enemy level1,2,3 works r side
+     #do_game ${i} 2 225 "b" # 180 * 5/4 # 
+     #do_game ${i} 3 225 "b" # 180 * 5/4 # 
+-    do_game ${i} 4 225 # 180 * 5/4
+-    do_game ${i} 5 225 # 180 * 5/4
+-    do_game ${i} 6 225 # 180 * 5/4
+-    do_game ${i} 7 225 # 180 * 5/4
+-    do_game ${i} 8 225 # 180 * 5/4
+-    do_game ${i} 9 225 # 180 * 5/4
+-    do_game ${i} 10 225 # 180 * 5/4
++    #do_game ${i} 4 225 # 180 * 5/4
++    #do_game ${i} 5 225 # 180 * 5/4
++    #do_game ${i} 6 225 # 180 * 5/4
++    #do_game ${i} 7 225 # 180 * 5/4
++    #do_game ${i} 8 225 # 180 * 5/4
++    #do_game ${i} 9 225 # 180 * 5/4
++    #do_game ${i} 10 225 # 180 * 5/4
+     #do_push
+ done
+ 
