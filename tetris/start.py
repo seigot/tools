@@ -30,6 +30,13 @@ def get_option(game_level, game_time, manual, use_sample, random_seed, resultlog
                            help='Specigy user name if necessary')
     return argparser.parse_args()
 
+def get_python_cmd():
+    ret = subprocess.run("python --version", shell=True, \
+                         stderr=subprocess.PIPE, encoding="utf-8")
+    if "Python 2" in ret.stderr:
+        return "python3"
+    return "python"
+
 def start():
     ## default value
     GAME_LEVEL = 1
@@ -98,7 +105,8 @@ def start():
     print('OBSTACLE_PROBABILITY: ' + str(OBSTACLE_PROBABILITY))
 
     ## start game
-    cmd = 'python game_manager/game_manager.py' \
+    PYTHON_CMD = get_python_cmd()
+    cmd = PYTHON_CMD + ' ' + 'game_manager/game_manager.py' \
         + ' ' + '--game_time' + ' ' + str(GAME_TIME) \
         + ' ' + '--seed' + ' ' + str(RANDOM_SEED) \
         + ' ' + '--obstacle_height' + ' ' + str(OBSTACLE_HEIGHT) \
