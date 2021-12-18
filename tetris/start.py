@@ -48,7 +48,6 @@ def start():
                       INPUT_RANDOM_SEED,
                       RESULT_LOG_JSON,
                       USER_NAME)
-    print(args)
     if args.game_level >= 0:
         GAME_LEVEL = args.game_level
     if args.game_time >= 0:
@@ -82,7 +81,7 @@ def start():
         OBSTACLE_HEIGHT = 10
         OBSTACLE_PROBABILITY = 40
     else:
-        print('invalid level: ' + str(GAME_LEVEL))
+        print('invalid level: ' + str(GAME_LEVEL), file=sys.stderr)
         sys.exit(1)
 
     ## update random seed
@@ -110,7 +109,7 @@ def start():
         + ' ' + '--resultlogjson' + ' ' + str(RESULT_LOG_JSON)
     ret = subprocess.run(cmd, shell=True)
     if ret.returncode != 0:
-        print('ls failed.', file=sys.stderr)
+        print('error: subprocess failed.', file=sys.stderr)
         sys.exit(1)
 
 if __name__ == '__main__':
