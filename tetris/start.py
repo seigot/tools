@@ -33,6 +33,7 @@ def get_option(game_level, game_time, manual, use_sample, random_seed, resultlog
 def get_python_cmd():
     ret = subprocess.run("python --version", shell=True, \
                          stderr=subprocess.PIPE, encoding="utf-8")
+    print(ret)
     if "Python 2" in ret.stderr:
         return "python3"
     return "python"
@@ -115,10 +116,16 @@ def start():
         + ' ' + '--manual' + ' ' + str(IS_MANUAL_CONTROLL) \
         + ' ' + '--use_sample' + ' ' + str(IS_SAMPLE_CONTROLL) \
         + ' ' + '--resultlogjson' + ' ' + str(RESULT_LOG_JSON)
+
+    #try:
     ret = subprocess.run(cmd, shell=True)
     if ret.returncode != 0:
         print('error: subprocess failed.', file=sys.stderr)
         sys.exit(1)
+    #except KeyboardInterrupt:
+    #    print("a.py got ctrl-c")
+
+
 
 if __name__ == '__main__':
     start()
