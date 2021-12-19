@@ -3,7 +3,6 @@
 
 import sys
 import subprocess
-from subprocess import Popen
 from argparse import ArgumentParser
 
 def get_option(game_level, game_time, manual, use_sample, random_seed, resultlogjson, user_name):
@@ -118,13 +117,16 @@ def start():
         + ' ' + '--use_sample' + ' ' + str(IS_SAMPLE_CONTROLL) \
         + ' ' + '--resultlogjson' + ' ' + str(RESULT_LOG_JSON)
 
-    #p = subprocess.call(cmd, shell=True)
-    popen = Popen(cmd, shell=True)
-    try:
-        popen.wait()
-    except KeyboardInterrupt:
-        print("a.py got ctrl-c")
-        popen.terminate()
+    ret = subprocess.run(cmd, shell=True)
+    if ret.returncode != 0:
+        print('error: subprocess failed.', file=sys.stderr)
+        sys.exit(1)
+    #p = subprocess.Popen(cmd, shell=True)
+    #try:
+    #    p.wait()
+    #except KeyboardInterrupt:
+    #    print("KeyboardInterrupt, call p.terminate()")
+    #    p.terminate()
 
 if __name__ == '__main__':
     start()
