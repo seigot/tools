@@ -1,0 +1,83 @@
+From 537cc07da9e8977b4b004e0bb5d5319bd8d79780 Mon Sep 17 00:00:00 2001
+From: seigot <s.takada.3o3@gmail.com>
+Date: Sat, 8 Jan 2022 17:18:31 +0000
+Subject: [PATCH] add score detail
+
+---
+ scripts/gameserver.sh | 32 ++++++++++++++++++++++++++------
+ 1 file changed, 26 insertions(+), 6 deletions(-)
+
+diff --git a/scripts/gameserver.sh b/scripts/gameserver.sh
+index b918338..33da939 100644
+--- a/scripts/gameserver.sh
++++ b/scripts/gameserver.sh
+@@ -34,8 +34,13 @@ function update_result(){
+     local LEVEL="$5"
+     local RESULT="$6"
+     local DROP_INTERVAL="$7"
+-    local HEADER_STR="DATETIME, REPOSITORY_URL, BRANCH, SCORE, LEVEL, RESULT, DROP_INTERVAL"
+-    local STR="${DATETIME}, ${REPOSITORY_URL}, ${BRANCH}, ${SCORE}, ${LEVEL}, ${RESULT}, ${DROP_INTERVAL}"
++    local LINE1_SCORE="$8"
++    local LINE2_SCORE="$9"
++    local LINE3_SCORE="${10}"
++    local LINE4_SCORE="${11}"
++    local GAMEOVER_SCORE="${12}"
++    local HEADER_STR="DATETIME, REPOSITORY_URL, BRANCH, SCORE, LEVEL, RESULT, DROP_INTERVAL, 1LINE_SCORE, 2LINE_SCORE, 3LINE_SCORE, 4LINE_SCORE, GAMEOVER_SCORE"
++    local STR="${DATETIME}, ${REPOSITORY_URL}, ${BRANCH}, ${SCORE}, ${LEVEL}, ${RESULT}, ${DROP_INTERVAL}, ${LINE1_SCORE}, ${LINE2_SCORE}, ${LINE3_SCORE}, ${LINE4_SCORE}, ${GAMEOVER_SCORE}"
+     
+     ## update result file
+     local RESULT_LOG="result.csv"
+@@ -52,7 +57,7 @@ function update_result(){
+ 	    echo "${HEADER_STR}" >> ${RESULT_LEVEL_LOG}
+ 	fi
+ 	echo $STR >> ${RESULT_LEVEL_LOG}
+-	cat <(head -1 ${RESULT_LEVEL_LOG}) <(tail -n +2 ${RESULT_LEVEL_LOG} | sort -nr -t, -k3) > ${RESULT_RANKING_LOG}
++	cat <(head -1 ${RESULT_LEVEL_LOG}) <(tail -n +2 ${RESULT_LEVEL_LOG} | sort -nr -t, -k4) > ${RESULT_RANKING_LOG}
+     fi
+ 	
+     echo "--"
+@@ -90,7 +95,7 @@ function error_result(){
+     #RESULT="$5"
+     #STR="${DATETIME}, ${REPOSITORY_URL}, ${SCORE}, ${LEVEL}, ${RESULT}"
+     #update_result "${STR}"
+-    update_result "$1" "$2" "$3" "$4" "$5" "$6" "$7"
++    update_result "$1" "$2" "$3" "$4" "$5" "$6" "$7" "-" "-" "-" "-" "-"
+ }
+ 
+ function success_result(){
+@@ -101,7 +106,7 @@ function success_result(){
+     #LEVEL="$4"
+     #STR="${DATETIME}, ${REPOSITORY_URL}, ${SCORE}, ${LEVEL}, SUCCESS"
+     #update_result "${STR}"
+-    update_result "$1" "$2" "$3" "$4" "$5" "$6" "$7"
++    update_result "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}"
+ }
+ 
+ function check_drop_interval_value(){
+@@ -176,7 +181,22 @@ function do_tetris(){
+     # get result score
+     SCORE=`jq .judge_info.score ${TMP_LOG}`
+     echo $SCORE
+-    success_result "${DATETIME}" "${REPOSITORY_URL}" "${BRANCH}" "${SCORE}" "${LEVEL}" "SUCCESS" "${DROP_INTERVAL}"
++    STAT_LINE1=`jq .debug_info.line_score_stat[0] ${TMP_LOG}`
++    LINE1=`jq .debug_info.line_score.line1 ${TMP_LOG}`
++    STAT_LINE2=`jq .debug_info.line_score_stat[1] ${TMP_LOG}`
++    LINE2=`jq .debug_info.line_score.line2 ${TMP_LOG}`
++    STAT_LINE3=`jq .debug_info.line_score_stat[2] ${TMP_LOG}`
++    LINE3=`jq .debug_info.line_score.line3 ${TMP_LOG}`
++    STAT_LINE4=`jq .debug_info.line_score_stat[3] ${TMP_LOG}`
++    LINE4=`jq .debug_info.line_score.line4 ${TMP_LOG}`
++    STAT_GAMEOVER=`jq .debug_info.line_score.gameover ${TMP_LOG}`
++    GAMEOVER=`jq .judge_info.gameover_count ${TMP_LOG}`
++    LINE1_SCORE=$(( STAT_LINE1 * LINE1 ))
++    LINE2_SCORE=$(( STAT_LINE2 * LINE2 ))
++    LINE3_SCORE=$(( STAT_LINE3 * LINE3 ))
++    LINE4_SCORE=$(( STAT_LINE4 * LINE4 ))
++    GAMEOVER_SCORE=$(( STAT_GAMEOVER * GAMEOVER ))
++    success_result "${DATETIME}" "${REPOSITORY_URL}" "${BRANCH}" "${SCORE}" "${LEVEL}" "SUCCESS" "${DROP_INTERVAL}" "${LINE1_SCORE}" "${LINE2_SCORE}" "${LINE3_SCORE}" "${LINE4_SCORE}" "${GAMEOVER_SCORE}"
+ }
+ 
+ function do_polling(){
+-- 
+2.25.1
+
