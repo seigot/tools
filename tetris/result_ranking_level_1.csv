@@ -1,0 +1,11 @@
+DATETIME, REPOSITORY_URL, BRANCH, SCORE, LEVEL, RESULT, DROP_INTERVAL, 1LINE_SCORE, 2LINE_SCORE, 3LINE_SCORE, 4LINE_SCORE, GAMEOVER_SCORE
+2022/01/08_23:14:24, https://github.com/seigot/tetris, master, -174, 1, SUCCESS, 100, 0, 0, 0, 0, -500
+2022/01/08_22:52:18, https://github.com/seigot/tetris, master, 54, 1, SUCCESS, 1000, 0, 0, 0, 0, 0
+2022/01/06_0:19:56, https://github.com/seigot/tetris, master, 58, 1, SUCCESS, 1000, 0, 0, 0, 0, 0
+2022/01/04_2:45:36, https://github.com/seigot/tetris, master, 58, 1, SUCCESS, 1000, 0, 0, 0, 0, 0
+2022/01/04_13:07:46, https://github.com/seigot/tetris, master, 56, 1, SUCCESS, 1000, 0, 0, 0, 0, 0
+2021/12/29_3:07:22, https://github.com/seigot/tetris, master, 54, 1, SUCCESS, 1000, 0, 0, 0, 0, 0
+2021/12/29_3:06:33, https://github.com/seigot/tetris, master, 55, 1, SUCCESS, 1000, 0, 0, 0, 0, 0
+2021/12/29_22:06:41, https://github.com/seigot/tetris, master, 53, 1, SUCCESS, 1000, 0, 0, 0, 0, 0
+2021/12/29_14:37:54, https://github.com/seigot/tetris, master, 57, 1, SUCCESS, 1000, 0, 0, 0, 0, 0
+2021/12/28_20:59:17, https://github.com/seigot/tetris, master, 57, 1, SUCCESS, 1000, 0, 0, 0, 0, 0
