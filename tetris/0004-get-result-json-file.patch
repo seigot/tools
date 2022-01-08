@@ -1,0 +1,25 @@
+From 88d63b0d155d22420afc275626036efcbb4dc6ae Mon Sep 17 00:00:00 2001
+From: seigot <s.takada.3o3@gmail.com>
+Date: Sat, 8 Jan 2022 15:19:06 +0000
+Subject: [PATCH 4/5] get result json file
+
+---
+ scripts/gameserver.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/gameserver.sh b/scripts/gameserver.sh
+index 6869715..201d7c8 100644
+--- a/scripts/gameserver.sh
++++ b/scripts/gameserver.sh
+@@ -169,7 +169,7 @@ function do_tetris(){
+     docker exec ${CONTAINER_NAME} bash -c "${POST_COMMAND}" > ${TMP_LOG}    
+ 
+     # get result score
+-    SCORE=`jq .judge_info.score tmp.log ${TMP_LOG}`
++    SCORE=`jq .judge_info.score ${TMP_LOG}`
+     echo $SCORE
+     success_result "${DATETIME}" "${REPOSITORY_URL}" "${BRANCH}" "${SCORE}" "${LEVEL}" "SUCCESS" "${DROP_INTERVAL}"
+ }
+-- 
+2.25.1
+

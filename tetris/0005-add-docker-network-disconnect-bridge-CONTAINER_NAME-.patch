@@ -1,0 +1,25 @@
+From ea694638c2e882405e762b5c21724a65ecfc4922 Mon Sep 17 00:00:00 2001
+From: seigot <s.takada.3o3@gmail.com>
+Date: Sat, 8 Jan 2022 15:20:04 +0000
+Subject: [PATCH 5/5] add docker network disconnect bridge ${CONTAINER_NAME},
+ to isolate docker cotainer
+
+---
+ scripts/gameserver.sh | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/scripts/gameserver.sh b/scripts/gameserver.sh
+index 201d7c8..a39e920 100644
+--- a/scripts/gameserver.sh
++++ b/scripts/gameserver.sh
+@@ -161,6 +161,7 @@ function do_tetris(){
+ 	error_result "${DATETIME}" "${REPOSITORY_URL}" "${BRANCH}" "0" "${LEVEL}" "pip3_install_-r_requirements.txt_NG" "${DROP_INTERVAL}"
+ 	return 0
+     fi
++    docker network disconnect bridge ${CONTAINER_NAME}
+     docker exec ${CONTAINER_NAME} bash -c "${DO_COMMAND}"
+     if [ $? -ne 0 ]; then
+ 	error_result "${DATETIME}" "${REPOSITORY_URL}" "${BRANCH}" "0" "${LEVEL}" "python_start.py_NG" "${DROP_INTERVAL}"
+-- 
+2.25.1
+
