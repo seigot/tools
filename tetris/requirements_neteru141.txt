@@ -1,0 +1,8 @@
+pyqt5
+numpy
+pillow
+matplotlib
+torch
+torchvision 
+torchaudio
+
