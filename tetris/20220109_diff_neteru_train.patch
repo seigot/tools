@@ -1,0 +1,193 @@
+--- game_manager/game_manager.py	2022-01-09 23:53:50.539802076 +0900
++++ /home/ubuntu/neteru/tetris_game/game_manager/game_manager.py	2022-01-09 23:30:02.655346218 +0900
+@@ -8,13 +8,22 @@
+ 
+ from board_manager import BOARD_DATA, Shape
+ from block_controller import BLOCK_CONTROLLER
+-from block_controller_sample import BLOCK_CONTROLLER_SAMPLE
++from block_controller_next_steps import BLOCK_CONTROLLER_NEXT_STEP
+ 
+ from argparse import ArgumentParser
+ import time
+ import json
+ import pprint
+ 
++import torch
++import torch.nn as nn
++from deep_q_network import DeepQNetwork
++
++import os
++import shutil
++from random import random, randint, sample
++import numpy as np
++
+ def get_option(game_time, manual, use_sample, drop_speed, random_seed, obstacle_height, obstacle_probability, resultlogjson):
+     argparser = ArgumentParser()
+     argparser.add_argument('--game_time', type=int,
+@@ -41,6 +50,20 @@
+     argparser.add_argument('--resultlogjson', type=str,
+                            default=resultlogjson,
+                            help='result json log file path')
++    argparser.add_argument("--width", type=int, default=10, help="The common width for all images")
++    argparser.add_argument("--height", type=int, default=20, help="The common height for all images")
++    argparser.add_argument("--block_size", type=int, default=30, help="Size of a block")
++    argparser.add_argument("--batch_size", type=int, default=512, help="The number of images per batch")
++    argparser.add_argument("--lr", type=float, default=1e-3)
++    argparser.add_argument("--gamma", type=float, default=0.99)
++    argparser.add_argument("--initial_epsilon", type=float, default=1)
++    argparser.add_argument("--final_epsilon", type=float, default=1e-3)
++    argparser.add_argument("--num_decay_epochs", type=float, default=1500)
++    argparser.add_argument("--num_epochs", type=int, default=3000)
++    argparser.add_argument("--save_interval", type=int, default=1000)
++    argparser.add_argument("--replay_memory_size", type=int, default=30000, help="Number of epoches between testing phases")
++    argparser.add_argument("--log_path", type=str, default="tensorboard")
++    argparser.add_argument("--saved_path", type=str, default="trained_models")
+     return argparser.parse_args()
+ 
+ class Game_Manager(QMainWindow):
+@@ -54,6 +77,7 @@
+ 
+     def __init__(self):
+         super().__init__()
++
+         self.isStarted = False
+         self.isPaused = False
+         self.nextMove = None
+@@ -92,6 +116,30 @@
+             self.obstacle_probability = args.obstacle_probability
+         if len(args.resultlogjson) != 0:
+             self.resultlogjson = args.resultlogjson
++
++        self.width = args.width
++        self.heigth = args.height
++        self.block_size = args.block_size
++        self.batch_size = args.batch_size
++        self.lr = args.lr
++        self.gamma = args.gamma
++        self.initial_epsilon = args.initial_epsilon
++        self.final_epsilon = args.final_epsilon
++        self.num_decay_epochs = args.num_decay_epochs
++        self.num_epochs = args.num_epochs
++        self.save_interval = args.save_interval
++        self.replay_memory_size = args.replay_memory_size
++        self.log_path = args.log_path
++        self.saved_path = args.saved_path
++        
++        self.model = torch.load("{}/tetris".format(args.saved_path), map_location=lambda storage, loc: storage)
++        self.model.eval()
++
++        self.state = None
++        self.next_state = None
++        self.action = None
++        self.reward = None
++
+         self.initUI()
+ 
+     def initUI(self):
+@@ -167,7 +215,7 @@
+         self.tboard.updateData()
+         self.sidePanel.updateData()
+         self.update()
+-
++    
+     def timerEvent(self, event):
+         # callback function for user control
+ 
+@@ -190,20 +238,20 @@
+                                   "y_moveblocknum": "none", # amount of next y movement
+                                   },
+                             }
+-                # get nextMove from GameController
++
+                 GameStatus = self.getGameStatus()
+ 
+-                if self.use_sample == "y":
+-                    self.nextMove = BLOCK_CONTROLLER_SAMPLE.GetNextMove(nextMove, GameStatus)
+-                else:
+-                    self.nextMove = BLOCK_CONTROLLER.GetNextMove(nextMove, GameStatus)
+-
+-                if self.manual in ("y", "g"):
+-                    # ignore nextMove, for manual controll
+-                    self.nextMove["strategy"]["x"] = BOARD_DATA.currentX
+-                    self.nextMove["strategy"]["y_moveblocknum"] = 1
+-                    self.nextMove["strategy"]["y_operation"] = 0
+-                    self.nextMove["strategy"]["direction"] = BOARD_DATA.currentDirection
++                next_actions, next_states = BLOCK_CONTROLLER_NEXT_STEP.GetNextMoveState(GameStatus)
++                next_actions = np.array(next_actions)
++                next_actions = torch.from_numpy(next_actions).type(torch.FloatTensor)
++                next_states = np.array(next_states)
++                next_states = torch.from_numpy(next_states).type(torch.FloatTensor)
++
++                predictions = self.model(next_states)[:, 0]
++                index = torch.argmax(predictions).item()
++                self.action = next_actions[index]
++
++                self.nextMove = BLOCK_CONTROLLER.GetNextMove(GameStatus, nextMove, self.action)
+ 
+             if self.nextMove:
+                 # shape direction operation
+@@ -252,9 +300,7 @@
+ 
+             self.UpdateScore(removedlines, dropdownlines)
+ 
+-            # check reset field
+             if BOARD_DATA.currentY < 1:
+-                # if Piece cannot movedown and stack, reset field
+                 print("reset field.")
+                 self.resetfield()
+ 
+@@ -263,6 +309,7 @@
+ 
+             # update window
+             self.updateWindow()
++
+         else:
+             super(Game_Manager, self).timerEvent(event)
+ 
+@@ -368,9 +415,6 @@
+                         },
+                         "line_score_stat":"none",
+                         "shape_info_stat":"none",
+-                        "random_seed":"none",
+-                        "obstacle_height":"none",
+-                        "obstacle_probability":"none"
+                       },
+                   }
+         # update status
+@@ -410,6 +454,7 @@
+         status["judge_info"]["score"] = self.tboard.score
+         status["judge_info"]["line"] = self.tboard.line
+         status["judge_info"]["block_index"] = self.block_index
++
+         ## debug_info
+         status["debug_info"]["dropdownscore"] = self.tboard.dropdownscore
+         status["debug_info"]["linescore"] = self.tboard.linescore
+@@ -435,9 +480,6 @@
+         status["debug_info"]["shape_info"]["shapeS"]["color"] = "blue"
+         status["debug_info"]["shape_info"]["shapeZ"]["index"] = Shape.shapeZ
+         status["debug_info"]["shape_info"]["shapeZ"]["color"] = "yellow"
+-        status["debug_info"]["random_seed"] = self.random_seed
+-        status["debug_info"]["obstacle_height"] = self.obstacle_height
+-        status["debug_info"]["obstacle_probability"] = self.obstacle_probability
+         if BOARD_DATA.currentShape == Shape.shapeNone:
+             print("warning: current shape is none !!!")
+ 
+@@ -666,7 +708,7 @@
+         self.msg2Statusbar.emit(status_str)
+         self.update()
+ 
+-        if self.game_time >= 0 and elapsed_time > self.game_time - 0.5:
++        if self.game_time >= 0 and elapsed_time > self.game_time:
+             # finish game.
+             print("game finish!! elapsed time: " + elapsed_time_str + "/game_time: " + str(self.game_time))
+             print("")
+@@ -697,8 +739,7 @@
+                     print(log_file_path)
+                     GameStatusJson = GAME_MANEGER.getGameStatusJson()
+                     f.write(GameStatusJson)
+-
+-            #sys.exit(app.exec_())
++                    
+             sys.exit(0)
+ 
+ if __name__ == '__main__':
