@@ -19,4 +19,4 @@ jobs:
           MAX_HEADER_LEVEL: 3
           GITHUB_TOKEN: ${{ secrets.SECRETS_UPDATE_TOC_ACCESS_TOKEN }}
           # 目次の見出し
-          TOC_TITLE: '**目次**'
+          TOC_TITLE: '**Table of Contents**'
