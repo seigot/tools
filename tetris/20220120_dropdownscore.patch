@@ -1,0 +1,32 @@
+diff --git a/game_manager/board_manager.py b/game_manager/board_manager.py
+index fc4f493..1f53bdf 100644
+--- a/game_manager/board_manager.py
++++ b/game_manager/board_manager.py
+@@ -112,6 +112,7 @@ class BoardData(object):
+         self.currentDirection = 0
+         self.currentShape = Shape() # initial current shape data
+         self.nextShape = None
++#        self.nextNShape = None
+         self.shape_info_stat = [0] * 8
+         self.obstacle_height = 0
+         self.obstacle_probability = 0
+diff --git a/game_manager/game_manager.py b/game_manager/game_manager.py
+index 76f3c8f..2189a36 100644
+--- a/game_manager/game_manager.py
++++ b/game_manager/game_manager.py
+@@ -496,6 +496,7 @@ class Game_Manager(QMainWindow):
+                         },
+                         "line_score_stat":"none",
+                         "shape_info_stat":"none",
++                        "dropdownscore":"none",
+                       },
+                   "judge_info":
+                       {
+@@ -532,6 +533,7 @@ class Game_Manager(QMainWindow):
+         status["debug_info"]["shape_info"]["shapeS"]["color"] = "blue"
+         status["debug_info"]["shape_info"]["shapeZ"]["index"] = Shape.shapeZ
+         status["debug_info"]["shape_info"]["shapeZ"]["color"] = "yellow"
++        status["debug_info"]["dropdownscore"] = self.tboard.dropdownscore
+         ## judge_info
+         status["judge_info"]["elapsed_time"] = round(time.time() - self.tboard.start_time, 3)
+         status["judge_info"]["game_time"] = self.game_time
