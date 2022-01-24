@@ -63,6 +63,29 @@ class Block_Controller(object):
 
         if self.mode == "train_sample":
 
+            #self.width = 10 #args.width
+            #self.heigth = 20 #args.height
+            #self.block_size = 30 #args.block_size
+            #self.batch_size = 512 #args.batch_size
+            #self.lr = 1e-3 #args.lr
+            #self.gamma = 0.99 #args.gamma
+            #self.initial_epsilon = 1 #args.initial_epsilon
+            #self.final_epsilon = 1e-3 #args.final_epsilon
+            #self.num_decay_epochs = 1500 #args.num_decay_epochs
+            #self.num_epochs = 3000 #args.num_epochs
+            #self.save_interval = 1000 #args.save_interval
+            #self.replay_memory_size = 30000 #args.replay_memory_size
+            #self.log_path = "tensorboard" #args.log_path
+            self.saved_path = "./trained_models" #args.saved_path
+
+            self.model = torch.load("{}/tetris".format(self.saved_path), map_location=lambda storage, loc: storage)
+            self.model.eval()
+
+            #self.state = None
+            #self.next_state = None
+            #self.action = None
+            #self.reward = None
+
             strategy = None
             LatestEvalValue = -100000
             # search with current block Shape
@@ -84,28 +107,9 @@ class Block_Controller(object):
             # if self.mode == "predict_sample":
 
             # predict -->
-            self.width = 10 #args.width
-            self.heigth = 20 #args.height
-            self.block_size = 30 #args.block_size
-            self.batch_size = 512 #args.batch_size
-            self.lr = 1e-3 #args.lr
-            self.gamma = 0.99 #args.gamma
-            self.initial_epsilon = 1 #args.initial_epsilon
-            self.final_epsilon = 1e-3 #args.final_epsilon
-            self.num_decay_epochs = 1500 #args.num_decay_epochs
-            self.num_epochs = 3000 #args.num_epochs
-            self.save_interval = 1000 #args.save_interval
-            self.replay_memory_size = 30000 #args.replay_memory_size
-            self.log_path = "tensorboard" #args.log_path
-            self.saved_path = "./trained_models" #args.saved_path
-
+            self.saved_path = "./trained_models"
             self.model = torch.load("{}/tetris".format(self.saved_path), map_location=lambda storage, loc: storage)
             self.model.eval()
-
-            self.state = None
-            self.next_state = None
-            self.action = None
-            self.reward = None
 
             # search best nextMove -->
             next_actions, next_states = self.getStrategyAndStatelist(GameStatus)
@@ -116,11 +120,11 @@ class Block_Controller(object):
 
             predictions = self.model(next_states)[:, 0]
             index = torch.argmax(predictions).item()
-            self.action = next_actions[index]
+            action = next_actions[index]
 
             print("===", datetime.now() - t1)
-            nextMove["strategy"]["direction"] = self.action[0].item()
-            nextMove["strategy"]["x"] = self.action[1].item()
+            nextMove["strategy"]["direction"] = action[0].item()
+            nextMove["strategy"]["x"] = action[1].item()
             nextMove["strategy"]["y_operation"] = 1
             nextMove["strategy"]["y_moveblocknum"] = 0
             # search best nextMove <--
