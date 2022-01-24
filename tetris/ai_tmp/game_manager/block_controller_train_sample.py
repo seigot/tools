@@ -75,16 +75,101 @@ class Block_Controller(object):
             #self.num_epochs = 3000 #args.num_epochs
             #self.save_interval = 1000 #args.save_interval
             #self.replay_memory_size = 30000 #args.replay_memory_size
-            #self.log_path = "tensorboard" #args.log_path
+            self.log_path = "./tensorboard" #args.log_path
             self.saved_path = "./trained_models" #args.saved_path
 
-            self.model = torch.load("{}/tetris".format(self.saved_path), map_location=lambda storage, loc: storage)
-            self.model.eval()
+            #self.model = torch.load("{}/tetris".format(self.saved_path), map_location=lambda storage, loc: storage)
+            #self.model.eval()
+
+            self.episode = 0
+            self.step = 0
+            self.num_states = 4
+            self.num_actions = 1
+            self.model = DeepQNetwork()
+            self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
+            self.criterion = nn.MSELoss()
+            self.replay_memory = deque(maxlen=self.replay_memory_size)
+
+            self.init_state_flag = True
 
             #self.state = None
             #self.next_state = None
             #self.action = None
             #self.reward = None
+
+            #if os.path.isdir(self.log_path):
+            #    shutil.rmtree(self.log_path)
+            os.makedirs(self.log_path)
+
+            #if os.path.isdir(self.saved_path):
+            #    shutil.rmtree(self.saved_path)
+            os.makedirs(self.saved_path)
+
+            self.writer = SummaryWriter(self.log_path)
+
+            # train -->
+            backboard = GameStatus["field_info"]["backboard"]
+            done = False
+
+            print("### step ###")
+            print(self.step)
+            print("### episode ###")
+            print(self.episode)
+
+            if(self.init_state_flag == True):
+                # init state
+                fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = BLOCK_CONTROLLER_NEXT_STEP.calcEvaluationValueSample(backboard)
+                self.state = np.array([fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num])
+                self.state = torch.from_numpy(self.state).type(torch.FloatTensor)
+
+                self.init_state_flag = False
+
+            next_actions, next_states = self.getStrategyAndStatelist(GameStatus)
+            next_actions = np.array(next_actions)
+            next_actions = torch.from_numpy(next_actions).type(torch.FloatTensor)
+            next_states = np.array(next_states)
+            next_states = torch.from_numpy(next_states).type(torch.FloatTensor)
+
+            print("### next_actions ###")
+            print(next_actions)
+
+            print("### next_states ###")
+            print(next_states)
+
+            self.model.eval()
+            with torch.no_grad():
+                predictions = self.model(next_states)[:, 0]
+                print("### predictions ###")
+                print(predictions)
+                
+            epsilon = self.final_epsilon + (max(self.num_decay_epochs - self.episode, 0) * (self.initial_epsilon - self.final_epsilon) / self.num_decay_epochs)
+            print("### epsilon ###")
+            print(epsilon)
+            u = random()
+            random_action = u <= epsilon
+
+            self.model.train()
+            if random_action:
+                print("### len(next states) ###")
+                print(len(next_states))
+                index = randint(0, len(next_states) - 1)
+            else:
+                index = torch.argmax(predictions).item()
+
+            self.next_state = next_states[index, :]
+            print("### self.next_state ###")
+            print(self.next_state)
+            self.action = next_actions[index]
+            print("### self.action ###")
+            print(self.action) # (rotation, position)
+
+            nextMove["strategy"]["direction"] = self.action[0].item()
+            nextMove["strategy"]["x"] = self.action[1].item()
+            nextMove["strategy"]["y_operation"] = 1
+            nextMove["strategy"]["y_moveblocknum"] = 0
+
+            ####
+            ####
 
             strategy = None
             LatestEvalValue = -100000
@@ -102,6 +187,11 @@ class Block_Controller(object):
                     if EvalValue > LatestEvalValue:
                         strategy = (direction0, x0, 1, 1)
                         LatestEvalValue = EvalValue
+
+
+                        if reset.
+                        self.episode += 1
+                        self.step = 0
 
         else:
             # if self.mode == "predict_sample":
