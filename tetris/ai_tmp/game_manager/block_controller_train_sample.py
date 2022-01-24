@@ -54,6 +54,8 @@ class Block_Controller(object):
         self.NextShape_class = GameStatus["block_info"]["nextShape"]["class"]
         # current board info
         self.board_backboard = GameStatus["field_info"]["backboard"]
+        self.board_width = GameStatus["field_info"]["width"]
+        self.board_height = GameStatus["field_info"]["height"]
         # default board definition
         self.board_data_width = GameStatus["field_info"]["width"]
         self.board_data_height = GameStatus["field_info"]["height"]
@@ -118,7 +120,7 @@ class Block_Controller(object):
 
             if(self.init_state_flag == True):
                 # init state
-                fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = BLOCK_CONTROLLER_NEXT_STEP.calcEvaluationValueSample(backboard)
+                fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = self.calcEvaluationValueSample(backboard)
                 self.state = np.array([fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num])
                 self.state = torch.from_numpy(self.state).type(torch.FloatTensor)
 
@@ -163,23 +165,35 @@ class Block_Controller(object):
             print("### self.action ###")
             print(self.action) # (rotation, position)
 
-            nextMove["strategy"]["direction"] = self.action[0].item()
-            nextMove["strategy"]["x"] = self.action[1].item()
+            direction = self.action[0].item()
+            x = self.action[1].item()
+            nextMove["strategy"]["direction"] = direction
+            nextMove["strategy"]["x"] = x
             nextMove["strategy"]["y_operation"] = 1
             nextMove["strategy"]["y_moveblocknum"] = 0
 
             ####
             #### memory
 
+            # get reward
+
             self.reward = 0
 
-            if BOARD_DATA.currentY < 1: ##### gameover
-                self.reward = torch.FloatTensor([Game_Manager.GAMEOVER_SCORE])
+            trial_board = self.getBoard(backboard, self.CurrentShape_class, direction, x)
+            fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = self.calcEvaluationValueSample(trial_board)
+            removedlines = fullLines_num
+            
+            is_Continue = self.CheckIfContinue(trial_board, self.board_width, self.board_height, self.NextShape_class)
+
+            #if BOARD_DATA.currentY < 1: ##### gameover
+            if is_Continue == False: ##### gameover
+                self.reward = torch.FloatTensor([-500])
                 done = True
 
             elif self.step >= 180:
                 self.reward = torch.FloatTensor([10.0])
                 done = True
+
 
             elif removedlines > 0: ####
                 if removedlines == 1:
@@ -198,26 +212,29 @@ class Block_Controller(object):
             self.replay_memory.append([self.state, self.reward, self.next_state, done])
             
             if done:
+                ## reset episode
                 print("reset episode")
 
                 ###
-                self.reset_episode()
-                        if reset.
-                        self.episode += 1
-                        self.step = 0
-
-
+                #self.reset_episode()
+                #if reset
+                # self.episode += 1
+                # self.step = 0
+                self.episode += 1
+                self.step = 0
+                nextMove["option"]["reset_all_field"] = True
 
                 final_score = GameStatus["judge_info"]["score"]
                 final_tetrominoes = self.step
                 final_cleared_lines = GameStatus["judge_info"]["line"]
 
-                ## 初期化 ###
-                GameStatus = self.getGameStatus()
-                backboard = GameStatus["field_info"]["backboard"]
-                fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = self.calcEvaluationValueSample(board)
-                self.state = np.array([fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num])
-                self.state = torch.from_numpy(self.state).type(torch.FloatTensor)
+                ## 初期化、これは必要？一旦コメントアウト ###
+                #GameStatus = self.getGameStatus()
+                #backboard = GameStatus["field_info"]["backboard"]
+                #fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = self.calcEvaluationValueSample(board)
+                #self.state = np.array([fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num])
+                #self.state = torch.from_numpy(self.state).type(torch.FloatTensor)
+                # ここまで
 
                 if len(self.replay_memory) < self.replay_memory_size / 10:
                     # skip loss backward, optimizer process, because not enough data.
@@ -333,6 +350,18 @@ class Block_Controller(object):
                 fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = self.calcEvaluationValueSample(board)
                 state_list.append([fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num])
         return strategy_list, state_list
+
+    def CheckIfCotinue(self, board, width, height, shape):
+        minX, maxX, minY, maxY = shape.getBoundingOffsets(0)
+        self.tryMove(board, width, height, shape, 0, 5, -minY)
+
+    def tryMove(self, board, width, height, shape, direction, x, y):
+        for x, y in shape.getCoords(direction, x, y):
+            if x >= width or x < 0 or y >= height or y < 0:
+                return False
+            if self.board[x + y * width] > 0:
+                return False
+            return True
 
     def getSearchXRange(self, Shape_class, direction):
         #

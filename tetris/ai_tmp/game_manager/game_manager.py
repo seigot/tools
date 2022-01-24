@@ -179,6 +179,18 @@ class Game_Manager(QMainWindow):
         BOARD_DATA.clear()
         BOARD_DATA.createNewPiece()
 
+    def reset_all_field(self):
+        # reset field all for debug
+        self.tboard.reset_cnt = 0
+        self.tboard.score = 0
+        self.tboard.dropdownscore = 0
+        self.tboard.linescore = 0
+        self.tboard.line = 0
+        self.tboard.line_score_stat = [0, 0, 0, 0]
+        self.tboard.start_time = time.time()
+        BOARD_DATA.clear()
+        BOARD_DATA.createNewPiece()
+
     def updateWindow(self):
         self.tboard.updateData()
         self.sidePanel.updateData()
@@ -205,6 +217,10 @@ class Game_Manager(QMainWindow):
                                   "y_operation": "none",  # movedown or dropdown (0:movedown, 1:dropdown)
                                   "y_moveblocknum": "none", # amount of next y movement
                                   },
+                            "option":
+                                {
+                                  "reset_all_field": None,
+                                }
                             }
                 # get nextMove from GameController
                 GameStatus = self.getGameStatus()
@@ -287,6 +303,11 @@ class Game_Manager(QMainWindow):
                 # if Piece cannot movedown and stack, reset field
                 print("reset field.")
                 self.resetfield()
+
+            # reset field for debug
+            if nextMove["option"]["reset_all_field"] == True:
+                print("reset all field.")
+                self.reset_all_field()
 
             # init nextMove
             self.nextMove = None
