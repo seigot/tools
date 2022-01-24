@@ -141,7 +141,7 @@ class Block_Controller(object):
                 predictions = self.model(next_states)[:, 0]
                 print("### predictions ###")
                 print(predictions)
-                
+
             epsilon = self.final_epsilon + (max(self.num_decay_epochs - self.episode, 0) * (self.initial_epsilon - self.final_epsilon) / self.num_decay_epochs)
             print("### epsilon ###")
             print(epsilon)
@@ -169,29 +169,114 @@ class Block_Controller(object):
             nextMove["strategy"]["y_moveblocknum"] = 0
 
             ####
-            ####
+            #### memory
 
-            strategy = None
-            LatestEvalValue = -100000
-            # search with current block Shape
-            for direction0 in CurrentShapeDirectionRange:
-                # search with x range
-                x0Min, x0Max = self.getSearchXRange(self.CurrentShape_class, direction0)
-                for x0 in range(x0Min, x0Max):
-                    # get board data, as if dropdown block
-                    board = self.getBoard(self.board_backboard, self.CurrentShape_class, direction0, x0)
+            self.reward = 0
 
-                    # evaluate board
-                    EvalValue = self.calcEvaluationValueSample(board)
-                    # update best move
-                    if EvalValue > LatestEvalValue:
-                        strategy = (direction0, x0, 1, 1)
-                        LatestEvalValue = EvalValue
+            if BOARD_DATA.currentY < 1: ##### gameover
+                self.reward = torch.FloatTensor([Game_Manager.GAMEOVER_SCORE])
+                done = True
 
+            elif self.step >= 180:
+                self.reward = torch.FloatTensor([10.0])
+                done = True
 
+            elif removedlines > 0: ####
+                if removedlines == 1:
+                    linescore = 100 #Game_Manager.LINE_SCORE_1
+                elif removedlines == 2:
+                    linescore = 300 #Game_Manager.LINE_SCORE_2
+                elif removedlines == 3:
+                    linescore = 700 #Game_Manager.LINE_SCORE_3
+                elif removedlines == 4:
+                    linescore = 1300 #Game_Manager.LINE_SCORE_4
+
+                self.reward = torch.FloatTensor([linescore])
+
+            print("### state memory appned ###")
+            print(self.state)
+            self.replay_memory.append([self.state, self.reward, self.next_state, done])
+            
+            if done:
+                print("reset episode")
+
+                ###
+                self.reset_episode()
                         if reset.
                         self.episode += 1
                         self.step = 0
+
+
+
+                final_score = GameStatus["judge_info"]["score"]
+                final_tetrominoes = self.step
+                final_cleared_lines = GameStatus["judge_info"]["line"]
+
+                ## 初期化 ###
+                GameStatus = self.getGameStatus()
+                backboard = GameStatus["field_info"]["backboard"]
+                fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = self.calcEvaluationValueSample(board)
+                self.state = np.array([fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num])
+                self.state = torch.from_numpy(self.state).type(torch.FloatTensor)
+
+                if len(self.replay_memory) < self.replay_memory_size / 10:
+                    # skip loss backward, optimizer process, because not enough data.
+                    pass
+                else:
+
+                    batch = sample(self.replay_memory, min(len(self.replay_memory), self.batch_size))
+                    state_batch, reward_batch, next_state_batch, done_batch = zip(*batch)
+                    state_batch = torch.stack(tuple(self.state for self.state in state_batch))
+                    reward_batch = torch.from_numpy(np.array(reward_batch, dtype=np.float32)[:, None])
+                    next_state_batch = torch.stack(tuple(self.state for self.state in next_state_batch))
+
+                    q_values = self.model(state_batch)
+                    print("### q_values ###")
+                    print(q_values)
+                    self.model.eval()
+                    with torch.no_grad():
+                        next_prediction_batch = self.model(next_state_batch)
+                        print("### next prediction batch ###")
+                        print(next_prediction_batch)
+                    self.model.train()
+
+                    y_batch = torch.cat(
+                        tuple(self.reward if done else self.reward + self.gamma * prediction for self.reward, done, prediction in
+                            zip(reward_batch, done_batch, next_prediction_batch)))[:, None]
+
+                    print("### y_batch ###")
+                    print(y_batch)
+
+                    self.optimizer.zero_grad()
+                    loss = self.criterion(q_values, y_batch)
+                    print("### loss ###")
+                    print(loss)
+                    loss.backward()
+                    self.optimizer.step()
+
+                    print("Episode: {}/{}, Action: {}, Score: {}, Tetrominoes {}, Cleared lines: {}".format(
+                        self.episode,
+                        self.num_epochs,
+                        self.action,
+                        final_score,
+                        final_tetrominoes,
+                        final_cleared_lines))
+                    self.writer.add_scalar('Train/Score', final_score, self.episode - 1)
+                    self.writer.add_scalar('Train/Tetrominoes', final_tetrominoes, self.episode - 1)
+                    self.writer.add_scalar('Train/Cleared lines', final_cleared_lines, self.episode - 1)
+
+                    if self.episode > 0 and self.episode % self.save_interval == 0:
+                        torch.save(self.model, "{}/tetris_{}".format(self.saved_path, self.episode))
+
+                    if final_score > self.king_of_score:
+                        torch.save(self.model, "{}/tetris_{}_{}_{}".format(self.saved_path, self.episode, self.step, final_score))
+                        self.king_of_score = final_score
+
+            else:
+                self.state = self.next_state
+ 
+            # step count up
+            self.step += 1
 
         else:
             # if self.mode == "predict_sample":
