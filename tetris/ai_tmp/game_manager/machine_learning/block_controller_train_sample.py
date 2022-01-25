@@ -7,7 +7,8 @@ import copy
 
 import torch
 import torch.nn as nn
-from deep_q_network import DeepQNetwork
+from machine_learning.deep_q_network import DeepQNetwork
+#deep_q_network import DeepQNetwork
 from collections import deque
 from tensorboardX import SummaryWriter
 
