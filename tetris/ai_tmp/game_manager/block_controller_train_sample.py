@@ -30,6 +30,12 @@ class Block_Controller(object):
         
         self.mode = None
 
+        # train
+        self.init_train_parameter_flag = False
+
+        # predict
+        self.init_predict_parameter_flag = False
+
     # GetNextMove is main function.
     # input
     #    nextMove : nextMove structure which is empty.
@@ -65,51 +71,59 @@ class Block_Controller(object):
 
         if self.mode == "train_sample":
 
-            #self.width = 10 #args.width
-            #self.heigth = 20 #args.height
-            #self.block_size = 30 #args.block_size
-            #self.batch_size = 512 #args.batch_size
-            #self.lr = 1e-3 #args.lr
-            #self.gamma = 0.99 #args.gamma
-            #self.initial_epsilon = 1 #args.initial_epsilon
-            #self.final_epsilon = 1e-3 #args.final_epsilon
-            #self.num_decay_epochs = 1500 #args.num_decay_epochs
-            #self.num_epochs = 3000 #args.num_epochs
-            #self.save_interval = 1000 #args.save_interval
-            #self.replay_memory_size = 30000 #args.replay_memory_size
-            self.log_path = "./tensorboard" #args.log_path
-            self.saved_path = "./trained_models" #args.saved_path
-
-            #self.model = torch.load("{}/tetris".format(self.saved_path), map_location=lambda storage, loc: storage)
-            #self.model.eval()
-
-            self.episode = 0
-            self.step = 0
-            self.num_states = 4
-            self.num_actions = 1
-            self.model = DeepQNetwork()
-            self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
-            self.criterion = nn.MSELoss()
-            self.replay_memory = deque(maxlen=self.replay_memory_size)
-
-            self.init_state_flag = True
-
-            #self.state = None
-            #self.next_state = None
-            #self.action = None
-            #self.reward = None
-
-            #if os.path.isdir(self.log_path):
-            #    shutil.rmtree(self.log_path)
-            os.makedirs(self.log_path)
-
-            #if os.path.isdir(self.saved_path):
-            #    shutil.rmtree(self.saved_path)
-            os.makedirs(self.saved_path)
-
-            self.writer = SummaryWriter(self.log_path)
-
             # train -->
+
+            # init parameter
+            if self.init_train_parameter_flag == False:
+                #self.width = 10 #args.width
+                #self.heigth = 20 #args.height
+                #self.block_size = 30 #args.block_size
+                self.batch_size = 512 #args.batch_size
+                self.lr = 1e-3 #args.lr
+                self.gamma = 0.99 #args.gamma
+                self.initial_epsilon = 1 #args.initial_epsilon
+                self.final_epsilon = 1e-3 #args.final_epsilon
+                self.num_decay_epochs = 1500 #args.num_decay_epochs
+                self.num_epochs = 3000 #args.num_epochs
+                self.save_interval = 1000 #args.save_interval
+                self.replay_memory_size = 30000 #args.replay_memory_size
+                self.log_path = "./tensorboard" #args.log_path
+                self.saved_path = "./trained_models" #args.saved_path
+
+                #self.model = torch.load("{}/tetris".format(self.saved_path), map_location=lambda storage, loc: storage)
+                #self.model.eval()
+
+                self.episode = 0
+                self.step = 0
+                self.num_states = 4
+                self.num_actions = 1
+                self.model = DeepQNetwork()
+                self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
+                self.criterion = nn.MSELoss()
+                self.replay_memory = deque(maxlen=self.replay_memory_size)
+                
+                self.init_state_flag = True
+
+                self.state = None
+                self.next_state = None
+                self.action = None
+                self.reward = None
+
+                self.king_of_score = 0
+
+                #if os.path.isdir(self.log_path):
+                #    shutil.rmtree(self.log_path)
+                #os.makedirs(self.log_path)
+
+                #if os.path.isdir(self.saved_path):
+                #    shutil.rmtree(self.saved_path)
+                #os.makedirs(self.saved_path)
+
+                self.writer = SummaryWriter(self.log_path)
+                self.init_train_parameter_flag = True
+
+
+            # train main process -->
             backboard = GameStatus["field_info"]["backboard"]
             done = False
 
@@ -179,23 +193,34 @@ class Block_Controller(object):
 
             self.reward = 0
 
-            trial_board = self.getBoard(backboard, self.CurrentShape_class, direction, x)
+            print("-----")
+            trial_board = self.getBoard(backboard, self.CurrentShape_class, int(direction), int(x))
             fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = self.calcEvaluationValueSample(trial_board)
             removedlines = fullLines_num
-            
+
+            # print
+            pprint.pprint(trial_board, width = 30, compact = True)
+            print(self.NextShape_class.getBoundingOffsets(0))
+
             is_Continue = self.CheckIfContinue(trial_board, self.board_width, self.board_height, self.NextShape_class)
+            #is_Continue = self.CheckIfContinue(trial_board, self.board_width, self.board_height, self.CurrentShape_class)
+            print("-----")
+            print(is_Continue)
+            print(int(direction))
+            print(int(x))
 
             #if BOARD_DATA.currentY < 1: ##### gameover
             if is_Continue == False: ##### gameover
                 self.reward = torch.FloatTensor([-500])
                 done = True
+                #sys.exit(0)
 
             elif self.step >= 180:
                 self.reward = torch.FloatTensor([10.0])
                 done = True
 
 
-            elif removedlines > 0: ####
+            elif removedlines > 0:
                 if removedlines == 1:
                     linescore = 100 #Game_Manager.LINE_SCORE_1
                 elif removedlines == 2:
@@ -210,7 +235,9 @@ class Block_Controller(object):
             print("### state memory appned ###")
             print(self.state)
             self.replay_memory.append([self.state, self.reward, self.next_state, done])
-            
+            print("replay memory len")
+            print(len(self.replay_memory))
+
             if done:
                 ## reset episode
                 print("reset episode")
@@ -235,12 +262,12 @@ class Block_Controller(object):
                 #self.state = np.array([fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num])
                 #self.state = torch.from_numpy(self.state).type(torch.FloatTensor)
                 # ここまで
+                self.init_state_flag = True
 
                 if len(self.replay_memory) < self.replay_memory_size / 10:
                     # skip loss backward, optimizer process, because not enough data.
                     pass
                 else:
-
                     batch = sample(self.replay_memory, min(len(self.replay_memory), self.batch_size))
                     state_batch, reward_batch, next_state_batch, done_batch = zip(*batch)
                     state_batch = torch.stack(tuple(self.state for self.state in state_batch))
@@ -299,10 +326,15 @@ class Block_Controller(object):
             # if self.mode == "predict_sample":
 
             # predict -->
-            self.saved_path = "./trained_models"
-            self.model = torch.load("{}/tetris".format(self.saved_path), map_location=lambda storage, loc: storage)
-            self.model.eval()
 
+            # init parameter
+            if self.init_predict_parameter_flag == False:
+                self.saved_path = "./trained_models"
+                self.model = torch.load("{}/tetris".format(self.saved_path), map_location=lambda storage, loc: storage)
+                self.model.eval()
+                self.init_predict_parameter_flag = True
+
+            # predict main process -->
             # search best nextMove -->
             next_actions, next_states = self.getStrategyAndStatelist(GameStatus)
             next_actions = np.array(next_actions)
@@ -320,7 +352,7 @@ class Block_Controller(object):
             nextMove["strategy"]["y_operation"] = 1
             nextMove["strategy"]["y_moveblocknum"] = 0
             # search best nextMove <--
-            # predict <--
+            # predict main process <--
 
         print(nextMove)
         print("###### SAMPLE CODE (mode:{}) ######".format(self.mode))
@@ -351,17 +383,25 @@ class Block_Controller(object):
                 state_list.append([fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num])
         return strategy_list, state_list
 
-    def CheckIfCotinue(self, board, width, height, shape):
+    def CheckIfContinue(self, board, width, height, shape):
+        print("== check if continue ==")
         minX, maxX, minY, maxY = shape.getBoundingOffsets(0)
-        self.tryMove(board, width, height, shape, 0, 5, -minY)
+        return self.tryMove(board, width, height, shape, 0, 5, -minY)
 
     def tryMove(self, board, width, height, shape, direction, x, y):
         for x, y in shape.getCoords(direction, x, y):
+            print(x, y)
             if x >= width or x < 0 or y >= height or y < 0:
+                # out of range
+                print("out of range")
                 return False
-            if self.board[x + y * width] > 0:
+            if board[x + y * width] > 0:
+                # already block exist
+                print("block exist")
                 return False
-            return True
+
+        print("block can move")
+        return True
 
     def getSearchXRange(self, Shape_class, direction):
         #
@@ -500,11 +540,11 @@ class Block_Controller(object):
 
 
         # calc Evaluation Value
-        score = 0
-        score = score + fullLines * 10.0           # try to delete line 
-        score = score - nHoles * 1.0               # try not to make hole
-        score = score - nIsolatedBlocks * 1.0      # try not to make isolated block
-        score = score - absDy * 1.0                # try to put block smoothly
+        # score = 0
+        # score = score + fullLines * 10.0           # try to delete line 
+        # score = score - nHoles * 1.0               # try not to make hole
+        # score = score - nIsolatedBlocks * 1.0      # try not to make isolated block
+        # score = score - absDy * 1.0                # try to put block smoothly
         #score = score - maxDy * 0.3                # maxDy
         #score = score - maxHeight * 5              # maxHeight
         #score = score - stdY * 1.0                 # statistical data

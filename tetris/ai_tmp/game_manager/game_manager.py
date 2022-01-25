@@ -180,7 +180,8 @@ class Game_Manager(QMainWindow):
         BOARD_DATA.createNewPiece()
 
     def reset_all_field(self):
-        # reset field all for debug
+        # reset all field for debug
+        # this function is mainly for machine learning
         self.tboard.reset_cnt = 0
         self.tboard.score = 0
         self.tboard.dropdownscore = 0
@@ -231,13 +232,13 @@ class Game_Manager(QMainWindow):
 
                 elif self.mode == "train_sample" or self.mode == "predict_sample":
                     # sample train/predict
-                    # if self.mode == "train" or self.mode == "train_sample" or self.mode == "predict_sample":
-                    # import block_controller_train, it's necessary to install pytorch to use.
+                    # import block_controller_train_sample, it's necessary to install pytorch to use.
                     from block_controller_train_sample import BLOCK_CONTROLLER_TRAIN_SAMPLE
                     self.nextMove = BLOCK_CONTROLLER_TRAIN_SAMPLE.GetNextMove(nextMove, GameStatus)
 
                 elif self.mode == "train":
                     # train
+                    # import block_controller_train, it's necessary to install pytorch to use.
                     from block_controller_train import BLOCK_CONTROLLER_TRAIN
                     self.nextMove = BLOCK_CONTROLLER_TRAIN.GetNextMove(nextMove, GameStatus)
 
@@ -304,8 +305,8 @@ class Game_Manager(QMainWindow):
                 print("reset field.")
                 self.resetfield()
 
-            # reset field for debug
-            if nextMove["option"]["reset_all_field"] == True:
+            # reset all field if debug option is enabled
+            if self.nextMove["option"]["reset_all_field"] == True:
                 print("reset all field.")
                 self.reset_all_field()
 
