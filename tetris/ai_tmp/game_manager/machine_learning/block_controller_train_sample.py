@@ -8,7 +8,6 @@ import copy
 import torch
 import torch.nn as nn
 from machine_learning.deep_q_network import DeepQNetwork
-#deep_q_network import DeepQNetwork
 from collections import deque
 from tensorboardX import SummaryWriter
 
@@ -29,6 +28,8 @@ class Block_Controller(object):
 
     def __init__(self):
         
+        # init parameter
+        # common
         self.mode = None
 
         # train
@@ -76,9 +77,7 @@ class Block_Controller(object):
 
             # init parameter
             if self.init_train_parameter_flag == False:
-                #self.width = 10 #args.width
-                #self.heigth = 20 #args.height
-                #self.block_size = 30 #args.block_size
+
                 self.batch_size = 512 #args.batch_size
                 self.lr = 1e-3 #args.lr
                 self.gamma = 0.99 #args.gamma
@@ -90,9 +89,6 @@ class Block_Controller(object):
                 self.replay_memory_size = 30000 #args.replay_memory_size
                 self.log_path = "./tensorboard" #args.log_path
                 self.saved_path = "./trained_models" #args.saved_path
-
-                #self.model = torch.load("{}/tetris".format(self.saved_path), map_location=lambda storage, loc: storage)
-                #self.model.eval()
 
                 self.episode = 0
                 self.step = 0
@@ -115,10 +111,14 @@ class Block_Controller(object):
                 #if os.path.isdir(self.log_path):
                 #    shutil.rmtree(self.log_path)
                 #os.makedirs(self.log_path)
+                if os.path.exists(self.log_path) == False:
+                    os.makedirs(self.log_path)
 
                 #if os.path.isdir(self.saved_path):
                 #    shutil.rmtree(self.saved_path)
                 #os.makedirs(self.saved_path)
+                if os.path.exists(self.saved_path) == False:
+                    os.makedirs(self.saved_path)
 
                 self.writer = SummaryWriter(self.log_path)
                 self.init_train_parameter_flag = True
@@ -138,7 +138,6 @@ class Block_Controller(object):
                 fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = self.calcEvaluationValueSample(backboard)
                 self.state = np.array([fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num])
                 self.state = torch.from_numpy(self.state).type(torch.FloatTensor)
-
                 self.init_state_flag = False
 
             next_actions, next_states = self.getStrategyAndStatelist(GameStatus)
@@ -204,7 +203,6 @@ class Block_Controller(object):
             print(self.NextShape_class.getBoundingOffsets(0))
 
             is_Continue = self.CheckIfContinue(trial_board, self.board_width, self.board_height, self.NextShape_class)
-            #is_Continue = self.CheckIfContinue(trial_board, self.board_width, self.board_height, self.CurrentShape_class)
             print("-----")
             print(is_Continue)
             print(int(direction))
@@ -315,6 +313,7 @@ class Block_Controller(object):
 
                     if final_score > self.king_of_score:
                         torch.save(self.model, "{}/tetris_{}_{}_{}".format(self.saved_path, self.episode, self.step, final_score))
+                        torch.save(self.model, "{}/tetris".format(self.saved_path))
                         self.king_of_score = final_score
 
             else:
@@ -385,7 +384,6 @@ class Block_Controller(object):
         return strategy_list, state_list
 
     def CheckIfContinue(self, board, width, height, shape):
-        print("== check if continue ==")
         minX, maxX, minY, maxY = shape.getBoundingOffsets(0)
         return self.tryMove(board, width, height, shape, 0, 5, -minY)
 
@@ -394,14 +392,10 @@ class Block_Controller(object):
             print(x, y)
             if x >= width or x < 0 or y >= height or y < 0:
                 # out of range
-                print("out of range")
                 return False
             if board[x + y * width] > 0:
                 # already block exist
-                print("block exist")
                 return False
-
-        print("block can move")
         return True
 
     def getSearchXRange(self, Shape_class, direction):
