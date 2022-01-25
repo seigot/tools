@@ -1,0 +1,24 @@
+diff --git a/game_manager/game_manager.py b/game_manager/game_manager.py
+index e71b636..89f1cab 100644
+--- a/game_manager/game_manager.py
++++ b/game_manager/game_manager.py
+@@ -416,12 +416,13 @@ class Game_Manager(QMainWindow):
+                 final_tetrominoes = self.step
+                 final_cleared_lines = GameStatus["judge_info"]["line"]
+ 
+-                GameStatus = self.getGameStatus()
+-                backboard = GameStatus["field_info"]["backboard"]
+-
+-                fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = BLOCK_CONTROLLER_NEXT_STEP.calcEvaluationValueSample(backboard)
+-                self.state = np.array([fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num])
+-                self.state = torch.from_numpy(self.state).type(torch.FloatTensor)
++                #GameStatus = self.getGameStatus()
++                #backboard = GameStatus["field_info"]["backboard"]
++                #
++                #fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = BLOCK_CONTROLLER_NEXT_STEP.calcEvaluationValueSample(backboard)
++                #self.state = np.array([fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num])
++                #self.state = torch.from_numpy(self.state).type(torch.FloatTensor)
++                self.init_state_flag = True
+ 
+                 if len(self.replay_memory) < self.replay_memory_size / 10:
+                     pass
