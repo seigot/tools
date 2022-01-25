@@ -1,0 +1,34 @@
+diff --git a/game_manager/game_manager.py b/game_manager/game_manager.py
+index 0a1b4da..5b4ce25 100644
+--- a/game_manager/game_manager.py
++++ b/game_manager/game_manager.py
+@@ -233,19 +233,19 @@ class Game_Manager(QMainWindow):
+                 elif self.mode == "train_sample" or self.mode == "predict_sample":
+                     # sample train/predict
+                     # import block_controller_train_sample, it's necessary to install pytorch to use.
+-                    # from machine_learning.block_controller_train_sample import BLOCK_CONTROLLER_TRAIN_SAMPLE
+-                    # self.nextMove = BLOCK_CONTROLLER_TRAIN_SAMPLE.GetNextMove(nextMove, GameStatus)
+-                    print("---")
+-                    print("currently mode:{} is not supported".format(self.mode))
+-                    sys.exit(0)
++                    from machine_learning.block_controller_train_sample import BLOCK_CONTROLLER_TRAIN_SAMPLE
++                    self.nextMove = BLOCK_CONTROLLER_TRAIN_SAMPLE.GetNextMove(nextMove, GameStatus)
++                    # print("---")
++                    # print("currently mode:{} is not supported".format(self.mode))
++                    # sys.exit(0)
+                 elif self.mode == "train":
+                     # train
+                     # import block_controller_train, it's necessary to install pytorch to use.
+-                    # from machine_learning.block_controller_train import BLOCK_CONTROLLER_TRAIN
+-                    # self.nextMove = BLOCK_CONTROLLER_TRAIN.GetNextMove(nextMove, GameStatus)
+-                    print("---")
+-                    print("currently mode:{} is not supported".format(self.mode))
+-                    sys.exit(0)
++                    from machine_learning.block_controller_train import BLOCK_CONTROLLER_TRAIN
++                    self.nextMove = BLOCK_CONTROLLER_TRAIN.GetNextMove(nextMove, GameStatus)
++                    # print("---")
++                    # print("currently mode:{} is not supported".format(self.mode))
++                    # sys.exit(0)
+                 else:
+                     self.nextMove = BLOCK_CONTROLLER.GetNextMove(nextMove, GameStatus)
+ 
