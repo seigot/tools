@@ -1,0 +1,14 @@
+diff --git a/burger_war_dev/scripts/agents/brain.py b/burger_war_dev/scripts/agents/brain.py
+index e3d3892..54f73d7 100644
+--- a/burger_war_dev/scripts/agents/brain.py
++++ b/burger_war_dev/scripts/agents/brain.py
+@@ -242,7 +242,8 @@ class Brain:
+ 
+     def load_model(self, path):
+         print('Loading model...: {}'.format(path))
+-        model = torch.load(path)
++        #model = torch.load(path)
++        model = torch.load(path, torch.device('cpu'))        
+         self.policy_net.load_state_dict(model)
+         self.update_target_network()
+ 
