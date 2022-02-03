@@ -1,0 +1,167 @@
+diff --git a/game_manager/board_manager.py b/game_manager/board_manager.py
+index 13d5620..7bd28d9 100644
+--- a/game_manager/board_manager.py
++++ b/game_manager/board_manager.py
+@@ -107,6 +107,9 @@ class BoardData(object):
+     def __init__(self):
+         self.backBoard = [0] * BoardData.width * BoardData.height # initialize board matrix
+ 
++        self.initialX = 5
++        #self.initialY = 1 # initial Y depends on shape index
++        self.initialDirection = 0
+         self.currentX = -1
+         self.currentY = -1
+         self.currentDirection = 0
+@@ -174,6 +177,12 @@ class BoardData(object):
+ 
+         return ShapeClass, ShapeIdx, ShapeRange
+ 
++    def isCurrentShapeMovable(self):
++        # check if currentShape is movable
++        _, _, minY, _ = self.currentShape.getBoundingOffsets(0)
++        ret = self.tryMove(self.currentShape, self.initialDirection, self.initialX, -minY)
++        return ret
++
+     def getCurrentShapeCoord(self):
+         return self.currentShape.getCoords(self.currentDirection, self.currentX, self.currentY)
+ 
+@@ -191,43 +200,36 @@ class BoardData(object):
+ 
+     def createNewPiece(self):
+         if self.nextShape == None:
+-            self.ShapeList.insert(len(self.ShapeList), 0)
+             # initialize next shape data
++            self.ShapeList.insert(len(self.ShapeList), 0)
+             for i in range(self.ShapeListMax-1):
+                 self.ShapeList.insert(len(self.ShapeList), Shape(self.getNewShapeIndex()))
+             self.nextShape = self.ShapeList[1]
+ 
+-        minX, maxX, minY, maxY = self.nextShape.getBoundingOffsets(0)
+-        result = False
+-
+-        # check if nextShape can appear
+-        if self.tryMoveCurrent(0, 5, -minY):
+-            self.currentX = 5
+-            self.currentY = -minY
+-            self.currentDirection = 0
+-            # get nextShape
+-            self.ShapeList.pop(0)
+-            self.ShapeList.insert(len(self.ShapeList), Shape(self.getNewShapeIndex()))
+-            self.currentShape = self.ShapeList[0]
+-            self.nextShape = self.ShapeList[1]
+-            result = True
+-        else:
+-            # cannnot appear
+-            self.currentShape = Shape()
+-            self.currentX = -1
+-            self.currentY = -1
+-            self.currentDirection = 0
+-            result = False
++        # get currentShape
++        self.ShapeList.pop(0)
++        self.ShapeList.insert(len(self.ShapeList), Shape(self.getNewShapeIndex()))
++        self.currentShape = self.ShapeList[0]
++        self.nextShape = self.ShapeList[1]
++
++        # update currentShape data
++        minX, maxX, minY, maxY = self.currentShape.getBoundingOffsets(0)
++        self.currentX = self.initialX
++        self.currentY = -minY
++        self.currentDirection = self.initialDirection
+         self.shape_info_stat[self.currentShape.shape] += 1
+-        return result
++
++        return True
+ 
+     def tryMoveCurrent(self, direction, x, y):
+         return self.tryMove(self.currentShape, direction, x, y)
+ 
+     def tryMove(self, shape, direction, x, y):
+         for x, y in shape.getCoords(direction, x, y):
++            # out of range
+             if x >= BoardData.width or x < 0 or y >= BoardData.height or y < 0:
+                 return False
++            # already block exist
+             if self.backBoard[x + y * BoardData.width] > 0:
+                 return False
+         return True
+diff --git a/game_manager/game_manager.py b/game_manager/game_manager.py
+index aac9960..79b7e2a 100644
+--- a/game_manager/game_manager.py
++++ b/game_manager/game_manager.py
+@@ -233,19 +233,19 @@ class Game_Manager(QMainWindow):
+                 elif self.mode == "train_sample" or self.mode == "predict_sample":
+                     # sample train/predict
+                     # import block_controller_train_sample, it's necessary to install pytorch to use.
+-                    # from machine_learning.block_controller_train_sample import BLOCK_CONTROLLER_TRAIN_SAMPLE
+-                    # self.nextMove = BLOCK_CONTROLLER_TRAIN_SAMPLE.GetNextMove(nextMove, GameStatus)
+-                    print("---")
+-                    print("currently mode:{} is not supported".format(self.mode))
+-                    sys.exit(0)
++                    from machine_learning.block_controller_train_sample import BLOCK_CONTROLLER_TRAIN_SAMPLE
++                    self.nextMove = BLOCK_CONTROLLER_TRAIN_SAMPLE.GetNextMove(nextMove, GameStatus)
++                    # print("---")
++                    # print("currently mode:{} is not supported".format(self.mode))
++                    # sys.exit(0)
+                 elif self.mode == "train":
+                     # train
+                     # import block_controller_train, it's necessary to install pytorch to use.
+-                    # from machine_learning.block_controller_train import BLOCK_CONTROLLER_TRAIN
+-                    # self.nextMove = BLOCK_CONTROLLER_TRAIN.GetNextMove(nextMove, GameStatus)
+-                    print("---")
+-                    print("currently mode:{} is not supported".format(self.mode))
+-                    sys.exit(0)
++                    from machine_learning.block_controller_train import BLOCK_CONTROLLER_TRAIN
++                    self.nextMove = BLOCK_CONTROLLER_TRAIN.GetNextMove(nextMove, GameStatus)
++                    # print("---")
++                    # print("currently mode:{} is not supported".format(self.mode))
++                    # sys.exit(0)
+                 else:
+                     self.nextMove = BLOCK_CONTROLLER.GetNextMove(nextMove, GameStatus)
+ 
+@@ -303,17 +303,17 @@ class Game_Manager(QMainWindow):
+ 
+             self.UpdateScore(removedlines, dropdownlines)
+ 
+-            # check reset field
+-            if BOARD_DATA.currentY < 1:
+-                # if Piece cannot movedown and stack, reset field
+-                print("reset field.")
+-                self.resetfield()
+-
+             # reset all field if debug option is enabled
+             if self.nextMove["option"]["reset_all_field"] == True:
+                 print("reset all field.")
+                 self.reset_all_field()
+ 
++            # check reset field
++            if BOARD_DATA.isCurrentShapeMovable() == False:
++                # if Piece cannot movedown and stack, reset field
++                print("reset field.")
++                self.resetfield()
++
+             # init nextMove
+             self.nextMove = None
+ 
+diff --git a/start.py b/start.py
+index 12162a8..10bec10 100644
+--- a/start.py
++++ b/start.py
+@@ -15,7 +15,7 @@ def get_option(game_level, game_time, mode, random_seed, drop_interval, resultlo
+                            help='Specify game time(s), if specify -1, do endless loop')
+     argparser.add_argument('-m', '--mode', type=str,
+                            default=mode,
+-                           help='Specify mode (keyboard/gamepad/sample/train/train_sample/predict_sample) if necessary')
++                           help='Specify mode (keyboard/gamepad/sample/train/predict/train_sample/predict_sample) if necessary')
+     argparser.add_argument('-r', '--random_seed', type=int,
+                            default=random_seed,
+                            help='Specify random seed if necessary') 
+@@ -66,7 +66,7 @@ def start():
+         GAME_LEVEL = args.game_level
+     if args.game_time >= 0 or args.game_time == -1:
+         GAME_TIME = args.game_time
+-    if args.mode in ("keyboard", "gamepad", "sample", "train", "train_sample", "predict_sample"):
++    if args.mode in ("keyboard", "gamepad", "sample", "train", "predict", "train_sample", "predict_sample"):
+         IS_MODE = args.mode
+     if args.random_seed >= 0:
+         INPUT_RANDOM_SEED = args.random_seed
