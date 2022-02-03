@@ -184,6 +184,7 @@ class Block_Controller(object):
             trial_board = self.getBoard(backboard, self.CurrentShape_class, int(direction), int(x))
             fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = self.calcEvaluationValueSample(trial_board)
             removedlines = fullLines_num
+            ## check if NextShape is appearable
             is_Continue = self.CheckIfContinue(trial_board, self.board_width, self.board_height, self.NextShape_class)
 
             if is_Continue == False:
@@ -346,10 +347,12 @@ class Block_Controller(object):
         return strategy_list, state_list
 
     def CheckIfContinue(self, board, width, height, shape):
+        # get Shape offsets
         _, _, minY, _ = shape.getBoundingOffsets(0)
         return self.tryMove(board, width, height, shape, 0, 5, -minY)
 
     def tryMove(self, board, width, height, shape, direction, x, y):
+        # check Shape coordinates
         for x, y in shape.getCoords(direction, x, y):
             print(x, y)
             if x >= width or x < 0 or y >= height or y < 0:
