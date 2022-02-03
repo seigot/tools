@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 from machine_learning.deep_q_network import DeepQNetwork
 from collections import deque
-from tensorboardX import SummaryWriter
+#from tensorboardX import SummaryWriter
 
 import os
 import shutil
@@ -29,7 +29,6 @@ class Block_Controller(object):
     def __init__(self):
         
         # init parameter
-        # common
         self.mode = None
 
         # train
@@ -71,24 +70,23 @@ class Block_Controller(object):
         self.mode = GameStatus["judge_info"]["mode"]
         strategy = (0, 0, 0, 0)
 
+        # train/predict
         if self.mode == "train_sample":
-
-            # train -->
+            # train_sample -->
 
             # init parameter
             if self.init_train_parameter_flag == False:
-
-                self.batch_size = 512 #args.batch_size
-                self.lr = 1e-3 #args.lr
-                self.gamma = 0.99 #args.gamma
-                self.initial_epsilon = 1 #args.initial_epsilon
-                self.final_epsilon = 1e-3 #args.final_epsilon
-                self.num_decay_epochs = 1500 #args.num_decay_epochs
-                self.num_epochs = 3000 #args.num_epochs
-                self.save_interval = 1000 #args.save_interval
-                self.replay_memory_size = 30000 #args.replay_memory_size
-                self.log_path = "./tensorboard" #args.log_path
-                self.saved_path = "./trained_models" #args.saved_path
+                self.batch_size = 512
+                self.lr = 1e-3
+                self.gamma = 0.99
+                self.initial_epsilon = 1
+                self.final_epsilon = 1e-3
+                self.num_decay_epochs = 1500
+                self.num_epochs = 3000
+                self.save_interval = 1000
+                self.replay_memory_size = 30000
+                self.log_path = "./tensorboard"
+                self.saved_path = "./trained_models"
 
                 self.episode = 0
                 self.step = 0
@@ -98,7 +96,7 @@ class Block_Controller(object):
                 self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
                 self.criterion = nn.MSELoss()
                 self.replay_memory = deque(maxlen=self.replay_memory_size)
-                
+
                 self.init_state_flag = True
 
                 self.state = None
@@ -108,25 +106,18 @@ class Block_Controller(object):
 
                 self.king_of_score = 0
 
-                #if os.path.isdir(self.log_path):
-                #    shutil.rmtree(self.log_path)
-                #os.makedirs(self.log_path)
                 if os.path.exists(self.log_path) == False:
                     os.makedirs(self.log_path)
 
-                #if os.path.isdir(self.saved_path):
-                #    shutil.rmtree(self.saved_path)
-                #os.makedirs(self.saved_path)
                 if os.path.exists(self.saved_path) == False:
                     os.makedirs(self.saved_path)
 
-                self.writer = SummaryWriter(self.log_path)
+                #self.writer = SummaryWriter(self.log_path)
                 self.init_train_parameter_flag = True
 
-
             # train main process -->
-            backboard = GameStatus["field_info"]["backboard"]
             done = False
+            backboard = GameStatus["field_info"]["backboard"]
 
             print("### step ###")
             print(self.step)
@@ -140,6 +131,7 @@ class Block_Controller(object):
                 self.state = torch.from_numpy(self.state).type(torch.FloatTensor)
                 self.init_state_flag = False
 
+            # get next actions
             next_actions, next_states = self.getStrategyAndStatelist(GameStatus)
             next_actions = np.array(next_actions)
             next_actions = torch.from_numpy(next_actions).type(torch.FloatTensor)
@@ -179,6 +171,7 @@ class Block_Controller(object):
             print("### self.action ###")
             print(self.action) # (rotation, position)
 
+            # get nextMove
             direction = self.action[0].item()
             x = self.action[1].item()
             nextMove["strategy"]["direction"] = direction
@@ -186,40 +179,25 @@ class Block_Controller(object):
             nextMove["strategy"]["y_operation"] = 1
             nextMove["strategy"]["y_moveblocknum"] = 0
 
-            ####
-            #### memory
-
             # get reward
-
             self.reward = 0
-
-            print("-----")
             trial_board = self.getBoard(backboard, self.CurrentShape_class, int(direction), int(x))
             fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = self.calcEvaluationValueSample(trial_board)
             removedlines = fullLines_num
-
-            # print
-            pprint.pprint(trial_board, width = 30, compact = True)
-            print(self.NextShape_class.getBoundingOffsets(0))
-
             is_Continue = self.CheckIfContinue(trial_board, self.board_width, self.board_height, self.NextShape_class)
-            print("-----")
-            print(is_Continue)
-            print(int(direction))
-            print(int(x))
 
-            #if BOARD_DATA.currentY < 1: ##### gameover
-            if is_Continue == False: ##### gameover
+            if is_Continue == False:
+                # gameover
                 self.reward = torch.FloatTensor([-500])
                 done = True
-                #sys.exit(0)
 
             elif self.step >= 180:
+                # step max
                 self.reward = torch.FloatTensor([10.0])
                 done = True
 
-
             elif removedlines > 0:
+                # get score
                 if removedlines == 1:
                     linescore = 100 #Game_Manager.LINE_SCORE_1
                 elif removedlines == 2:
@@ -228,24 +206,16 @@ class Block_Controller(object):
                     linescore = 700 #Game_Manager.LINE_SCORE_3
                 elif removedlines == 4:
                     linescore = 1300 #Game_Manager.LINE_SCORE_4
-
                 self.reward = torch.FloatTensor([linescore])
 
             print("### state memory appned ###")
             print(self.state)
             self.replay_memory.append([self.state, self.reward, self.next_state, done])
-            print("replay memory len")
-            print(len(self.replay_memory))
 
-            if done:
-                ## reset episode
+            if done == True:
+                # reset episode
                 print("reset episode")
 
-                ###
-                #self.reset_episode()
-                #if reset
-                # self.episode += 1
-                # self.step = 0
                 self.episode += 1
                 self.step = 0
                 nextMove["option"]["reset_all_field"] = True
@@ -254,19 +224,14 @@ class Block_Controller(object):
                 final_tetrominoes = self.step
                 final_cleared_lines = GameStatus["judge_info"]["line"]
 
-                ## 初期化、これは必要？一旦コメントアウト ###
-                #GameStatus = self.getGameStatus()
-                #backboard = GameStatus["field_info"]["backboard"]
-                #fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num = self.calcEvaluationValueSample(board)
-                #self.state = np.array([fullLines_num, nHoles_num, nIsolatedBlocks_num, absDy_num])
-                #self.state = torch.from_numpy(self.state).type(torch.FloatTensor)
-                # ここまで
                 self.init_state_flag = True
 
+                # update
                 if len(self.replay_memory) < self.replay_memory_size / 10:
-                    # skip loss backward, optimizer process, because not enough data.
+                    # skip update, because not enough data.
                     pass
                 else:
+                    # update model
                     batch = sample(self.replay_memory, min(len(self.replay_memory), self.batch_size))
                     state_batch, reward_batch, next_state_batch, done_batch = zip(*batch)
                     state_batch = torch.stack(tuple(self.state for self.state in state_batch))
@@ -304,9 +269,9 @@ class Block_Controller(object):
                         final_score,
                         final_tetrominoes,
                         final_cleared_lines))
-                    self.writer.add_scalar('Train/Score', final_score, self.episode - 1)
-                    self.writer.add_scalar('Train/Tetrominoes', final_tetrominoes, self.episode - 1)
-                    self.writer.add_scalar('Train/Cleared lines', final_cleared_lines, self.episode - 1)
+                    #self.writer.add_scalar('Train/Score', final_score, self.episode - 1)
+                    #self.writer.add_scalar('Train/Tetrominoes', final_tetrominoes, self.episode - 1)
+                    #self.writer.add_scalar('Train/Cleared lines', final_cleared_lines, self.episode - 1)
 
                     if self.episode > 0 and self.episode % self.save_interval == 0:
                         torch.save(self.model, "{}/tetris_{}".format(self.saved_path, self.episode))
@@ -315,17 +280,16 @@ class Block_Controller(object):
                         torch.save(self.model, "{}/tetris_{}_{}_{}".format(self.saved_path, self.episode, self.step, final_score))
                         torch.save(self.model, "{}/tetris".format(self.saved_path))
                         self.king_of_score = final_score
-
             else:
                 self.state = self.next_state
  
             # step count up
             self.step += 1
 
-        else:
-            # if self.mode == "predict_sample":
+            # train main process <--
 
-            # predict -->
+        elif self.mode == "predict_sample":
+            # predict_sample -->
 
             # init parameter
             if self.init_predict_parameter_flag == False:
@@ -335,7 +299,6 @@ class Block_Controller(object):
                 self.init_predict_parameter_flag = True
 
             # predict main process -->
-            # search best nextMove -->
             next_actions, next_states = self.getStrategyAndStatelist(GameStatus)
             next_actions = np.array(next_actions)
             next_actions = torch.from_numpy(next_actions).type(torch.FloatTensor)
@@ -351,11 +314,10 @@ class Block_Controller(object):
             nextMove["strategy"]["x"] = action[1].item()
             nextMove["strategy"]["y_operation"] = 1
             nextMove["strategy"]["y_moveblocknum"] = 0
-            # search best nextMove <--
             # predict main process <--
 
         print(nextMove)
-        print("###### SAMPLE CODE (mode:{}) ######".format(self.mode))
+        print("###### BLOCK_CONTROLLER_TRAIN_SAMPLE (mode:{}) ######".format(self.mode))
         return nextMove
 
     def getStrategyAndStatelist(self, GameStatus):
@@ -384,7 +346,7 @@ class Block_Controller(object):
         return strategy_list, state_list
 
     def CheckIfContinue(self, board, width, height, shape):
-        minX, maxX, minY, maxY = shape.getBoundingOffsets(0)
+        _, _, minY, _ = shape.getBoundingOffsets(0)
         return self.tryMove(board, width, height, shape, 0, 5, -minY)
 
     def tryMove(self, board, width, height, shape, direction, x, y):
