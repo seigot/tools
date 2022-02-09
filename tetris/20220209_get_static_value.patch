@@ -1,0 +1,176 @@
+diff --git a/scripts/gameserver.sh b/scripts/gameserver.sh
+index 9423a9a..a2fa0d9 100644
+--- a/scripts/gameserver.sh
++++ b/scripts/gameserver.sh
+@@ -29,10 +29,11 @@ function update_result(){
+ 
+     DATETIME="$1" #`date +%Y%m%d_%H%M_%S`
+     REPOSITORY_URL="$2"
+-    SCORE="$3"
+-    LEVEL="$4"
+-    RESULT="$5"
+-    STR="${DATETIME}, ${REPOSITORY_URL}, ${SCORE}, ${LEVEL}, ${RESULT}"    
++    BRANCH="$3"
++    SCORE="$4"
++    LEVEL="$5"
++    RESULT="$6"
++    STR="${DATETIME}, ${REPOSITORY_URL}, ${BRANCH}, ${SCORE}, ${LEVEL}, ${RESULT}"
+ 
+     ## update result file
+     RESULT_LOG="result.csv"
+@@ -43,7 +44,7 @@ function update_result(){
+ 
+     if [ "${RESULT}" == "SUCCESS" ]; then
+ 	if [ ! -e ${RESULT_LEVEL_LOG} ]; then
+-	    echo "DATETIME, REPOSITORY_URL, SCORE, LEVEL, RESULT" >> ${RESULT_LEVEL_LOG}
++	    echo "DATETIME, REPOSITORY_URL, BRANCH, SCORE, LEVEL, RESULT" >> ${RESULT_LEVEL_LOG}
+ 	fi
+ 	echo $STR >> ${RESULT_LEVEL_LOG}
+ 	cat <(head -1 ${RESULT_LEVEL_LOG}) <(tail -n +2 ${RESULT_LEVEL_LOG} | sort -nr -t, -k3) > ${RESULT_RANKING_LOG}
+@@ -84,7 +85,7 @@ function error_result(){
+     #RESULT="$5"
+     #STR="${DATETIME}, ${REPOSITORY_URL}, ${SCORE}, ${LEVEL}, ${RESULT}"
+     #update_result "${STR}"
+-    update_result "$1" "$2" "$3" "$4" "$5"
++    update_result "$1" "$2" "$3" "$4" "$5" "$6"
+ }
+ 
+ function success_result(){
+@@ -95,20 +96,21 @@ function success_result(){
+     #LEVEL="$4"
+     #STR="${DATETIME}, ${REPOSITORY_URL}, ${SCORE}, ${LEVEL}, SUCCESS"
+     #update_result "${STR}"
+-    update_result "$1" "$2" "$3" "$4" "SUCCESS"
++    update_result "$1" "$2" "$3" "$4" "$5" "SUCCESS"
+ }
+ 
+ function do_tetris(){
+ 
+     DATETIME="$1"
+     REPOSITORY_URL="$2"
+-    LEVEL="$3"
++    BRANCH="$3"
++    LEVEL="$4"
+     GAME_TIME="180"
+     if [ "${EXEC_MODE}" != "RELEASE" ]; then
+ 	GAME_TIME="3" # debug value
+     fi 
+     
+-    PRE_COMMAND="cd ~ && rm -rf tetris && git clone ${REPOSITORY_URL} && cd ~/tetris && pip3 install -r requirements.txt"
++    PRE_COMMAND="cd ~ && rm -rf tetris && git clone ${REPOSITORY_URL} -b ${BRANCH} && cd ~/tetris && pip3 install -r requirements.txt"
+     DO_COMMAND="cd ~/tetris && export DISPLAY=:1 && python3 start.py -l ${LEVEL} -t ${GAME_TIME} && jq . result.json"
+     POST_COMMAND="cd ~/tetris && jq .judge_info.score result.json"
+ 
+@@ -126,20 +128,40 @@ function do_tetris(){
+     # exec command
+     docker exec ${CONTAINER_NAME} bash -c "${PRE_COMMAND}"
+     if [ $? -ne 0 ]; then
+-	error_result "${DATETIME}" "${REPOSITORY_URL}" "0" "${LEVEL}" "pip3_install_-r_requirements.txt_NG"
+-	return 0
+-    fi
+-    docker exec ${CONTAINER_NAME} bash -c "${DO_COMMAND}"
+-    if [ $? -ne 0 ]; then
+-	error_result "${DATETIME}" "${REPOSITORY_URL}" "0" "${LEVEL}" "python_start.py_NG"
++	error_result "${DATETIME}" "${REPOSITORY_URL}" "${BRANCH}" "0" "${LEVEL}" "pip3_install_-r_requirements.txt_NG"
+ 	return 0
+     fi
+-    docker exec ${CONTAINER_NAME} bash -c "${POST_COMMAND}" > ${TMP_LOG}    
+ 
+-    # get result score
+-    SCORE=`cat ${TMP_LOG} | tail -1`
+-    echo $SCORE
+-    success_result ${DATETIME} ${REPOSITORY_URL} ${SCORE} ${LEVEL}
++    # do_command
++    SCORE_ARRAY=()
++    LOOP_TIMES=10
++    for i in `seq ${LOOP_TIMES}`
++    do
++	docker exec ${CONTAINER_NAME} bash -c "${DO_COMMAND}"
++	if [ $? -ne 0 ]; then
++	    error_result "${DATETIME}" "${REPOSITORY_URL}" "${BRANCH}" "0" "${LEVEL}" "python_start.py_NG"
++	    return 0
++	fi
++	docker exec ${CONTAINER_NAME} bash -c "${POST_COMMAND}" > ${TMP_LOG}
++
++        # get result score
++	SCORE=`cat ${TMP_LOG} | tail -1`
++	echo $SCORE
++
++        # append array
++	SCORE_ARRAY+=("${SCORE}")
++    done
++
++    # calc static value
++    echo ${SCORE_ARRAY[@]} | python get_statistics.py > ${TMP_LOG}
++    MEAN_SCORE=`cat ${TMP_LOG} | grep "mean" | cut -d' ' -f2`
++    STDEV_SCORE=`cat ${TMP_LOG} | grep "stdev" | cut -d' ' -f2`
++    MAX_SCORE=`cat ${TMP_LOG} | grep "max" | cut -d' ' -f2`
++    MIN_SCORE=`cat ${TMP_LOG} | grep "min" | cut -d' ' -f2`
++    NUM=`cat ${TMP_LOG} | grep "num" | cut -d' ' -f2`
++    echo "${MEAN_SCORE}" "${STDEV_SCORE}" "${MAX_SCORE}" "${MIN_SCORE}" "${NUM}"
++
++    success_result ${DATETIME} ${REPOSITORY_URL} ${MAX_SCORE} ${LEVEL} ${MEAN_SCORE} ${STDEV_SCORE} ${MAX_SCORE} ${MIN_SCORE} ${NUM}
+ }
+ 
+ function do_polling(){
+@@ -160,7 +182,7 @@ function do_polling(){
+     RET=$?
+     if [ $RET -ne 0 ]; then
+ 	echo "curl NG"
+-	error_result "-" "-" "0" "-" "curl_google_speadsheet_NG"
++	error_result "-" "-" "-" "0" "-" "curl_google_speadsheet_NG"
+ 	return 0
+     fi
+     VALUE_LENGTH=`jq .values ${JSONFILE} | jq length`
+@@ -192,21 +214,32 @@ function do_polling(){
+ 	    # DELETE unnecessary strings
+ 	    # BLANK_CHECK:
+ 	    # URL_CHECK: "https://github.com/seigot/tetris"
+-	    # CLONE tetris CHECK:
++	    # CLONE tetris, and branch CHECK:
+ 	    VALUE_URL1=`jq .values[${idx}][1] ${JSONFILE}`
+ 	    VALUE_URL2=`echo ${VALUE_URL1} | cut -d' ' -f 1`
+ 	    VALUE_URL=${VALUE_URL2//"\""/""}  # "
+ 	    if [[ "$VALUE_URL" =~ "http".*"://github.com/".*"tetris"$ ]]; then
+ 		echo "url string OK"
+ 	    else
+-		error_result "${VALUE_TIME}" "${VALUE_URL}" "0" "-" "github_url_string_NG"
++		error_result "${VALUE_TIME}" "${VALUE_URL}" "-" "0" "-" "github_url_string_NG"
+ 		continue
+ 	    fi
+ 	    git ls-remote ${VALUE_URL} > /dev/null
+ 	    RET=$?
+ 	    if [ $RET -ne 0 ]; then
+ 		echo "git ls-remote NG"
+-		error_result "${VALUE_TIME}" "${VALUE_URL}" "0" "-" "github_url_access_NG"
++		error_result "${VALUE_TIME}" "${VALUE_URL}" "-" "0" "-" "github_url_access_NG"
++		continue
++	    fi
++	    VALUE_BRANCH=`jq .values[${idx}][4] ${JSONFILE} | sed 's/"//g'`
++	    if [ $VALUE_BRANCH == "null" ]; then
++		VALUE_BRANCH="master"
++	    fi
++	    git ls-remote ${VALUE_URL} | cut -f 2 | cut -d/ -f 3 | grep --line-regexp "${VALUE_BRANCH}"
++	    RET=$?
++	    if [ $RET -ne 0 ]; then
++		echo "git ls-remote NG"
++		error_result "${VALUE_TIME}" "${VALUE_URL}" "${VALUE_BRANCH}" "0" "-" "github_url_branch_access_NG"
+ 		continue
+ 	    fi
+ 
+@@ -217,12 +250,13 @@ function do_polling(){
+ 		VALUE_LEVEL=1
+ 	    fi
+ 	    
+-	    echo "LEVEL: ${VALUE_TIME}"
++	    echo "TIME: ${VALUE_TIME}"
+ 	    echo "URL: ${VALUE_URL}"
++	    echo "BRANCH: ${VALUE_BRANCH}"
+ 	    echo "LEVEL: ${VALUE_LEVEL}"
+ 
+ 	    ## do tetris
+-	    do_tetris "${VALUE_TIME}" "${VALUE_URL}" "${VALUE_LEVEL}"
++	    do_tetris "${VALUE_TIME}" "${VALUE_URL}" "${VALUE_BRANCH}" "${VALUE_LEVEL}"
+ 	done
+ 
+     else
