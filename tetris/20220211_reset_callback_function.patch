@@ -1,0 +1,44 @@
+diff --git a/game_manager/block_controller_sample.py b/game_manager/block_controller_sample.py
+index 3110401..050282c 100644
+--- a/game_manager/block_controller_sample.py
++++ b/game_manager/block_controller_sample.py
+@@ -78,10 +78,16 @@ class Block_Controller(object):
+         nextMove["strategy"]["x"] = strategy[1]
+         nextMove["strategy"]["y_operation"] = strategy[2]
+         nextMove["strategy"]["y_moveblocknum"] = strategy[3]
++        nextMove["option"]["reset_callback_function_addr"] = self.update
+         print(nextMove)
+         print("###### SAMPLE CODE ######")
+         return nextMove
+ 
++    def update(self):
++        print("update")
++        print("=================================================>")
++        pprint.pprint(self.board_backboard, width = 61, compact = True)
++
+     def getSearchXRange(self, Shape_class, direction):
+         #
+         # get x range from shape direction.
+diff --git a/game_manager/game_manager.py b/game_manager/game_manager.py
+index 53a8279..29e28e5 100644
+--- a/game_manager/game_manager.py
++++ b/game_manager/game_manager.py
+@@ -220,6 +220,7 @@ class Game_Manager(QMainWindow):
+                                   },
+                             "option":
+                                 {
++                                  "reset_callback_function_addr": None,
+                                   "reset_all_field": None,
+                                 }
+                             }
+@@ -300,6 +301,10 @@ class Game_Manager(QMainWindow):
+             # check reset field
+             if BOARD_DATA.currentY < 1:
+                 # if Piece cannot movedown and stack, reset field
++                if self.nextMove["option"]["reset_callback_function_addr"] != None:
++                    # if necessary, call reset_callback_function
++                    reset_callback_function = self.nextMove["option"]["reset_callback_function_addr"]
++                    reset_callback_function()
+                 print("reset field.")
+                 self.resetfield()
+ 
