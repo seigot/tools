@@ -1,0 +1,361 @@
+--- dqn_operation.py	2022-02-06 02:26:53.000000000 +0900
++++ dqn_self_play.py	2022-02-06 02:26:53.000000000 +0900
+@@ -29,8 +29,8 @@
+ from utils.state import State
+ from utils.wallAvoid import punish_by_count, punish_by_min_dist, manual_avoid_wall_2
+ from utils.lidar_transform import lidar_transform
++from agents.agent import Agent
+ 
+-import cv2
+ 
+ # config
+ FIELD_SCALE = 2.4
+@@ -60,8 +60,7 @@
+     """
+     An operator to train the dqn agent.
+     """
+-    def __init__(self, robot="r", online=False, policy_mode="epsilon", debug=True,
+-                 save_path=None, load_path=None, pkl_path=None, manual_avoid=False):
++    def __init__(self, robot="r", online=False, policy_mode="epsilon", debug=True, save_path=None, load_path=None, manual_avoid=False):
+         """
+         Args:
+             robot (str): robot namespace ("r" or "b")
+@@ -70,7 +69,6 @@
+             debug (bool): debug mode
+             save_path (str): model save path
+             load_path (str): model load path
+-            pkl_path (str): dump path
+             manual_avoid (bool): manually avoid walls or not
+         """
+         # attributes
+@@ -84,13 +82,15 @@
+         self.marker_list = FIELD_MARKERS + self.my_markers + self.op_markers
+         self.score = {k: 0 for k in self.marker_list}
+         self.past_score = {k: 0 for k in self.marker_list}
++        self.my_score = 0
++        self.op_score = 0
+ 
+         if save_path is None:
+             self.save_path = "../catkin_ws/src/burger_war_dev/burger_war_dev/scripts/models/tmp.pth"
+         else:
+             self.save_path = save_path
+-        
+-        self.pkl_path = pkl_path
++
++        self.load_path = load_path
+ 
+         # state variables
+         self.lidar_ranges = None
+@@ -114,7 +114,7 @@
+ 
+         if self.debug:
+             if self.robot == "r": self.odom_sub = rospy.Subscriber("red_bot/tracker", Odometry, self.callback_odom)
+-            if self.robot == "b": self.odom_sub = rospy.Subscriber("enemy_bot/tracker", Odometry, self.callback_odom)
++            if self.robot == "b": self.odom_sub = rospy.Subscriber("tracker", Odometry, self.callback_odom)
+         else:
+             self.amcl_sub = rospy.Subscriber("amcl_pose", PoseWithCovarianceStamped, self.callback_amcl)
+ 
+@@ -127,22 +127,10 @@
+         self.unpause_service = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
+ 
+         # agent
+-        if self.debug:
+-            # connect to agent server
+-            from agents.agent_conn import AgentClient
+-            self.agent = AgentClient(server_address='127.0.0.1', port=5010,
+-                                     num_actions=len(ACTION_LIST), batch_size=BATCH_SIZE, capacity=MEM_CAPACITY, gamma=GAMMA, prioritized=PRIOTIZED, lr=LR)
+-        else:
+-            # create agent in this process
+-            from agents.agent import Agent
+-            self.agent = Agent(num_actions=len(ACTION_LIST), batch_size=BATCH_SIZE, capacity=MEM_CAPACITY, gamma=GAMMA, prioritized=PRIOTIZED, lr=LR)
+-        # load model
+-        if load_path is not None:
+-            self.agent.load_model(load_path)
+-
+-        # load pickle file if exists
+-        if self.pkl_path is not None and os.path.exists(self.pkl_path):
+-            self.agent.load_memory(self.pkl_path)
++        self.agent = Agent(num_actions=len(ACTION_LIST), batch_size=BATCH_SIZE, capacity=MEM_CAPACITY, gamma=GAMMA, prioritized=PRIOTIZED, lr=LR)
++
++        if self.load_path is not None:
++            self.agent.load_model(self.load_path)
+ 
+         # mode
+         self.punish_if_facing_wall = not manual_avoid
+@@ -152,7 +140,6 @@
+     def callback_lidar(self, data):
+         """
+         callback function of lidar subscription
+-
+         Args:
+             data (LaserScan): distance data of lidar
+         """
+@@ -163,7 +150,6 @@
+     def callback_image(self, data):
+         """
+         callback function of image subscription
+-
+         Args:
+             data (Image): image from from camera mounted on the robot
+         """
+@@ -176,7 +162,7 @@
+             deriv_x = cv2.Sobel(img, cv2.CV_32F, 1, 0, ksize=5)
+             deriv_y = cv2.Sobel(img, cv2.CV_32F, 0, 1, ksize=5)
+             grad = np.sqrt(deriv_x ** 2 + deriv_x ** 2)
+-
++            
+             '''
+             # visualize preprocessed image for debug
+             def min_max(x, axis=None):
+@@ -196,18 +182,19 @@
+     def callback_odom(self, data):
+         """
+         callback function of tracker subscription
+-
+         Args:
+             data (Odometry): robot pose
+         """
+         x = data.pose.pose.position.x
+         y = data.pose.pose.position.y
++        if self.robot == "b":
++            x *= -1
++            y *= -1
+         self.my_pose = torch.FloatTensor([x, y]).view(1, 2)
+ 
+     def callback_amcl(self, data):
+         """
+         callback function of amcl subscription
+-
+         Args:
+             data (PoseWithCovarianceStamped): robot pose
+         """
+@@ -218,7 +205,6 @@
+     def callback_warstate(self, event):
+         """
+         callback function of warstate subscription
+-
+         Notes:
+             https://github.com/p-robotics-hub/burger_war_kit/blob/main/judge/README.md
+         """
+@@ -226,6 +212,9 @@
+         resp = requests.get(JUDGE_URL + "/warState")
+         json_dict = json.loads(resp.text)
+         self.game_state = json_dict['state']
++        self.my_score = int(json_dict['scores'][self.robot])
++        self.op_score = int(json_dict['scores'][self.enemy])
++        #print("name:{}, state:{}, score:{}".format(self.robot, self.game_state, self.my_score))
+         
+         if self.game_state == "running":            
+             for tg in json_dict["targets"]:
+@@ -238,7 +227,7 @@
+             for k in self.marker_list:
+                 if self.score[k] > 0:    msk.append(0)
+                 elif self.score[k] == 0: msk.append(1)
+-                else:                    msk.append(2)
++                else:                    msk.append(1)
+             
+             self.mask = torch.FloatTensor(msk).view(1, 18)
+ 
+@@ -249,7 +238,6 @@
+         Args:
+             past (dict): score dictionary at previous step
+             current (dict): score dictionary at current step
+-
+         Return:
+             reward (int)
+         """
+@@ -258,17 +246,23 @@
+ 
+         # Check LiDAR data to punish for AMCL failure
+         if self.punish_if_facing_wall:
+-            bad_position = punish_by_min_dist(self.lidar_ranges, dist_th=0.15)
+-        else:
++            #bad_position = punish_by_count(self.lidar_ranges, dist_th=DIST_TO_WALL_TH, count_th=NUM_LASER_CLOSE_TO_WALL_TH)
++            bad_position = punish_by_min_dist(self.lidar_ranges, dist_th=0.13)
+             if self.punish_far_from_center:
+                 pose = self.my_pose.squeeze()
+-                bad_position = punish_by_count(self.lidar_ranges, dist_th=0.2, count_th=90)
+-                if abs(pose[0].item()) > 1:
+-                    bad_position -= 0.1
+-                if abs(pose[1].item()) > 1:
+-                    bad_position -= 0.1
+-            else:
+-                bad_position = 0
++                dist_from_center = torch.sqrt(torch.pow(pose, 2).sum()).item()
++                if dist_from_center > 1.0:
++                    bad_position -= 1.0
++        # else:
++        #     if self.punish_far_from_center:
++        #         pose = self.my_pose.squeeze()
++        #         bad_position = punish_by_count(self.lidar_ranges, dist_th=0.2, count_th=90)
++        #         if abs(pose[0].item()) > 1:
++        #             bad_position -= 0.1
++        #         if abs(pose[1].item()) > 1:
++        #             bad_position -= 0.1
++        #     else:
++        #         bad_position = 0
+ 
+         plus_diff = sum([v for v in diff_my_score.values() if v > 0])
+         minus_diff = sum([v for v in diff_op_score.values() if v < 0])
+@@ -306,8 +300,11 @@
+             self.action = None
+         else:
+             # get action from agent
+-            if self.step % 3 == 0:
+-                policy = "boltzmann"
++            if self.robot == "b":
++                if self.episode % 2 == 0:
++                    policy = "boltzmann"
++                else:
++                    policy = "epsilon"
+             else:
+                 policy = "epsilon"
+ 
+@@ -369,27 +366,33 @@
+         amcl_init_pub.publish(amcl_pose)
+ 
+     def stop(self):
+-        self.pause_service()
++        if self.robot == "r":
++            print("***** EPISODE {} DONE *****".format(self.episode))
++            rospy.sleep(0.5)
++            self.pause_service()
+ 
+     def restart(self):
+         self.episode += 1
+ 
+-        # restart judge server
+-        #resp = send_to_judge(JUDGE_URL + "/warState/state", {"state": "running"})
++        if self.robot == "r":
++            # restart judge server
++            resp = send_to_judge(JUDGE_URL + "/warState/state", {"state": "running"})
+ 
+-        # restart gazebo physics
+-        self.unpause_service()
++            # restart gazebo physics
++            self.unpause_service()
+ 
+         # reset amcl pose
+         self.init_amcl_pose()
+ 
+-        print("restart the game")
++        print("restart the game by {}".format(self.robot))
+ 
+     def reset(self):
+         # reset parameters
+         self.step = 0
+         self.score = {k: 0 for k in self.marker_list}
+         self.past_score = {k: 0 for k in self.marker_list}
++        self.my_score = 0
++        self.op_score = 0
+         self.lidar_ranges = None
+         self.my_pose = None
+         self.image = None
+@@ -398,16 +401,13 @@
+         self.past_state = None
+         self.action = None
+ 
+-        # reset judge server
+-        #subprocess.call('bash ../catkin_ws/src/burger_war_dev/burger_war_dev/scripts/reset.sh', shell=True)
+-
+-        # reset robot's positions
+-        #self.move_robot("red_bot", (0.0, -1.3, 0.0), (0, 0, 1.57), (0, 0, 0), (0, 0, 0))
+-        #self.move_robot("blue_bot", (0.0, 1.3, 0.0), (0, 0, -1.57), (0, 0, 0), (0, 0, 0))
+-
+-        # detach agent
+-        if self.debug:
+-            self.agent.detach()
++        if self.robot == "r":
++            # reset judge server
++            subprocess.call('bash ../catkin_ws/src/burger_war_dev/burger_war_dev/scripts/reset.sh', shell=True)
++
++            # reset robot's positions
++            self.move_robot("red_bot", (0.0, -1.3, 0.0), (0, 0, 1.57), (0, 0, 0), (0, 0, 0))
++            self.move_robot("blue_bot", (0.0, 1.3, 0.0), (0, 0, -1.57), (0, 0, 0), (0, 0, 0))
+ 
+     def train(self, n_epochs=20):
+         for epoch in range(n_epochs):
+@@ -440,11 +440,18 @@
+                     self.agent.update_target_network()
+ 
+                 # save model
+-                self.agent.save_model(self.save_path)
+-
+-                # save memory
+-                if self.pkl_path is not None:
+-                    self.agent.save_memory(self.pkl_path)
++                if self.my_score > self.op_score:
++                    self.agent.save_model(self.save_path)
++                    if self.episode % 100 == 0:
++                        self.agent.save_model(self.save_path.split(".pth")[0] + "_ckpt_{}.pth".format(self.episode))
++                    print("{} Win the Game and Save model".format(self.robot))
++                else:
++                    time.sleep(1.5)
++                    try:
++                        self.agent.load_model(self.save_path)
++                        print("{} Lose the Game and Load model".format(self.robot))
++                    except:
++                        print("{} cannot load model".format(self.robot))
+ 
+                 # reset the game
+                 self.reset()
+@@ -472,22 +479,25 @@
+     try:
+         ROBOT_NAME = rosparam.get_param('DQNRun/side')
+     except:
+-        ROBOT_NAME = rosparam.get_param('enemyRun/side')
++        try:
++            ROBOT_NAME = rosparam.get_param('enemyRun/side')
++        except:
++            ROBOT_NAME = "b"
++
++    print("name: {}, server: {}".format(ROBOT_NAME, JUDGE_URL))
+ 
+     # parameters
+ 
+     ONLINE = True
+     POLICY = "epsilon"
+-    DEBUG = True
+-    
+-    SAVE_PATH = "../catkin_ws/src/burger_war_dev/burger_war_dev/scripts/models/20210311_0019.pth" 
+-    LOAD_PATH = None
+-    MANUAL_AVOID = True
+-    PKL_PATH = None
++    DEBUG = False
++    SAVE_PATH = None
++    LOAD_PATH = "../catkin_ws/src/burger_war_dev/burger_war_dev/scripts/models/20210314.pth"
++    MANUAL_AVOID = False
+ 
+     # wall avoidance
+-    DIST_TO_WALL_TH = 0.18  #[m]
+-    NUM_LASER_CLOSE_TO_WALL_TH = 90
++    DIST_TO_WALL_TH = 0.18
++    NUM_LASER_CLOSE_TO_WALL_TH = 30
+ 
+     # action lists
+     VEL = 0.2
+@@ -501,11 +511,11 @@
+     ]
+ 
+     # agent config
+-    UPDATE_Q_FREQ = 5
++    UPDATE_Q_FREQ = 10
+     BATCH_SIZE = 16
+-    MEM_CAPACITY = 1000
++    MEM_CAPACITY = 2000
+     GAMMA = 0.99
+-    PRIOTIZED = True
++    PRIOTIZED = False
+     LR = 0.0005
+     EPOCHS = 20
+ 
+@@ -513,8 +523,7 @@
+     RATE = 1
+ 
+     try:
+-        bot = DQNBot(robot=ROBOT_NAME, online=ONLINE, policy_mode=POLICY, debug=DEBUG,
+-                     save_path=SAVE_PATH, load_path=LOAD_PATH, pkl_path=PKL_PATH, manual_avoid=MANUAL_AVOID)
++        bot = DQNBot(robot=ROBOT_NAME, online=ONLINE, policy_mode=POLICY, debug=DEBUG, save_path=SAVE_PATH, load_path=LOAD_PATH, manual_avoid=MANUAL_AVOID)
+         bot.run(rospy_rate=RATE)
+ 
+     except rospy.ROSInterruptException:
