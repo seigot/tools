@@ -1,5 +1,7 @@
 sample
 
+統計
+
 ```
 Tutorial:5  
 Beginner:52  
@@ -8,6 +10,40 @@ Medium:58
 Hard:20    
 Total: 190
 ```
+
+用語
+
+```
+Web-SQLi: SQLインジェクション(SQLi)攻撃のこと
+
+Web-XSS:クロスサイトスクリプティング（XSS）のこと
+> 攻撃対象のWebサイトの脆弱性を突き、攻撃者がそこに悪質なサイトへ誘導するスクリプトを仕掛けることで、サイトに訪れるユーザーの個人情報などを詐取する攻撃のこと
+
+Web-ForceBrowsing: 
+Web-Node: 
+Web-Crypto: 
+Web-PathTraversal&LFI: トラバーサル とは、利用者が供給した入力ファイル名のセキュリティ検証/無害化が不十分であるため、ファイルAPIに対して「親ディレクトリへの横断 」を示すような文字がすり抜けて渡されてしまうような攻撃手法のことである
+Web-Businesslogic: 
+Web-Access_Control: 
+Web-GraphQL: 
+Web-Apache: 
+Web-Login: 
+Web-HTTP Header Injection: HTTPヘッダ・インジェクションとは、HTTPを使って通信するシステムにおいて、動的にHTTPヘッダを生成する機能の不備を突いてヘッダ行を挿入することで不正な動作を行なわせる攻撃手法のこと
+Web-Session: 
+Web-Upload: 
+Web-OpenRedirect: 
+Web-WebSocket: 
+Web-MongoDB: 
+Web-SSRF: 
+Web-JSONP: 
+Web-SSTI: 
+Web-CMDi: OSコマンドインジェクションは、Webサイトに向けて不正な入力を行うことにより、Webサーバ側で想定していない動作をさせるサイバー攻撃
+Web-XXE: 
+Web-Mail: 
+Web-JSON Injection: 
+```
+
+---
 
 Web-SQLi
 
