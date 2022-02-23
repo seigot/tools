@@ -1,5 +1,14 @@
 sample
 
+```
+Tutorial:5  
+Beginner:52  
+Easy:55  
+Medium:58  
+Hard:20    
+Total: 190
+```
+
 Web-SQLi
 
 |  No.  |  Check  |
