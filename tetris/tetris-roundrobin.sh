@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# ユーザ一覧を取得する
-USERS=(
+# プレーヤ一覧を取得する
+PLAYERS=(
     "testA@master" # 0
     "testB@master"
     "testC@master"
@@ -17,16 +17,16 @@ USERS=(
 # Debug
 function print_debug() {
     echo "--- UserList"
-    for user in ${USERS[@]}; do
+    for user in ${PLAYERS[@]}; do
 	echo $user
     done
 }
 
-# ユーザ一覧から、総当たり戦を実施するための組み合わせ一覧表を作成する
+# プレーヤ一覧から、総当たり戦を実施するための組み合わせ一覧表を作成する
 COMBINATION_LIST=()
 function get_combination_list() {
     echo "--- CombinationList"
-    N=`echo ${#USERS[*]}`
+    N=`echo ${#PLAYERS[*]}`
     N=`expr ${N} - 1`
     for i in `seq 0 ${N}`; do
 	for j in `seq 0 ${N}`; do
@@ -55,8 +55,8 @@ function do_battle_main() {
         # 変数を取得
 	PLAYER1_NUM=`echo ${i} | cut -d'_' -f1`
 	PLAYER2_NUM=`echo ${i} | cut -d'_' -f2`
-	PLAYER1=${USERS[${PLAYER1_NUM}]}
-	PLAYER2=${USERS[${PLAYER2_NUM}]}
+	PLAYER1=${PLAYERS[${PLAYER1_NUM}]}
+	PLAYER2=${PLAYERS[${PLAYER2_NUM}]}
 	echo "${PLAYER1_NUM}:${PLAYER1}, ${PLAYER2_NUM}:${PLAYER2}"
 
         # 対戦不要の組み合わせの場合
@@ -100,9 +100,9 @@ function get_result() {
 	    echo -n "${RESULT},"
 	elif [ ${PLAYER1_NUM} -gt ${PLAYER2_NUM} ]; then
             # 既存の結果を再利用(総当たり表の反対側の要素を取得)
-	    AA=`expr ${count} / ${#USERS[@]}`
-	    BB=`expr ${count} % ${#USERS[@]}`
-	    CC=`expr ${BB} \* ${#USERS[@]} + ${AA}`
+	    AA=`expr ${count} / ${#PLAYERS[@]}`
+	    BB=`expr ${count} % ${#PLAYERS[@]}`
+	    CC=`expr ${BB} \* ${#PLAYERS[@]} + ${AA}`
 	    RESULT=${RESULT_LIST[${CC}]}
 	    if [ "${RESULT}" == "W" ]; then
 		echo -n "L,"
@@ -113,9 +113,9 @@ function get_result() {
 	    echo -n "-,"
 	fi
 
-        # USERS分だけループ処理したら改行する
+        # PLAYERS分だけループ処理したら改行する
 	count=`expr $count + 1`
-	TMP_NUM=`expr $count % ${#USERS[@]}`
+	TMP_NUM=`expr $count % ${#PLAYERS[@]}`
 	if [ "${TMP_NUM}" == "0" ]; then
 	    echo ""
 	fi
