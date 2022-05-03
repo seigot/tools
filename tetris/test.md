@@ -4,11 +4,13 @@ PlayerNo  |  Player
 2         |  isshy-you@ish05h3
 3         |  seigot@master
 
-you\enemy          |  1  |  2  |  3  |
--------------------|-----|-----|-----|--
+
+you          |  1  |  2  |  3  |
+-------------------|-----|-----|-----|
 isshy-you@ish05g6  |  -  |  D  |  W  |
 isshy-you@ish05h3  |  D  |  -  |  W  |
 seigot@master      |  L  |  L  |  -  |
+
 
 GameNo  |  player1               |  player2
 --------|------------------------|----------------------
