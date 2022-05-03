@@ -16,10 +16,15 @@ PLAYERS=(
 )
 
 # Debug
-function print_debug() {
-    echo "--- UserList"
-    for user in ${PLAYERS[@]}; do
-	echo $user
+PLAYER_TEXT="player.txt"
+function printPlayerList() {
+    echo "--- PlayerList"
+    Playerno=0
+    echo "PlayerNo,Player" > ${PLAYER_TEXT}
+    for player in ${PLAYERS[@]}; do
+	PlayerNo=`expr $PlayerNo + 1`
+	echo $player
+	echo "$PlayerNo,$player" >> ${PLAYER_TEXT}
     done
 }
 
@@ -52,7 +57,8 @@ function do_tetris(){
     local RANDOM_SEED="$6"
     local GAME_TIME="180"
     if [ "${EXEC_MODE}" != "RELEASE" ]; then
-	GAME_TIME="3" # debug value
+	#GAME_TIME="3" # debug value
+	GAME_TIME="180" # debug value
     fi 
 
     local PRE_COMMAND="cd ~ && rm -rf tetris && git clone ${REPOSITORY_URL} -b ${BRANCH} && cd ~/tetris && pip3 install -r requirements.txt"
@@ -119,7 +125,16 @@ function do_battle(){
     else
 	PLAYER2_SCORE=`cat ${CURRENT_SCORE_TEXT}`
     fi
-    echo "${PLAYER1_}:${PLAYER1_SCORE},${PLAYER2_}:${PLAYER2_SCORE}" >> ${RESULT_TEXT}
+
+    # output result
+    TMP_NO=`tail -1 ${RESULT_TEXT} | cut -d, -f1`
+    GameNo=`expr $TMP_NO + 1`
+    RET=$?
+    if [ $RET -ge 2 ];then
+	# not a number
+        GameNo=1
+    fi
+    echo "${GameNo},${PLAYER1_}:${PLAYER1_SCORE},${PLAYER2_}:${PLAYER2_SCORE}" >> ${RESULT_TEXT}
 
     if [ $PLAYER1_SCORE -gt $PLAYER2_SCORE ]; then
 	return 0 # win
@@ -134,7 +149,9 @@ function do_battle(){
 function do_battle_main() {
     #echo ${COMBINATION_LIST[@]}
 
-    echo -n > ${RESULT_TEXT}    
+    #echo -n > ${RESULT_TEXT}
+    echo "GameNo,player1,player2" > ${RESULT_TEXT}
+    
     for i in ${COMBINATION_LIST[@]}; do
 
         # 変数を取得
@@ -176,7 +193,17 @@ function get_result() {
     #echo ${RESULT_LIST[@]}
     echo "--- Result"
     count=0
-    echo -n > ${RESULT_MATRIX_TEXT}
+
+    # output header string
+    #echo -n > ${RESULT_MATRIX_TEXT}
+    echo -n "you\opponent PlayerNo," > ${RESULT_MATRIX_TEXT}
+    N=`echo ${#PLAYERS[*]}`
+    for i in `seq 1 ${N}`; do
+	echo -n "${i}," >> ${RESULT_MATRIX_TEXT}
+    done
+    echo "" >> ${RESULT_MATRIX_TEXT}
+
+    # main process
     for i in ${COMBINATION_LIST[@]}; do
 
 	PLAYER1_NUM=`echo ${i} | cut -d'_' -f1`
@@ -221,14 +248,34 @@ function get_result() {
 }
 
 function upload_result() {
+
+    RESULT_MD="result.md"
+    echo -n "" >> ${RESULT_MD}
     echo "--- upload result"
+
+    echo "--- player.txt"
+    cat ${PLAYER_TEXT}
+    echo "## player list" >> ${RESULT_MD}
+    cat ${PLAYER_TEXT} | csvtomd >> ${RESULT_MD}
+
     echo "--- result_matrix.txt"
     cat ${RESULT_MATRIX_TEXT}
+    echo "## result(matrix)" >> ${RESULT_MD}
+    echo "W:win, L:lose, D:draw" >> ${RESULT_MD}
+    cat ${RESULT_MATRIX_TEXT} | sed -e "s/,\$//" | csvtomd >> ${RESULT_MD} >> ${RESULT_MD}
+
     echo "--- result.txt"
     cat ${RESULT_TEXT}
+    echo "## result(detail)" >> ${RESULT_MD}
+    cat ${RESULT_TEXT} | csvtomd >> ${RESULT_MD}
+
+    # git add/commit/push
+    git add ${RESULT_MD}
+    git commit -m "update"
+    git push
 }
 
-print_debug
+printPlayerList
 get_combination_list
 do_battle_main
 get_result
