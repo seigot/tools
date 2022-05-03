@@ -6,7 +6,7 @@ PlayerNo  |  Player
 
 
 you                |  1  |  2  |  3  |
--------------------|-----|-----|-----|--
+-------------------|-----|-----|-----|
 isshy-you@ish05g6  |  -  |  D  |  W  |
 isshy-you@ish05h3  |  D  |  -  |  W  |
 seigot@master      |  L  |  L  |  -  |
