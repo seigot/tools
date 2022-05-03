@@ -5,12 +5,11 @@ PlayerNo  |  Player
 3         |  seigot@master
 
 
-you                |  1  |  2  |  3  |
--------------------|-----|-----|-----|
-isshy-you@ish05g6  |  -  |  D  |  W  |
-isshy-you@ish05h3  |  D  |  -  |  W  |
-seigot@master      |  L  |  L  |  -  |
-
+you                |  1  |  2  |  3
+-------------------|-----|-----|---
+isshy-you@ish05g6  |  -  |  D  |  W
+isshy-you@ish05h3  |  D  |  -  |  W
+seigot@master      |  L  |  L  |  -
 
 GameNo  |  player1               |  player2
 --------|------------------------|----------------------
