@@ -2,16 +2,17 @@
 
 # プレーヤ一覧を取得する
 PLAYERS=(
-    "testA@master" # 0
-    "testB@master"
-    "testC@master"
-    "testD@master"
-    "testE@master"
-    "testF@master"
-    "testG@master"
-    "testH@master"
-    "testI@master"
-    "testJ@master" # N
+    "isshy-you@ish04e"
+    "isshy-you@ish04f"
+    "isshy-you@ish05a"
+    "isshy-you@ish05b"
+    "isshy-you@ish05c"
+    "isshy-you@ish05d"
+    "isshy-you@ish05f"
+    "isshy-you@ish05g3"
+    "isshy-you@ish05g6"
+    "isshy-you@ish05h3"
+    "seigot@master"
 )
 
 # Debug
@@ -38,13 +39,92 @@ function get_combination_list() {
 }
 
 # 対戦する
+CURRENT_SCORE_TEXT="current_score.txt"
+function do_tetris(){
+    # parameter declaration
+    local DATETIME="$1"
+    local REPOSITORY_URL="$2"
+    local BRANCH="$3"
+    local LEVEL="$4"
+    local DROP_INTERVAL="$5"
+    local RANDOM_SEED="$6"
+    local GAME_TIME="180"
+    if [ "${EXEC_MODE}" != "RELEASE" ]; then
+	GAME_TIME="3" # debug value
+    fi 
+
+    local PRE_COMMAND="cd ~ && rm -rf tetris && git clone ${REPOSITORY_URL} -b ${BRANCH} && cd ~/tetris && pip3 install -r requirements.txt"
+    local DO_COMMAND="cd ~/tetris && export DISPLAY=:1 && python3 start.py -l ${LEVEL} -t ${GAME_TIME} -d ${DROP_INTERVAL} -r ${RANDOM_SEED} && jq . result.json"
+    local POST_COMMAND="cd ~/tetris && jq . result.json"
+
+    local TMP_LOG="tmp.json"
+    local TMP2_LOG="tmp2.log"
+    local OUTPUTJSON="output.json"
+    local CONTAINER_NAME="tetris_docker"
+
+    # run docker with detached state
+    RET=`docker ps -a | grep ${CONTAINER_NAME} | wc -l`
+    if [ $RET -ne 0 ]; then
+	docker stop ${CONTAINER_NAME}
+	docker rm ${CONTAINER_NAME}
+    fi
+    docker run -d --name ${CONTAINER_NAME} -p 6080:80 --shm-size=512m seigott/tetris_docker
+    
+    # exec command
+    docker exec ${CONTAINER_NAME} bash -c "${PRE_COMMAND}"
+    if [ $? -ne 0 ]; then
+	return 0
+    fi
+    docker network disconnect bridge ${CONTAINER_NAME}
+    
+    # do command
+    docker exec ${CONTAINER_NAME} bash -c "${DO_COMMAND}"
+    if [ $? -ne 0 ]; then
+	return 0
+    fi
+    # get result
+    docker exec ${CONTAINER_NAME} bash -c "${POST_COMMAND}" > ${TMP_LOG}
+
+    # check if max score
+    CURRENT_SCORE=`jq .judge_info.score ${TMP_LOG}`
+    echo ${CURRENT_SCORE} > ${CURRENT_SCORE_TEXT}
+
+    return 0
+}
+
 function do_battle(){
     local PLAYER1_=${1}
     local PLAYER2_=${2}
+
     #echo "${PLAYER1}, ${PLAYER2}"
-    ## とりあえず勝ちを返す
-    return 0 # win
-    #return 1 # lose
+    PLAYER1_NAME=`echo ${PLAYER1_} | cut -d'@' -f1`
+    PLAYER1_BRANCH=`echo ${PLAYER1_} | cut -d'@' -f2`
+    PLAYER2_NAME=`echo ${PLAYER2_} | cut -d'@' -f1`
+    PLAYER2_BRANCH=`echo ${PLAYER2_} | cut -d'@' -f2`
+    ## Player1
+    do_tetris 0 "https://github.com/${PLAYER1_NAME}/tetris" "${PLAYER1_BRANCH}" 2 1000 1234
+    RET=$?
+    if [ $RET -ne 0 ]; then
+	PLAYER1_SCORE=0
+    else
+	PLAYER1_SCORE1=`cat ${CURRENT_SCORE_TEXT}`
+    fi
+    ## Player2
+    do_tetris 0 "https://github.com/${PLAYER2_NAME}/tetris" "${PLAYER2_BRANCH}" 2 1000 1234
+    RET=$?
+    if [ $RET -ne 0 ]; then
+	PLAYER2_SCORE=0
+    else
+	PLAYER2_SCORE1=`cat ${CURRENT_SCORE_TEXT}`
+    fi
+
+    if [ $PLAYER1_SCORE -gt $PLAYER2_SCORE ]; then
+	return 0 # win
+    elif [ $PLAYER1_SCORE -lt $PLAYER2_SCORE ]; then
+	return 1 # lose
+    else
+	return 2 # draw
+    fi
 }
 
 # 組み合わせ一覧表の順番に総当たり戦をする
@@ -73,8 +153,10 @@ function do_battle_main() {
 	RET=$?
 	if [ $RET -eq 0 ]; then
 	    RESULT="W"
-	else
+	elif [ $RET -eq 1 ]; then
 	    RESULT="L"
+	else
+	    RESULT="D"
 	fi
         # <---- ここまで対戦
 
@@ -106,8 +188,10 @@ function get_result() {
 	    RESULT=${RESULT_LIST[${CC}]}
 	    if [ "${RESULT}" == "W" ]; then
 		echo -n "L,"
-	    else
+	    elif [ "${RESULT}" == "L" ]; then
 		echo -n "W,"
+	    else
+		echo -n "D," # draw
 	    fi
 	else
 	    echo -n "-,"
