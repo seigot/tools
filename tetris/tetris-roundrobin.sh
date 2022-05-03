@@ -2,14 +2,14 @@
 
 # プレーヤ一覧を取得する
 PLAYERS=(
-    "isshy-you@ish04e"
-    "isshy-you@ish04f"
-    "isshy-you@ish05a"
-    "isshy-you@ish05b"
-    "isshy-you@ish05c"
-    "isshy-you@ish05d"
-    "isshy-you@ish05f"
-    "isshy-you@ish05g3"
+#    "isshy-you@ish04e"
+#    "isshy-you@ish04f"
+#    "isshy-you@ish05a"
+#    "isshy-you@ish05b"
+#    "isshy-you@ish05c"
+#    "isshy-you@ish05d"
+#    "isshy-you@ish05f"
+#    "isshy-you@ish05g3"
     "isshy-you@ish05g6"
     "isshy-you@ish05h3"
     "seigot@master"
@@ -32,13 +32,15 @@ function get_combination_list() {
     for i in `seq 0 ${N}`; do
 	for j in `seq 0 ${N}`; do
 	    STR="${i}_${j}"
-	#echo ${STR}
+            #echo ${STR}
 	    COMBINATION_LIST+=(${STR})
 	done
     done
 }
 
 # 対戦する
+RESULT_TEXT="result.txt"
+RESULT_MATRIX_TEXT="result_matrix.txt"
 CURRENT_SCORE_TEXT="current_score.txt"
 function do_tetris(){
     # parameter declaration
@@ -73,14 +75,14 @@ function do_tetris(){
     # exec command
     docker exec ${CONTAINER_NAME} bash -c "${PRE_COMMAND}"
     if [ $? -ne 0 ]; then
-	return 0
+	return 1
     fi
     docker network disconnect bridge ${CONTAINER_NAME}
     
     # do command
     docker exec ${CONTAINER_NAME} bash -c "${DO_COMMAND}"
     if [ $? -ne 0 ]; then
-	return 0
+	return 1
     fi
     # get result
     docker exec ${CONTAINER_NAME} bash -c "${POST_COMMAND}" > ${TMP_LOG}
@@ -88,13 +90,13 @@ function do_tetris(){
     # check if max score
     CURRENT_SCORE=`jq .judge_info.score ${TMP_LOG}`
     echo ${CURRENT_SCORE} > ${CURRENT_SCORE_TEXT}
-
     return 0
 }
 
 function do_battle(){
     local PLAYER1_=${1}
     local PLAYER2_=${2}
+    local RANDOM_SEED=${RANDOM}
 
     #echo "${PLAYER1}, ${PLAYER2}"
     PLAYER1_NAME=`echo ${PLAYER1_} | cut -d'@' -f1`
@@ -102,21 +104,22 @@ function do_battle(){
     PLAYER2_NAME=`echo ${PLAYER2_} | cut -d'@' -f1`
     PLAYER2_BRANCH=`echo ${PLAYER2_} | cut -d'@' -f2`
     ## Player1
-    do_tetris 0 "https://github.com/${PLAYER1_NAME}/tetris" "${PLAYER1_BRANCH}" 2 1000 1234
+    do_tetris 0 "https://github.com/${PLAYER1_NAME}/tetris" "${PLAYER1_BRANCH}" 2 1000 "${RANDOM_SEED}"
     RET=$?
     if [ $RET -ne 0 ]; then
 	PLAYER1_SCORE=0
     else
-	PLAYER1_SCORE1=`cat ${CURRENT_SCORE_TEXT}`
+	PLAYER1_SCORE=`cat ${CURRENT_SCORE_TEXT}`
     fi
     ## Player2
-    do_tetris 0 "https://github.com/${PLAYER2_NAME}/tetris" "${PLAYER2_BRANCH}" 2 1000 1234
+    do_tetris 0 "https://github.com/${PLAYER2_NAME}/tetris" "${PLAYER2_BRANCH}" 2 1000 "${RANDOM_SEED}"
     RET=$?
     if [ $RET -ne 0 ]; then
 	PLAYER2_SCORE=0
     else
-	PLAYER2_SCORE1=`cat ${CURRENT_SCORE_TEXT}`
+	PLAYER2_SCORE=`cat ${CURRENT_SCORE_TEXT}`
     fi
+    echo "${PLAYER1_}:${PLAYER1_SCORE},${PLAYER2_}:${PLAYER2_SCORE}" >> ${RESULT_TEXT}
 
     if [ $PLAYER1_SCORE -gt $PLAYER2_SCORE ]; then
 	return 0 # win
@@ -130,6 +133,8 @@ function do_battle(){
 # 組み合わせ一覧表の順番に総当たり戦をする
 function do_battle_main() {
     #echo ${COMBINATION_LIST[@]}
+
+    echo -n > ${RESULT_TEXT}    
     for i in ${COMBINATION_LIST[@]}; do
 
         # 変数を取得
@@ -171,15 +176,23 @@ function get_result() {
     #echo ${RESULT_LIST[@]}
     echo "--- Result"
     count=0
+    echo -n > ${RESULT_MATRIX_TEXT}
     for i in ${COMBINATION_LIST[@]}; do
 
 	PLAYER1_NUM=`echo ${i} | cut -d'_' -f1`
 	PLAYER2_NUM=`echo ${i} | cut -d'_' -f2`
 	RESULT=${RESULT_LIST[${count}]}
 
+        # 対象PLAYERの名前を出力する
+	TMP_NUM=`expr $count % ${#PLAYERS[@]}`
+	if [ "${TMP_NUM}" == "0" ]; then
+	    PLAYER1=${PLAYERS[${PLAYER1_NUM}]}
+	    echo -n "${PLAYER1}," >> ${RESULT_MATRIX_TEXT}
+	fi
+	
         # 結果を出力
 	if [ ${PLAYER1_NUM} -lt ${PLAYER2_NUM} ]; then
-	    echo -n "${RESULT},"
+	    echo -n "${RESULT}," >> ${RESULT_MATRIX_TEXT}
 	elif [ ${PLAYER1_NUM} -gt ${PLAYER2_NUM} ]; then
             # 既存の結果を再利用(総当たり表の反対側の要素を取得)
 	    AA=`expr ${count} / ${#PLAYERS[@]}`
@@ -187,26 +200,37 @@ function get_result() {
 	    CC=`expr ${BB} \* ${#PLAYERS[@]} + ${AA}`
 	    RESULT=${RESULT_LIST[${CC}]}
 	    if [ "${RESULT}" == "W" ]; then
-		echo -n "L,"
+		echo -n "L," >> ${RESULT_MATRIX_TEXT}
 	    elif [ "${RESULT}" == "L" ]; then
-		echo -n "W,"
+		echo -n "W," >> ${RESULT_MATRIX_TEXT}
 	    else
-		echo -n "D," # draw
+		echo -n "D," >> ${RESULT_MATRIX_TEXT} # draw
 	    fi
 	else
-	    echo -n "-,"
+	    echo -n "-," >> ${RESULT_MATRIX_TEXT}
 	fi
 
         # PLAYERS分だけループ処理したら改行する
 	count=`expr $count + 1`
 	TMP_NUM=`expr $count % ${#PLAYERS[@]}`
 	if [ "${TMP_NUM}" == "0" ]; then
-	    echo ""
+	    echo "" >> ${RESULT_MATRIX_TEXT}
 	fi
     done
+    cat ${RESULT_MATRIX_TEXT}
+}
+
+function upload_result() {
+    echo "--- upload result"
+    echo "--- result_matrix.txt"
+    cat ${RESULT_MATRIX_TEXT}
+    echo "--- result.txt"
+    cat ${RESULT_TEXT}
 }
 
 print_debug
 get_combination_list
 do_battle_main
 get_result
+upload_result
+
