@@ -2,14 +2,14 @@
 
 # プレーヤ一覧を取得する
 PLAYERS=(
-#    "isshy-you@ish04e"
-#    "isshy-you@ish04f"
-#    "isshy-you@ish05a"
-#    "isshy-you@ish05b"
-#    "isshy-you@ish05c"
-#    "isshy-you@ish05d"
-#    "isshy-you@ish05f"
-#    "isshy-you@ish05g3"
+    "isshy-you@ish04e"
+    "isshy-you@ish04f"
+    "isshy-you@ish05a"
+    "isshy-you@ish05b"
+    "isshy-you@ish05c"
+    "isshy-you@ish05d"
+    "isshy-you@ish05f"
+    "isshy-you@ish05g3"
     "isshy-you@ish05g6"
     "isshy-you@ish05h3"
     "seigot@master"
@@ -249,8 +249,9 @@ function get_result() {
 
 function upload_result() {
 
-    RESULT_MD="result.md"
-    echo -n "" >> ${RESULT_MD}
+    today=$(date +"%Y%m%d%H%M")
+    RESULT_MD="result_${today}.md"
+    echo -n "" > ${RESULT_MD}
     echo "--- upload result"
 
     echo "--- player.txt"
@@ -263,6 +264,10 @@ function upload_result() {
     echo "## result(matrix)" >> ${RESULT_MD}
     echo "W:win, L:lose, D:draw" >> ${RESULT_MD}
     cat ${RESULT_MATRIX_TEXT} | sed -e "s/,\$//" | csvtomd >> ${RESULT_MD} >> ${RESULT_MD}
+
+    echo "--- result summary"
+    echo "## result(summary)" >> ${RESULT_MD}
+    cat ${RESULT_MATRIX_TEXT} | tail -n+2 | python3 get_result_summary.py | csvtomd >> ${RESULT_MD}
 
     echo "--- result.txt"
     cat ${RESULT_TEXT}
