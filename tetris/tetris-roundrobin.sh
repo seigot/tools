@@ -2,14 +2,14 @@
 
 # プレーヤ一覧を取得する
 PLAYERS=(
-    "isshy-you@ish04e"
-    "isshy-you@ish04f"
-    "isshy-you@ish05a"
-    "isshy-you@ish05b"
-    "isshy-you@ish05c"
-    "isshy-you@ish05d"
-    "isshy-you@ish05f"
-    "isshy-you@ish05g3"
+#    "isshy-you@ish04e"
+#    "isshy-you@ish04f"
+#    "isshy-you@ish05a"
+#    "isshy-you@ish05b"
+#    "isshy-you@ish05c"
+#    "isshy-you@ish05d"
+#    "isshy-you@ish05f"
+#    "isshy-you@ish05g3"
     "isshy-you@ish05g6"
     "isshy-you@ish05h3"
     "seigot@master"
@@ -102,6 +102,7 @@ function do_tetris(){
 function do_battle(){
     local PLAYER1_=${1}
     local PLAYER2_=${2}
+    local LEVEL_=${3}
     local RANDOM_SEED=${RANDOM}
 
     #echo "${PLAYER1}, ${PLAYER2}"
@@ -110,7 +111,7 @@ function do_battle(){
     PLAYER2_NAME=`echo ${PLAYER2_} | cut -d'@' -f1`
     PLAYER2_BRANCH=`echo ${PLAYER2_} | cut -d'@' -f2`
     ## Player1
-    do_tetris 0 "https://github.com/${PLAYER1_NAME}/tetris" "${PLAYER1_BRANCH}" 2 1000 "${RANDOM_SEED}"
+    do_tetris 0 "https://github.com/${PLAYER1_NAME}/tetris" "${PLAYER1_BRANCH}" "${LEVEL_}" 1000 "${RANDOM_SEED}"
     RET=$?
     if [ $RET -ne 0 ]; then
 	PLAYER1_SCORE=0
@@ -118,7 +119,7 @@ function do_battle(){
 	PLAYER1_SCORE=`cat ${CURRENT_SCORE_TEXT}`
     fi
     ## Player2
-    do_tetris 0 "https://github.com/${PLAYER2_NAME}/tetris" "${PLAYER2_BRANCH}" 2 1000 "${RANDOM_SEED}"
+    do_tetris 0 "https://github.com/${PLAYER2_NAME}/tetris" "${PLAYER2_BRANCH}" "${LEVEL_}" 1000 "${RANDOM_SEED}"
     RET=$?
     if [ $RET -ne 0 ]; then
 	PLAYER2_SCORE=0
@@ -147,6 +148,8 @@ function do_battle(){
 
 # 組み合わせ一覧表の順番に総当たり戦をする
 function do_battle_main() {
+
+    local LEVEL=${1}
     #echo ${COMBINATION_LIST[@]}
 
     #echo -n > ${RESULT_TEXT}
@@ -171,7 +174,7 @@ function do_battle_main() {
 
         # 対戦必要な組み合わせの場合
         # ここで対戦する(PLAYER1 vs PLAYER2) -->
-	do_battle "${PLAYER1}" "${PLAYER2}"
+	do_battle "${PLAYER1}" "${PLAYER2}" "${LEVEL}"
 	RET=$?
 	if [ $RET -eq 0 ]; then
 	    RESULT="W"
@@ -249,8 +252,10 @@ function get_result() {
 
 function upload_result() {
 
+    local LEVEL=${1}
+    
     today=$(date +"%Y%m%d%H%M")
-    RESULT_MD="result_${today}.md"
+    RESULT_MD="result_Level${LEVEL}_${today}.md"
     echo -n "" > ${RESULT_MD}
     echo "--- upload result"
 
@@ -280,9 +285,13 @@ function upload_result() {
     git push
 }
 
-printPlayerList
-get_combination_list
-do_battle_main
-get_result
-upload_result
+function main(){
+    LEVEL=2
+    printPlayerList
+    get_combination_list
+    do_battle_main ${LEVEL}
+    get_result
+    upload_result ${LEVEL}
+}
 
+main
