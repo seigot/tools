@@ -27,6 +27,20 @@ isshy-you@ish05g3      |  L  |  L  |  W  |  W  |  W  |  W  |  W  |  -  |  D  |  
 isshy-you@ish05g6      |  W  |  W  |  W  |  W  |  W  |  L  |  W  |  D  |  -  |  W   |  W
 isshy-you@ish05h3      |  L  |  W  |  L  |  W  |  L  |  W  |  W  |  L  |  L  |  -   |  W
 seigot@master          |  L  |  L  |  L  |  L  |  L  |  L  |  L  |  L  |  L  |  L   |  -
+## result(summary)
+Player             |  W  |  L   |  D
+-------------------|-----|------|---
+isshy-you@ish05g6  |  8  |  1   |  1
+isshy-you@ish05g3  |  7  |  2   |  1
+isshy-you@ish05f   |  6  |  4   |  0
+isshy-you@ish04f   |  5  |  5   |  0
+isshy-you@ish05a   |  5  |  5   |  0
+isshy-you@ish05h3  |  5  |  5   |  0
+isshy-you@ish05c   |  5  |  4   |  1
+isshy-you@ish05d   |  5  |  4   |  1
+isshy-you@ish04e   |  4  |  6   |  0
+isshy-you@ish05b   |  3  |  7   |  0
+seigot@master      |  0  |  10  |  0
 ## result(detail)
 GameNo  |  player1                  |  player2
 --------|---------------------------|-------------------------
