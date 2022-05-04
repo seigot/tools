@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # プレーヤ一覧を取得する
-PLAYERS=(
+PLAYERS=()
+#PLAYERS=(
 #    "isshy-you@ish04e"
 #    "isshy-you@ish04f"
 #    "isshy-you@ish05a"
@@ -10,12 +11,56 @@ PLAYERS=(
 #    "isshy-you@ish05d"
 #    "isshy-you@ish05f"
 #    "isshy-you@ish05g3"
-    "isshy-you@ish05g6"
-    "isshy-you@ish05h3"
-    "seigot@master"
-)
+#    "isshy-you@ish05g6"
+#    "isshy-you@ish05h3"
+#    "seigot@master"
+#)
+function get_target_player_list(){
 
-# Debug
+    local LEVEL=${1}
+    RESULT_LEVEL_X_CSV="result_level_${LEVEL}.csv"
+    rm -f ${RESULT_LEVEL_X_CSV}
+
+    # 入力ファイルを取得
+    wget https://raw.githubusercontent.com/seigot/tetris_score_server/main/log/${RESULT_LEVEL_X_CSV}
+
+    # 入力ファイルから対象Playerを取得して配列に格納する
+    TARGET_LIST=()
+    TARGET_LIST_UNIQ=()
+    #COMPARE_DATE=`date --date '8 week ago' +"%Y%m%d"`
+    COMPARE_DATE=`date --date '10 week ago' +"%Y%m%d"`
+
+    while read -r line
+    do
+        # skip first line
+        CHECK_STR=`echo $line | cut -d, -f1`
+        if [ "$CHECK_STR" == "DATETIME" ]; then
+            continue
+        fi
+
+        # skip past line
+        TARGET_DATE=`echo $line | cut -d, -f1 | cut -d_ -f1 | sed -E 's/[\/|\_|\:]//g'`
+        if [ $TARGET_DATE -lt $COMPARE_DATE ]; then
+            continue
+        fi
+
+        # get target string
+        TARGET_UNAME=`echo ${line} | cut -d, -f2 | cut -d/ -f4`
+        TARGET_BRANCH=`echo ${line} | cut -d, -f3 | sed -e 's/ //g'`
+        TARGET_STR="${TARGET_UNAME}@${TARGET_BRANCH}"
+        TARGET_LIST+=(${TARGET_STR})
+    done < ${RESULT_LEVEL_X_CSV}
+
+    # 重複を削除
+    i=0
+    while read -r x; do
+          TARGET_LIST_UNIQ[i++]="$x"
+    done < <(printf '%s\n' "${TARGET_LIST[@]}" | sort -u)
+    PLAYERS=(${TARGET_LIST_UNIQ[@]})
+    echo ${PLAYERS[@]}
+}
+
+# Player一覧を次の処理のためにファイル出力する
 PLAYER_TEXT="player.txt"
 function printPlayerList() {
     echo "--- PlayerList"
@@ -287,11 +332,12 @@ function upload_result() {
 
 function main(){
     LEVEL=2
+    get_target_player_list ${LEVEL}
     printPlayerList
-    get_combination_list
-    do_battle_main ${LEVEL}
-    get_result
-    upload_result ${LEVEL}
+#    get_combination_list
+#    do_battle_main ${LEVEL}
+#    get_result
+#    upload_result ${LEVEL}
 }
 
 main
