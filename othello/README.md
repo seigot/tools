@@ -1,5 +1,7 @@
+#### Respect
 [https://www.codingame.com/ide/puzzle/othello-1](https://www.codingame.com/ide/puzzle/othello-1)  
-[othello AIの教科書](https://note.com/nyanyan_cubetech/m/m54104c8d2f12)
+[othello AIの教科書](https://note.com/nyanyan_cubetech/m/m54104c8d2f12)  
+[https://github.com/Nyanyan/Egaroucid5](https://github.com/Nyanyan/Egaroucid5)
 
 ```
 Game Input
