@@ -1,4 +1,5 @@
-[https://www.codingame.com/ide/puzzle/othello-1](https://www.codingame.com/ide/puzzle/othello-1)
+[https://www.codingame.com/ide/puzzle/othello-1](https://www.codingame.com/ide/puzzle/othello-1)  
+[othello AIの教科書](https://note.com/nyanyan_cubetech/m/m54104c8d2f12)
 
 ```
 Game Input
