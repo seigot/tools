@@ -10,6 +10,11 @@ print(c.values())
 for i in c.values():
     print(i)
 
+d = Counter([1, 3, 5, 6, 8])
+print(d.values())
+for i in d.values():
+    print(i)
+
 #Counter({'a': 4, 'c': 2, 'b': 1})
 #4
 #1
