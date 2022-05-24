@@ -59,7 +59,7 @@ def is_inside(y, x):
 
 def get_legal_grid_list(myColor, board):
     # init parameter
-    hw=8
+    hw=board_size
     board_is_legal = [[0 for j in range(hw)]for i in range(hw)] # hw*hw matrix
     dy = [0, 1, 0, -1, 1, 1, -1, -1] # for search all(8) direction
     dx = [1, 0, -1, 0, 1, -1, 1, -1] # for search all(8) direction

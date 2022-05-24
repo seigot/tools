@@ -3,6 +3,7 @@
 import subprocess
 from othello_py import *
 import tkinter
+import sys
 
 offset_y = 10
 offset_x = 10
@@ -10,7 +11,7 @@ rect_size = 60
 circle_offset = 3
 
 ai_player = int(input('AI moves (0: black 1: white): '))
-ai2_player = 1 if ai_player == 0 else 0
+ai2_player = 1 - ai_player
 #ai_exe = subprocess.Popen('./a.exe'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 ai_exe = subprocess.Popen('python testai.py'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 ai2_exe = subprocess.Popen('python testai2.py'.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -31,8 +32,14 @@ pixel_virtual = tkinter.PhotoImage(width=1, height=1)
 
 def on_closing():
     global ai_exe
+    global ai2_exe
+    print("on_closing")
+#    app.quit()
+#    app.destroy()
     ai_exe.kill()
+    ai2_exe.kill()
     app.destroy()
+    sys.exit(0)
 
 app.protocol("WM_DELETE_WINDOW", on_closing)
 
@@ -67,6 +74,7 @@ def end_game():
         result += hw2 - sum(o.n_stones)
     elif result < 0:
         result -= hw2 - sum(o.n_stones)
+    on_closing()
 
 def translate_coord(y, x):
     return chr(ord('a') + x) + str(y + 1)
@@ -102,8 +110,8 @@ def ai():
         if not o.check_legal():
             o.print_info()
             o.player = -1
-            end_game()
             print('end')
+            end_game()
     s = ''
     if o.player == 0:
         s += '*'
@@ -154,8 +162,8 @@ def ai2():
         if not o.check_legal():
             o.print_info()
             o.player = -1
-            end_game()
             print('end')
+            end_game()
     s = ''
     if o.player == 0:
         s += '*'
@@ -189,8 +197,8 @@ def get_coord(event):
         if not o.check_legal():
             o.print_info()
             o.player = -1
-            end_game()
             print('end')
+            end_game()
     s = ''
     if o.player == 0:
         s += '*'
@@ -215,8 +223,6 @@ def show_grid():
         button.place_forget()
     legal_buttons = []
 
-#    if o.player == ai2_player:
-#        app.after(300, ai2)
     # 描画する
     # ユーザからの入力を待つ??
     for y in range(hw):
@@ -235,11 +241,9 @@ def show_grid():
             elif o.grid[y][x] == legal:
                 if o.player != ai_player:
                     # ユーザ入力用のボタンを埋め込む
-#                    app.after(300, ai2)
                     color = '#3498db'
                     legal_buttons.append(tkinter.Button(canvas, image=pixel_virtual, width=rect_size - circle_offset * 2, height=rect_size - circle_offset * 2, bg=color, text=str(y) + '_' + str(x)))
                     legal_buttons[-1].bind('<ButtonPress>', get_coord)
-#                    legal_buttons[-1].bind('<ButtonPress>', ai2)
                     legal_buttons[-1].place(y=offset_y + rect_size * y, x=offset_x + rect_size * x)
                 continue
             canvas.create_oval(offset_x + rect_size * x + circle_offset, offset_y + rect_size * y + circle_offset, offset_x + rect_size * (x + 1) - circle_offset, offset_y + rect_size * (y + 1) - circle_offset, width=0, fill=color, tag=str(y) + '_' + str(x))
@@ -250,5 +254,7 @@ def show_grid():
 
 
 canvas.place(y=0, x=0)
-start()
+#start()
+app.after(10, start) #add
+print("mainloop")
 app.mainloop()
