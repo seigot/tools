@@ -1,0 +1,70 @@
+diff --git a/game_manager/game_manager.py b/game_manager/game_manager.py
+index 55e53f7..4cda166 100644
+--- a/game_manager/game_manager.py
++++ b/game_manager/game_manager.py
+@@ -227,6 +227,7 @@ class Game_Manager(QMainWindow):
+                                   },
+                             "option":
+                                 {
++                                  "reset_callback_function_addr": None,
+                                   "reset_all_field": None,
+                                 }
+                             }
+@@ -307,13 +308,18 @@ class Game_Manager(QMainWindow):
+             # check reset field
+             if BOARD_DATA.currentY < 1:
+                 # if Piece cannot movedown and stack, reset field
+-                print("reset field.")
+-                self.resetfield()
++                if self.nextMove["option"]["reset_callback_function_addr"] != None:
++                    # if necessary, call reset_callback_function
++                    reset_callback_function = self.nextMove["option"]["reset_callback_function_addr"]
++                    reset_callback_function()
+ 
+-            # reset all field if debug option is enabled
+-            if self.nextMove["option"]["reset_all_field"] == True:
+-                print("reset all field.")
+-                self.reset_all_field()
++                print("reset field.")
++                if self.nextMove["option"]["reset_all_field"] == True:
++                    # reset all field if debug option is enabled
++                    print("reset all field.")
++                    self.reset_all_field()
++                else:
++                    self.resetfield()
+ 
+             # init nextMove
+             self.nextMove = None
+diff --git a/game_manager/machine_learning/block_controller_train_sample.py b/game_manager/machine_learning/block_controller_train_sample.py
+index d14c8ee..9c48ec2 100644
+--- a/game_manager/machine_learning/block_controller_train_sample.py
++++ b/game_manager/machine_learning/block_controller_train_sample.py
+@@ -41,6 +41,8 @@ class Block_Controller(object):
+ 
+         # get data from GameStatus
+         self.mode = GameStatus["judge_info"]["mode"]
++        # current board info
++        self.board_backboard = GameStatus["field_info"]["backboard"]
+ 
+         if self.mode == "train":
+             # init parameter
+@@ -62,7 +64,8 @@ class Block_Controller(object):
+         nextMove["strategy"]["x"] = random.randint(0,9)
+         nextMove["strategy"]["y_operation"] = 1
+         nextMove["strategy"]["y_moveblocknum"] = random.randint(1,8)
+-        nextMove["option"]["reset_all_field"] = False
++        nextMove["option"]["reset_callback_function_addr"] = self.update
++        nextMove["option"]["reset_all_field"] = True
+         # search best nextMove <--
+ 
+         # return nextMove
+@@ -71,5 +74,10 @@ class Block_Controller(object):
+         print("###### BLOCK_CONTROLLER_TRAIN (mode:{}) ######".format(self.mode))
+         return nextMove
+ 
++    def update(self):
++        print("update")
++        print("=================================================>")
++        pprint.pprint(self.board_backboard, width = 61, compact = True)
++
+ BLOCK_CONTROLLER_TRAIN_SAMPLE = Block_Controller()
