@@ -45,10 +45,6 @@ jobs:
           git clone https://github.com/seigot/tetris
           cd tetris
           pip install -r requirements.txt
-          $Env:QT_QPA_PLATFORM = 'offscreen'
           python start.py -m sample -t 3 -f $HOME/result.json
-          # check result
-          jq . $HOME/result.json
-          SCORE=`jq ."judge_info"."score" $HOME/result.json`
-          echo "SCORE: $SCORE"
+          $Env:QT_QPA_PLATFORM = 'offscreen'
 
