@@ -52,12 +52,13 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
+
       - name: tetris
       # tetrisが動くかどうか確認(SCOREが入ればOK)
         run: |
           rm -rf tetris
           git clone https://github.com/seigot/tetris
-          cd tetris
+          pushd tetris
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           export QT_QPA_PLATFORM=offscreen
           python start.py -m sample -t 3 -f $HOME/result.json
@@ -66,3 +67,37 @@ jobs:
           SCORE=`jq ."judge_info"."score" $HOME/result.json`
           echo "SCORE: $SCORE"
           if [ $SCORE -lt 0 ]; then echo "error";exit 1; fi
+          popd
+
+      - name: tetris_DQN_sample
+        run: |
+          rm -rf tetris
+          git clone https://github.com/seigot/tetris
+          pushd tetris
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          export QT_QPA_PLATFORM=offscreen
+          python start.py -m predict_sample -l 2 -t 5 --predict_weight weight/DQN/sample_weight.pt
+          # check result
+          jq . $HOME/result.json
+          SCORE=`jq ."judge_info"."score" $HOME/result.json`
+          echo "SCORE: $SCORE"
+          if [ $SCORE -lt 0 ]; then echo "error";exit 1; fi
+          popd
+
+      - name: tetris_MLP_sample
+        run: |
+          rm -rf tetris
+          git clone https://github.com/seigot/tetris
+          pushd tetris
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          export QT_QPA_PLATFORM=offscreen
+          python start.py -m predict_sample2 -l 2 -t 5 --predict_weight weight/MLP/sample_weight.pt
+          # check result
+          jq . $HOME/result.json
+          SCORE=`jq ."judge_info"."score" $HOME/result.json`
+          echo "SCORE: $SCORE"
+          if [ $SCORE -lt 0 ]; then echo "error";exit 1; fi
+          popd
+
+
+
