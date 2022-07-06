@@ -41,7 +41,7 @@ jobs:
       - name: tetris
         shell: powershell
         run: |
-          rm -rf tetris
+          Remove-Item -Recurse -Force tetris
           git clone https://github.com/seigot/tetris
           cd tetris
           pip install -r requirements.txt
