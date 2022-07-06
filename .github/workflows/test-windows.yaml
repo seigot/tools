@@ -1,0 +1,28 @@
+name: test-windows
+on: 
+# push, pullrequest時にci実行
+    push:
+        paths-ignore:
+          - '.gitignore'
+          - 'LICENSE'
+          - '**.md'
+    pull_request:
+        paths-ignore:
+          - '.gitignore'
+          - 'LICENSE'
+          - '**.md'
+jobs:
+  build:
+    name: MSBuild
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Install Server-Media-Foundation
+        shell: powershell
+        run: |
+          msbuild -version
