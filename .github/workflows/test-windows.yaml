@@ -15,9 +15,19 @@ jobs:
   build:
     name: MSBuild
     runs-on: windows-latest
+
+    strategy:
+      matrix:
+        python-version: [3.9] # [3.5, 3.6, 3.7, 3.8]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
@@ -30,10 +40,7 @@ jobs:
       - name: Install related packages
         shell: powershell
         run: |
-          winget --version
-          winget install Git.Git 
           git --version
-          winget install python.python
           python --version
           pip install pyqt5
           pip install numpy
