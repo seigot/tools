@@ -37,7 +37,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyqt5
           pip install numpy
-          pip install -r requirements.txt
 
       - name: tetris
         shell: powershell
@@ -45,6 +44,7 @@ jobs:
           rm -rf tetris
           git clone https://github.com/seigot/tetris
           cd tetris
+          pip install -r requirements.txt
           export QT_QPA_PLATFORM=offscreen
           python start.py -m sample -t 3 -f $HOME/result.json
           # check result

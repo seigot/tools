@@ -43,7 +43,7 @@ jobs:
           sudo apt-get install -y python3-pyqt5
           sudo apt-get install -y git
           sudo apt-get install -y jq
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
@@ -58,6 +58,7 @@ jobs:
           rm -rf tetris
           git clone https://github.com/seigot/tetris
           cd tetris
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           export QT_QPA_PLATFORM=offscreen
           python start.py -m sample -t 3 -f $HOME/result.json
           # check result
