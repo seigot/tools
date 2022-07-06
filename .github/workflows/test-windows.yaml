@@ -50,6 +50,7 @@ jobs:
       - name: Do tetris
         shell: powershell
         run: |
+          rm -rf tetris
           git clone https://github.com/seigot/tetris
           cd tetris
           export QT_QPA_PLATFORM=offscreen

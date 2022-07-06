@@ -1,4 +1,4 @@
-name: test
+name: test-ubuntu
       
 on: 
 # push, pullrequest時にci実行
@@ -55,6 +55,7 @@ jobs:
       - name: tetris
       # tetrisが動くかどうか確認(SCOREが入ればOK)
         run: |
+          rm -rf tetris
           git clone https://github.com/seigot/tetris
           cd tetris
           export QT_QPA_PLATFORM=offscreen
