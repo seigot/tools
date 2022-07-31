@@ -6,20 +6,40 @@ SSHログイン<br>
 > https://qiita.com/seigot/items/a6eaebccfd427bb315b4
 > PC側で秘密鍵/公開鍵ペア生成する
 >```
-$ cd ~/.ssh
-$ ssh-keygen -t rsa -b 4096  # 鍵の名前は適当
-```
+>$ cd ~/.ssh
+>$ ssh-keygen -t rsa -b 4096  # 鍵の名前は適当
+>```
 
 ```
 $ ssh -p xxxxx seigot@xx.xx.xx.xx -i ~/.ssh/seigot_20220xxx
 ```
 
+## 1.現状の把握
 
+```
+１．システム構成の把握（プロセスやファイルの特定）
+２．ネットワーク構成の把握（port番号、通信の流れ、etc..）
+```
 
+#### サーバーで特定のポート番号を待ち受けているかどうかの確認
+> [lsofコマンド入門](https://qiita.com/hypermkt/items/905139168b0bc5c28ef2)
 
 ```
 $ sudo lsof -P -i:443
 ```
+
+#### プロセスの確認
+
+[psコマンド　チートシート](https://qiita.com/Higemal/items/6a1f2b4b870d67f67e4e)
+
+```
+$ ps -aux
+```
+
+
+
+## 2.xxx
+## 3.xxx
 
 ### 各種情報
 
