@@ -1,0 +1,66 @@
+diff --git a/game_manager/machine_learning/block_controller_train.py b/game_manager/machine_learning/block_controller_train.py
+index 017e467..f6492d5 100644
+--- a/game_manager/machine_learning/block_controller_train.py
++++ b/game_manager/machine_learning/block_controller_train.py
+@@ -101,8 +101,8 @@ class Block_Controller(object):
+                 self.model = torch.load(self.load_weight)
+                 self.model.eval()
+             
+-        if torch.cuda.is_available():
+-            self.model.cuda()
++        #if torch.cuda.is_available():
++        #    self.model.cuda()
+         
+         #=====Set hyper parameter=====
+         self.batch_size = cfg.train.batch_size
+@@ -505,8 +505,8 @@ class Block_Controller(object):
+             next_actions, next_states = zip(*next_steps.items())
+             next_states = torch.stack(next_states)
+                        
+-            if torch.cuda.is_available():
+-                next_states = next_states.cuda()
++            #if torch.cuda.is_available():
++            #    next_states = next_states.cuda()
+         
+             self.model.train()
+             with torch.no_grad():
+@@ -529,8 +529,8 @@ class Block_Controller(object):
+                 next２_steps =self.get_next_func(next_backboard,next_piece_id,next_shape_class)
+                 next2_actions, next2_states = zip(*next２_steps.items())
+                 next2_states = torch.stack(next2_states)
+-                if torch.cuda.is_available():
+-                    next2_states = next2_states.cuda()
++                #if torch.cuda.is_available():
++                #    next2_states = next2_states.cuda()
+                 self.model.train()
+                 with torch.no_grad():
+                     next_predictions = self.model(next2_states)[:, 0]
+@@ -543,8 +543,8 @@ class Block_Controller(object):
+                 next２_steps =self.get_next_func(next_backboard,next_piece_id,next_shape_class)
+                 next2_actions, next2_states = zip(*next２_steps.items())
+                 next2_states = torch.stack(next2_states)
+-                if torch.cuda.is_available():
+-                    next2_states = next2_states.cuda()
++                #if torch.cuda.is_available():
++                #    next2_states = next2_states.cuda()
+                 self.target_model.train()
+                 with torch.no_grad():
+                     next_predictions = self.target_model(next2_states)[:, 0]
+@@ -557,8 +557,8 @@ class Block_Controller(object):
+                 next２_steps =self.get_next_func(next_backboard,next_piece_id,next_shape_class)
+                 next2_actions, next2_states = zip(*next２_steps.items())
+                 next2_states = torch.stack(next2_states)
+-                if torch.cuda.is_available():
+-                    next2_states = next2_states.cuda()
++                #if torch.cuda.is_available():
++                #    next2_states = next2_states.cuda()
+                 self.model.train()
+                 with torch.no_grad():
+                     next_predictions = self.model(next2_states)[:, 0]
+@@ -654,4 +654,4 @@ class Block_Controller(object):
+         for _x, _y in coordArray:
+             _board[(_y + dy) * self.board_data_width + _x] = Shape_class.shape
+         return _board
+-BLOCK_CONTROLLER_TRAIN = Block_Controller()
+\ No newline at end of file
++BLOCK_CONTROLLER_TRAIN = Block_Controller()
