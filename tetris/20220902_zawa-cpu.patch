@@ -1,0 +1,13 @@
+diff --git a/game_manager/block_controller_sample.py b/game_manager/block_controller_sample.py
+index 8d61b73..ff876a4 100644
+--- a/game_manager/block_controller_sample.py
++++ b/game_manager/block_controller_sample.py
+@@ -203,7 +203,7 @@ class Block_Controller(object):
+         #### maxDy
+         #maxDy = max(BlockMaxY) - min(BlockMaxY)
+         #### maxHeight
+-        #maxHeight = max(BlockMaxY) - fullLines
++        maxHeight = max(BlockMaxY) - fullLines
+ 
+         ## statistical data
+         #### stdY
