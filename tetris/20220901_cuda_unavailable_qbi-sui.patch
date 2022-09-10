@@ -1,8 +1,8 @@
 diff --git a/game_manager/machine_learning/block_controller_train.py b/game_manager/machine_learning/block_controller_train.py
-index e2408b3..67e2208 100644
+index 8f099db..a0780da 100644
 --- a/game_manager/machine_learning/block_controller_train.py
 +++ b/game_manager/machine_learning/block_controller_train.py
-@@ -130,8 +130,8 @@ class Block_Controller(object):
+@@ -143,8 +143,8 @@ class Block_Controller(object):
                      print("Finetuning mode\nLoad {}...".format(self.ft_weight), file=f)
                  
              
@@ -13,9 +13,9 @@ index e2408b3..67e2208 100644
          
          #=====Set hyper parameter=====
          self.batch_size = cfg["train"]["batch_size"]
-@@ -587,8 +587,8 @@ class Block_Controller(object):
-             next_actions, next_states = zip(*next_steps.items())
-             next_states = torch.stack(next_states)
+@@ -614,8 +614,8 @@ class Block_Controller(object):
+             #next_mino = next_mino.dtype(np.double)
+             #print(next_mino)
                         
 -            if torch.cuda.is_available():
 -                next_states = next_states.cuda()
@@ -24,39 +24,39 @@ index e2408b3..67e2208 100644
          
              self.model.train()
              with torch.no_grad():
-@@ -611,8 +611,8 @@ class Block_Controller(object):
-                 next２_steps =self.get_next_func(next_backboard,next_piece_id,next_shape_class)
-                 next2_actions, next2_states = zip(*next２_steps.items())
+@@ -640,8 +640,8 @@ class Block_Controller(object):
                  next2_states = torch.stack(next2_states)
+                 next2_mino = self.shape_image[next2_piece_id]
+                 next2_mino = next2_mino.unsqueeze(0).float()
 -                if torch.cuda.is_available():
 -                    next2_states = next2_states.cuda()
 +#                if torch.cuda.is_available():
 +#                    next2_states = next2_states.cuda()
                  self.model.train()
                  with torch.no_grad():
-                     next_predictions = self.model(next2_states)[:, 0]
-@@ -625,8 +625,8 @@ class Block_Controller(object):
-                 next２_steps =self.get_next_func(next_backboard,next_piece_id,next_shape_class)
-                 next2_actions, next2_states = zip(*next２_steps.items())
-                 next2_states = torch.stack(next2_states)
+                     next_predictions = self.model(next2_states,next2_mino)[:, 0]
+@@ -657,8 +657,8 @@ class Block_Controller(object):
+                 next2_mino = self.shape_image[next2_piece_id]
+                 next2_mino = next2_mino.unsqueeze(0).float()
+                 
 -                if torch.cuda.is_available():
 -                    next2_states = next2_states.cuda()
 +#                if torch.cuda.is_available():
 +#                    next2_states = next2_states.cuda()
                  self.target_model.train()
                  with torch.no_grad():
-                     next_predictions = self.target_model(next2_states)[:, 0]
-@@ -639,8 +639,8 @@ class Block_Controller(object):
-                 next２_steps =self.get_next_func(next_backboard,next_piece_id,next_shape_class)
-                 next2_actions, next2_states = zip(*next２_steps.items())
+                     next_predictions = self.target_model(next2_states,next2_mino)[:, 0]
+@@ -673,8 +673,8 @@ class Block_Controller(object):
                  next2_states = torch.stack(next2_states)
+                 next2_mino = self.shape_image[next2_piece_id]
+                 next2_mino = next2_mino.unsqueeze(0).float()
 -                if torch.cuda.is_available():
 -                    next2_states = next2_states.cuda()
 +#                if torch.cuda.is_available():
 +#                    next2_states = next2_states.cuda()
                  self.model.train()
                  with torch.no_grad():
-                     next_predictions = self.model(next2_states)[:, 0]
+                     next_predictions = self.model(next2_states,next2_mino)[:, 0]
 diff --git a/game_manager/machine_learning/block_controller_train_sample.py b/game_manager/machine_learning/block_controller_train_sample.py
 index e19bae1..dd4d92f 100644
 --- a/game_manager/machine_learning/block_controller_train_sample.py
