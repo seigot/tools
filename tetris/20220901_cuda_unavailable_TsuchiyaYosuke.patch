@@ -10,35 +10,65 @@ index b294234..5c422c3 100644
          # return nextMove
          print("===", datetime.now() - t1)
          print(nextMove)
-diff --git a/game_manager/game_manager.py b/game_manager/game_manager.py
-index f9f4204..c95ad25 100644
---- a/game_manager/game_manager.py
-+++ b/game_manager/game_manager.py
-@@ -101,7 +101,7 @@ class Game_Manager(QMainWindow):
-                           self.BlockNumMax)
-         if args.game_time >= 0:
-             self.game_time = args.game_time
--        if args.mode in ("keyboard", "gamepad", "sample", "train", "predict", "train_sample_qlearning", "predict_sample_qlearing", "train_sample2", "predict_sample2"):
-+        if args.mode in ("keyboard", "gamepad", "sample", "train", "predict", "train_sample_qlearning", "predict_sample_qlearning", "train_sample2", "predict_sample2"):
-             self.mode = args.mode
-         if args.drop_interval >= 0:
-             self.drop_interval = args.drop_interval
-@@ -254,11 +254,14 @@ class Game_Manager(QMainWindow):
-                 # get nextMove from GameController
-                 GameStatus = self.getGameStatus()
- 
-+
-+                print("MODE", self.mode)
-+                
-                 if self.mode == "sample":
-                     # sample
-                     self.nextMove = BLOCK_CONTROLLER_SAMPLE.GetNextMove(nextMove, GameStatus)
- 
--                elif self.mode == "train_sample_qlearning" or self.mode == "predict_sample_qlearing":
-+                elif self.mode == "train_sample_qlearning" or self.mode == "predict_sample_qlearning":
-                     # sample train/predict
-                     # import block_controller_train_sample, it's necessary to install pytorch to use.
-                     from q_learning.block_controller_train_sample import BLOCK_CONTROLLER_TRAIN_SAMPLE as BLOCK_CONTROLLER_TRAIN
+diff --git a/game_manager/q_learning/block_controller_train.py b/game_manager/q_learning/block_controller_train.py
+index 5a148d7..8cdfb52 100644
+--- a/game_manager/q_learning/block_controller_train.py
++++ b/game_manager/q_learning/block_controller_train.py
+@@ -123,8 +123,8 @@ class Block_Controller(object):
+                     print("Finetuning mode\nLoad {}".format(self.ft_weight), file=f)
+                 
+             
+-        if torch.cuda.is_available():
+-            self.model.cuda()
++#        if torch.cuda.is_available():
++#            self.model.cuda()
+         
+         self.batch_size = config["train"]["batch_size"]
+         self.lr = config["train"]["lr"]
+@@ -489,8 +489,8 @@ class Block_Controller(object):
+             next_actions, next_states = zip(*next_steps.items())
+             next_states = torch.stack(next_states)
+                        
+-            if torch.cuda.is_available():
+-                next_states = next_states.cuda()
++#            if torch.cuda.is_available():
++#                next_states = next_states.cuda()
+         
+             self.model.train()
+             with torch.no_grad():
+@@ -511,8 +511,8 @@ class Block_Controller(object):
+                 next２_steps =self.get_next_func(next_backboard,next_piece_id,next_shape_class)
+                 next2_actions, next2_states = zip(*next２_steps.items())
+                 next2_states = torch.stack(next2_states)
+-                if torch.cuda.is_available():
+-                    next2_states = next2_states.cuda()
++#                if torch.cuda.is_available():
++#                    next2_states = next2_states.cuda()
+                 self.model.train()
+                 with torch.no_grad():
+                     next_predictions = self.model(next2_states)[:, 0]
+@@ -523,8 +523,8 @@ class Block_Controller(object):
+                 next２_steps =self.get_next_func(next_backboard,next_piece_id,next_shape_class)
+                 next2_actions, next2_states = zip(*next２_steps.items())
+                 next2_states = torch.stack(next2_states)
+-                if torch.cuda.is_available():
+-                    next2_states = next2_states.cuda()
++#                if torch.cuda.is_available():
++#                    next2_states = next2_states.cuda()
+                 self.target_model.train()
+                 with torch.no_grad():
+                     next_predictions = self.target_model(next2_states)[:, 0]
+@@ -535,8 +535,8 @@ class Block_Controller(object):
+                 next２_steps =self.get_next_func(next_backboard,next_piece_id,next_shape_class)
+                 next2_actions, next2_states = zip(*next２_steps.items())
+                 next2_states = torch.stack(next2_states)
+-                if torch.cuda.is_available():
+-                    next2_states = next2_states.cuda()
++#                if torch.cuda.is_available():
++#                    next2_states = next2_states.cuda()
+                 self.model.train()
+                 with torch.no_grad():
+                     next_predictions = self.model(next2_states)[:, 0]
 diff --git a/game_manager/q_learning/block_controller_train_sample.py b/game_manager/q_learning/block_controller_train_sample.py
 index be22dbd..53893f7 100644
 --- a/game_manager/q_learning/block_controller_train_sample.py
@@ -98,24 +128,3 @@ index be22dbd..53893f7 100644
                  self.model.train()
                  with torch.no_grad():
                      next_predictions = self.model(next2_states)[:, 0]
-diff --git a/start.py b/start.py
-index e18f911..3165e4c 100644
---- a/start.py
-+++ b/start.py
-@@ -81,7 +81,7 @@ def start():
-         GAME_LEVEL = args.game_level
-     if args.game_time >= 0 or args.game_time == -1:
-         GAME_TIME = args.game_time
--    if args.mode in ("keyboard", "gamepad", "sample", "train", "predict", "train_sample_qlearning", "predict_sample_qlearing", "train_sample2", "predict_sample2"):
-+    if args.mode in ("keyboard", "gamepad", "sample", "train", "predict", "train_sample_qlearning", "predict_sample_qlearning", "train_sample2", "predict_sample2"):
-         IS_MODE = args.mode
-     if args.random_seed >= 0:
-         INPUT_RANDOM_SEED = args.random_seed
-@@ -154,6 +154,7 @@ def start():
-         + ' ' + '--ShapeListMax' + ' ' + str(SHAPE_LIST_MAX) \
-         + ' ' + '--BlockNumMax' + ' ' + str(BLOCK_NUM_MAX)
- 
-+    print(cmd)
-     ret = subprocess.run(cmd, shell=True)
-     if ret.returncode != 0:
-         print('error: subprocess failed.', file=sys.stderr)
