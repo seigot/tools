@@ -56,7 +56,7 @@ jobs:
           python -c "import sys; print(sys.version)"
 
 
-      - name: tetris
+      - name: tetris_sample
       # tetrisが動くかどうか確認(SCOREが入ればOK)
         run: |
           # QT display off
