@@ -67,7 +67,7 @@ index b51c156..fca906b 100644
          newBackBoard = [0] * BoardData.width * BoardData.height
          newY = BoardData.height - 1
 diff --git a/game_manager/game_manager.py b/game_manager/game_manager.py
-index f5737b0..7a947be 100644
+index f5737b0..a9eecce 100644
 --- a/game_manager/game_manager.py
 +++ b/game_manager/game_manager.py
 @@ -131,7 +131,8 @@ class Game_Manager(QMainWindow):
@@ -156,7 +156,7 @@ index f5737b0..7a947be 100644
          for i in range(ShapeListLength):
              if i == 0:
                  # skip current shape
-@@ -731,6 +757,24 @@ class SidePanel(QFrame):
+@@ -731,6 +757,23 @@ class SidePanel(QFrame):
              for x, y in ShapeClass.getCoords(0, 0, -minY):
                  drawSquare(painter, x * self.gridSize + dx, y * self.gridSize + dy + y_offset, val, self.gridSize)
  
@@ -177,16 +177,6 @@ index f5737b0..7a947be 100644
 +            for x, y in holdShapeClass.getCoords(0, 0, -minY):
 +                drawSquare(painter, x * self.gridSize + dx, y * self.gridSize + dy + y_offset, val, self.gridSize)
 +
-+
  class Board(QFrame):
      msg2Statusbar = pyqtSignal(str)
  
-@@ -768,7 +812,7 @@ class Board(QFrame):
-             val = BOARD_DATA.currentShape.shape
-             drawSquare(painter, x * self.gridSize, y * self.gridSize, val, self.gridSize)
- 
--        # Draw a border
-+        # Draw a virtical border
-         painter.setPen(QColor(0x777777))
-         painter.drawLine(self.width()-1, 0, self.width()-1, self.height())
-         painter.setPen(QColor(0xCCCCCC))
