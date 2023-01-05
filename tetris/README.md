@@ -8,7 +8,7 @@ test
   subgraph ゲーム管理用プログラム/game_manager
     B1["init"]-->C1
     C1["main process in board manager.py"]
-    D1["main process in block controller.py"]
+    D1["main process in block controller.py<br>ここで現在のブロックの動作を決定する"]
     C1 --getNextMove--> D1
     D1 --NextMove--> C1
     subgraph ボード管理用プログラム/board_manager
@@ -23,6 +23,7 @@ test
   subgraph ゲーム開始用コマンド/start command
      A1[start.py] --> B1
   end
+style ブロック操作用プログラム/block_controller fill:#fef
 ```
 
 ## usb ssd に tetris環境構築できるかどうかのトライアル用
