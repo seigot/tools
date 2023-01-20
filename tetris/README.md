@@ -1,4 +1,32 @@
 test 
+
+# システム構成
+
+```mermaid
+  graph TB
+
+  subgraph ゲーム管理用プログラム
+    B1["game_manager.py"]
+    C1["board_manager.py"]
+    D1["block_controller.py<br>ここで現在のブロックの動作を決定する"]
+    B1 --update--> C1
+    B1 --getNextMove--> D1
+    D1 --NextMove--> B1
+    subgraph ボード管理用プログラム
+        C1
+    end
+    subgraph ブロック操作用プログラム
+        D1
+    end
+  end
+
+
+  subgraph ゲーム開始用コマンド
+     A1[start.py] --> B1
+  end
+style ブロック操作用プログラム fill:#fef
+```
+
 ## usb ssd に tetris環境構築できるかどうかのトライアル用
 
 作成中... 
