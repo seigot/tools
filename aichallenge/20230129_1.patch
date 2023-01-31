@@ -1,0 +1,115 @@
+diff --git a/autoware/aichallenge_ws/src/aichallenge_submit/obstacle_stop_planner_custom/config/obstacle_stop_planner.param.yaml b/autoware/aichallenge_ws/src/aichallenge_submit/obstacle_stop_planner_custom/config/obstacle_stop_planner.param.yaml
+index 48dba07..41fbb73 100644
+--- a/autoware/aichallenge_ws/src/aichallenge_submit/obstacle_stop_planner_custom/config/obstacle_stop_planner.param.yaml
++++ b/autoware/aichallenge_ws/src/aichallenge_submit/obstacle_stop_planner_custom/config/obstacle_stop_planner.param.yaml
+@@ -1,7 +1,7 @@
+ /**:
+   ros__parameters:
+     hunting_threshold: 0.5                   # even if the obstacle disappears, the stop judgment continues for hunting_threshold [s]
+-    max_velocity: 20.0                       # max velocity [m/s]
++    max_velocity: 13.0                       # max velocity [m/s]
+     enable_slow_down: False                  # whether to use slow down planner [-]
+     enable_z_axis_obstacle_filtering: True
+     z_axis_filtering_buffer: 0.0
+diff --git a/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/common/common.param.yaml b/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/common/common.param.yaml
+index a23570a..bc789a3 100644
+--- a/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/common/common.param.yaml
++++ b/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/common/common.param.yaml
+@@ -2,14 +2,14 @@
+   ros__parameters:
+     # constraints param for normal driving
+     normal:
+-      min_acc: -0.5         # min deceleration [m/ss]
+-      max_acc: 1.0          # max acceleration [m/ss]
+-      min_jerk: -0.5        # min jerk [m/sss]
+-      max_jerk: 1.0         # max jerk [m/sss]
++      min_acc: -7.0         # min deceleration [m/ss]
++      max_acc: 10.0          # max acceleration [m/ss]
++      min_jerk: -2.5        # min jerk [m/sss]
++      max_jerk: 3.0         # max jerk [m/sss]
+ 
+     # constraints to be observed
+     limit:
+-      min_acc: -2.5         # min deceleration limit [m/ss]
+-      max_acc: 1.0          # max acceleration limit [m/ss]
+-      min_jerk: -1.5        # min jerk limit [m/sss]
+-      max_jerk: 1.5         # max jerk limit [m/sss]
++      min_acc: -7.0         # min deceleration limit [m/ss]
++      max_acc: 10.0          # max acceleration limit [m/ss]
++      min_jerk: -3.5        # min jerk limit [m/sss]
++      max_jerk: 3.5         # max jerk limit [m/sss]
+diff --git a/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/common/motion_velocity_smoother/motion_velocity_smoother.param.yaml b/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/common/motion_velocity_smoother/motion_velocity_smoother.param.yaml
+index 91bc39b..1e42537 100644
+--- a/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/common/motion_velocity_smoother/motion_velocity_smoother.param.yaml
++++ b/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/common/motion_velocity_smoother/motion_velocity_smoother.param.yaml
+@@ -1,15 +1,15 @@
+ /**:
+   ros__parameters:
+     # motion state constraints
+-    max_velocity: 20.0      # max velocity limit [m/s]
++    max_velocity: 13.0      # max velocity limit [m/s]
+     stop_decel: 0.0         # deceleration at a stop point[m/ss]
+ 
+     # external velocity limit parameter
+     margin_to_insert_external_velocity_limit: 0.3   #  margin distance to insert external velocity limit [m]
+ 
+     # curve parameters
+-    max_lateral_accel: 0.8             # max lateral acceleration limit [m/ss]
+-    min_curve_velocity: 0.5            # min velocity at lateral acceleration limit and steering angle rate limit [m/s]
++    max_lateral_accel: 1.5             # max lateral acceleration limit [m/ss]
++    min_curve_velocity: 2.5            # min velocity at lateral acceleration limit and steering angle rate limit [m/s]
+     decel_distance_before_curve: 3.5   # slow speed distance before a curve for lateral acceleration limit
+     decel_distance_after_curve: 2.0    # slow speed distance after a curve for lateral acceleration limit
+ 
+diff --git a/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/avoidance/avoidance.param.yaml b/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/avoidance/avoidance.param.yaml
+index d691228..d944939 100644
+--- a/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/avoidance/avoidance.param.yaml
++++ b/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/avoidance/avoidance.param.yaml
+@@ -14,7 +14,7 @@
+       threshold_speed_object_is_stopped: 1.0      # [m/s]
+       object_check_forward_distance: 150.0        # [m]
+       object_check_backward_distance: 2.0         # [m]
+-      lateral_collision_margin: 1.0               # [m]
++      lateral_collision_margin: 2.0               # [m]
+       lateral_collision_safety_buffer: 0.7        # [m]
+ 
+       prepare_time: 2.0                           # [s]
+diff --git a/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/lane_change/lane_change.param.yaml b/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/lane_change/lane_change.param.yaml
+index 1a66bc0..1986d4c 100644
+--- a/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/lane_change/lane_change.param.yaml
++++ b/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/lane_change/lane_change.param.yaml
+@@ -7,7 +7,7 @@
+       lane_change_prepare_duration: 4.0
+       lane_changing_duration: 8.0
+       lane_change_finish_judge_buffer: 3.0
+-      minimum_lane_change_velocity: 5.6
++      minimum_lane_change_velocity: 20.0
+       prediction_duration: 8.0
+       prediction_time_resolution: 0.5
+       static_obstacle_velocity_thresh: 1.5
+diff --git a/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/behavior_planning/lane_change_planner/lane_change_planner.param.yaml b/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/behavior_planning/lane_change_planner/lane_change_planner.param.yaml
+index 0bf4238..75930f9 100644
+--- a/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/behavior_planning/lane_change_planner/lane_change_planner.param.yaml
++++ b/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/behavior_planning/lane_change_planner/lane_change_planner.param.yaml
+@@ -11,7 +11,7 @@
+     backward_length_buffer_for_end_of_lane: 5.0
+     lane_change_finish_judge_buffer: 3.0
+     minimum_lane_change_length: 12.0
+-    minimum_lane_change_velocity: 5.6
++    minimum_lane_change_velocity: 20.0
+     prediction_duration: 8.0
+     prediction_time_resolution: 0.5
+     drivable_area_resolution: 0.1
+diff --git a/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop_planner.param.yaml b/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop_planner.param.yaml
+index 91433f7..b15f89f 100644
+--- a/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop_planner.param.yaml
++++ b/autoware/aichallenge_ws/src/aichallenge_submit/tier4_planning_launch/config/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop_planner.param.yaml
+@@ -2,7 +2,7 @@
+   ros__parameters:
+     hunting_threshold: 0.5                   # even if the obstacle disappears, the stop judgment continues for hunting_threshold [s]
+     lowpass_gain: 0.9                        # gain parameter for low pass filter [-]
+-    max_velocity: 20.0                       # max velocity [m/s]
++    max_velocity: 13.0                       # max velocity [m/s]
+     enable_slow_down: False                  # whether to use slow down planner [-]
+     enable_z_axis_obstacle_filtering: True
+     z_axis_filtering_buffer: 0.0
