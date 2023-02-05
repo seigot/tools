@@ -1,0 +1,358 @@
+diff --git a/game_manager/board_manager.py b/game_manager/board_manager.py
+index d83e8c5..1e37182 100644
+--- a/game_manager/board_manager.py
++++ b/game_manager/board_manager.py
+@@ -146,6 +146,7 @@ class BoardData(object):
+         self.nextShapeIndexCnt = 0
+         self.nextShapeIndexList = [1,2,3,4,5,6,7]
+         self.nextShapeIndexListDXY = [[0,0,1] for _ in range(len(self.nextShapeIndexList))] # for art DXY config data
++        self.nextShapeMode = "default"
+         self.colorTable = [0x000000, 0xCC6666, 0x66CC66, 0x6666CC,
+                            0xCCCC66, 0xCC66CC, 0x66CCCC, 0xDAAA00]
+         self.tryMoveNextCnt = 0
+@@ -169,8 +170,9 @@ class BoardData(object):
+     #######################################
+     ## テトリミノ形状初期化
+     #######################################
+-    def init_shape_parameter(self, ShapeListMax):
++    def init_shape_parameter(self, ShapeListMax, nextShapeMode):
+         self.ShapeListMax = ShapeListMax
++        self.nextShapeMode = nextShapeMode
+ 
+     #######################################
+     ## 障害ブロック初期化
+@@ -330,6 +332,21 @@ class BoardData(object):
+         minX, maxX, minY, maxY = self.nextShape.getBoundingOffsets(0)
+         result = False
+ 
++        # nextShapeMode == "hate" mode
++        if self.nextShapeMode == "hate":
++            self.currentX = 5
++            self.currentY = -minY
++            self.currentDirection = 0
++            # get nextShape
++            self.ShapeList.pop(0)
++            self.ShapeList.append(Shape(self.getNewShapeIndexForHateMode()))
++            self.currentShape = self.ShapeList[1]
++            self.nextShape = self.ShapeList[1]
++            result = True
++            self.shape_info_stat[self.currentShape.shape] += 1
++            return result
++
++        # nextShapeMode == "default" mode
+         # check if nextShape can appear
+         if self.tryMoveNext(0, 5, -minY):
+             self.currentX = 5
+@@ -348,6 +365,7 @@ class BoardData(object):
+             self.currentY = -1
+             self.currentDirection = 0
+             result = False
++
+         self.shape_info_stat[self.currentShape.shape] += 1
+         return result
+ 
+@@ -568,4 +586,154 @@ class BoardData(object):
+                 if tmp_num <= obstacle_probability:
+                     self.backBoard[x + y * BoardData.width] = np_randomObstaclePiece.random.randint(1, 8)
+ 
++    #################################################
++    # 次のテトリミノの取得(HateMode用)
++    #################################################
++    def getNewShapeIndexForHateMode(self):
++        # テトリミノの現状形状取得
++
++        LatestHateEvalValue = 100000000
++        for ShapeIndex in range(1,8):
++            LatestEvalValue = 0
++            Shape_class = Shape(ShapeIndex)
++            _, _, CurrentShapeDirectionRange = self.getShapeDataFromShapeClass(Shape_class)
++            # search with current block Shape
++            for direction0 in CurrentShapeDirectionRange:
++                # search with x range
++                x0Min, x0Max = self.getSearchXRange(Shape_class, direction0)
++                for x0 in range(x0Min, x0Max):
++                    # get board data, as if dropdown block
++                    board = self.getBoard(self.backBoard, Shape_class, direction0, x0)
++                    EvalValue = self.calcEvaluationValueSample(board)
++                    if EvalValue > LatestEvalValue:
++                        strategy = (direction0, x0, 1, 1)
++                        LatestEvalValue = EvalValue
++            # save worst shape
++            if LatestEvalValue < LatestHateEvalValue:
++                HateShapeIndex = Shape_class.shape
++                LatestHateEvalValue = LatestEvalValue
++        return HateShapeIndex
++
++    def getSearchXRange(self, Shape_class, direction):
++        # get x range from shape direction.
++        width = self.width
++        minX, maxX, _, _ = Shape_class.getBoundingOffsets(direction) # get shape x offsets[minX,maxX] as relative value.
++        xMin = -1 * minX
++        xMax = width - maxX
++        return xMin, xMax
++
++    def getShapeCoordArray(self, Shape_class, direction, x, y):
++        # get coordinate array by given shape.
++        coordArray = Shape_class.getCoords(direction, x, y) # get array from shape direction, x, y.
++        return coordArray
++
++    def getBoard(self, board_backboard, Shape_class, direction, x):
++        # get new board.
++        # copy backboard data to make new board.
++        # if not, original backboard data will be updated later.
++        board = copy.deepcopy(board_backboard)
++        return self.dropDownOnBoard(board, Shape_class, direction, x)
++
++    def dropDownOnBoard(self, board, Shape_class, direction, x):
++        # internal function of getBoard.
++        # -- drop down the shape on the board.
++        width = self.width
++        height = self.height
++        dy = 22 - 1
++        coordArray = self.getShapeCoordArray(Shape_class, direction, x, 0)
++        # update dy
++        for _x, _y in coordArray:
++            _yy = 0
++            while _yy + _y < height and (_yy + _y < 0 or board[(_y + _yy) * width + _x] == 0):
++                _yy += 1
++            _yy -= 1
++            if _yy < dy:
++                dy = _yy
++        # get new board
++        _board = self.dropDownWithDy(board, Shape_class, direction, x, dy)
++        return _board
++
++    def dropDownWithDy(self, board, Shape_class, direction, x, dy):
++        # internal function of dropDown.
++        width = self.width
++        _board = board
++        coordArray = self.getShapeCoordArray(Shape_class, direction, x, 0)
++        for _x, _y in coordArray:
++            _board[(_y + dy) * width + _x] = Shape_class.shape
++        return _board
++
++    def calcEvaluationValueSample(self, board):
++        # sample function of evaluate board.
++        width = self.width
++        height = self.height
++
++        # evaluation paramters
++        ## lines to be removed
++        fullLines = 0
++        ## number of holes or blocks in the line.
++        nHoles, nIsolatedBlocks = 0, 0
++        ## absolute differencial value of MaxY
++        absDy = 0
++        ## how blocks are accumlated
++        BlockMaxY = [0] * width
++        holeCandidates = [0] * width
++        holeConfirm = [0] * width
++
++        ### check board
++        # each y line
++        for y in range(height - 1, 0, -1):
++            hasHole = False
++            hasBlock = False
++            # each x line
++            for x in range(width):
++                ## check if hole or block..
++                if board[y * self.width + x] == 0:
++                    # hole
++                    hasHole = True
++                    holeCandidates[x] += 1  # just candidates in each column..
++                else:
++                    # block
++                    hasBlock = True
++                    BlockMaxY[x] = height - y                # update blockMaxY
++                    if holeCandidates[x] > 0:
++                        holeConfirm[x] += holeCandidates[x]  # update number of holes in target column..
++                        holeCandidates[x] = 0                # reset
++                    if holeConfirm[x] > 0:
++                        nIsolatedBlocks += 1                 # update number of isolated blocks
++
++            if hasBlock == True and hasHole == False:
++                # filled with block
++                fullLines += 1
++            elif hasBlock == True and hasHole == True:
++                # do nothing
++                pass
++            elif hasBlock == False:
++                # no block line (and ofcourse no hole)
++                pass
++
++        # nHoles
++        for x in holeConfirm:
++            nHoles += abs(x)
++
++        ### absolute differencial value of MaxY
++        BlockMaxDy = []
++        for i in range(len(BlockMaxY) - 1):
++            val = BlockMaxY[i] - BlockMaxY[i+1]
++            BlockMaxDy += [val]
++        for x in BlockMaxDy:
++            absDy += abs(x)
++
++        #### maxDy
++        maxDy = max(BlockMaxY) - min(BlockMaxY)
++        #### maxHeight
++        maxHeight = max(BlockMaxY) - fullLines
++
++        # calc Evaluation Value
++        score = 0
++        score = score + fullLines * 100.0            # try to delete line 
++        score = score - nHoles * 1.0                 # try not to make hole
++        score = score - nIsolatedBlocks * 1.0        # try not to make isolated block
++        score = score - maxHeight * 1                # maxHeight
++        return score
++
+ BOARD_DATA = BoardData()
+diff --git a/game_manager/game_manager.py b/game_manager/game_manager.py
+index 07e91cf..b8c1b90 100644
+--- a/game_manager/game_manager.py
++++ b/game_manager/game_manager.py
+@@ -18,7 +18,7 @@ import pprint
+ ################################
+ # Option 取得
+ ###############################
+-def get_option(game_time, mode, drop_interval, random_seed, obstacle_height, obstacle_probability, resultlogjson, train_yaml, predict_weight, user_name, ShapeListMax, BlockNumMax, art_config_filepath):
++def get_option(game_time, mode, nextShapeMode, drop_interval, random_seed, obstacle_height, obstacle_probability, resultlogjson, train_yaml, predict_weight, user_name, ShapeListMax, BlockNumMax, art_config_filepath):
+     argparser = ArgumentParser()
+     argparser.add_argument('--game_time', type=int,
+                            default=game_time,
+@@ -26,6 +26,9 @@ def get_option(game_time, mode, drop_interval, random_seed, obstacle_height, obs
+     argparser.add_argument('--mode', type=str,
+                            default=mode,
+                            help='Specify mode (keyboard/gamepad/sample/train/art) if necessary')
++    argparser.add_argument('--nextShapeMode', type=str,
++                           default=nextShapeMode,
++                           help='Specify nextShapeMode (default/hate) if necessary')
+     argparser.add_argument('--drop_interval', type=int,
+                            default=drop_interval,
+                            help='Specify drop_interval(s)')
+@@ -89,6 +92,7 @@ class Game_Manager(QMainWindow):
+         self.game_time = -1
+         self.block_index = 0
+         self.mode = "default"
++        self.nextShapeMode = "default"
+         self.drop_interval = 1000
+         self.random_seed = time.time() * 10000000 # 0
+         self.obstacle_height = 0
+@@ -103,6 +107,7 @@ class Game_Manager(QMainWindow):
+         
+         args = get_option(self.game_time,
+                           self.mode,
++                          self.nextShapeMode,
+                           self.drop_interval,
+                           self.random_seed,
+                           self.obstacle_height,
+@@ -118,6 +123,8 @@ class Game_Manager(QMainWindow):
+             self.game_time = args.game_time
+         if args.mode in ("keyboard", "gamepad", "sample", "art", "train", "predict", "train_sample", "predict_sample", "train_sample2", "predict_sample2"):
+             self.mode = args.mode
++        if args.nextShapeMode in ("default", "hate"):
++            self.nextShapeMode = args.nextShapeMode
+         if args.drop_interval >= 0:
+             self.drop_interval = args.drop_interval
+         if args.seed >= 0:
+@@ -164,6 +171,7 @@ class Game_Manager(QMainWindow):
+         random_seed_Nextshape = self.random_seed
+         self.tboard = Board(self, self.gridSize,
+                             self.game_time,
++                            self.nextShapeMode,
+                             random_seed_Nextshape,
+                             self.obstacle_height,
+                             self.obstacle_probability,
+@@ -902,17 +910,17 @@ class Board(QFrame):
+     ###############################################
+     # 初期化
+     ###############################################
+-    def __init__(self, parent, gridSize, game_time, random_seed, obstacle_height, obstacle_probability, ShapeListMax, art_config_filepath):
++    def __init__(self, parent, gridSize, game_time, nextShapeMode, random_seed, obstacle_height, obstacle_probability, ShapeListMax, art_config_filepath):
+         super().__init__(parent)
+         self.setFixedSize(gridSize * BOARD_DATA.width, gridSize * BOARD_DATA.height)
+         self.gridSize = gridSize
+         self.game_time = game_time
+-        self.initBoard(random_seed, obstacle_height, obstacle_probability, ShapeListMax, art_config_filepath)
++        self.initBoard(nextShapeMode, random_seed, obstacle_height, obstacle_probability, ShapeListMax, art_config_filepath)
+ 
+     ###############################################
+     # 画面ボード初期化
+     ###############################################
+-    def initBoard(self, random_seed_Nextshape, obstacle_height, obstacle_probability, ShapeListMax, art_config_filepath):
++    def initBoard(self, nextShapeMode, random_seed_Nextshape, obstacle_height, obstacle_probability, ShapeListMax, art_config_filepath):
+         self.score = 0
+         self.dropdownscore = 0
+         self.linescore = 0
+@@ -924,7 +932,7 @@ class Board(QFrame):
+         BOARD_DATA.clear()
+         BOARD_DATA.init_randomseed(random_seed_Nextshape)
+         BOARD_DATA.init_obstacle_parameter(obstacle_height, obstacle_probability)
+-        BOARD_DATA.init_shape_parameter(ShapeListMax)
++        BOARD_DATA.init_shape_parameter(ShapeListMax, nextShapeMode)
+         BOARD_DATA.init_art_config(art_config_filepath)
+ 
+     ###############################################
+diff --git a/start.py b/start.py
+index 6af390c..e568dce 100644
+--- a/start.py
++++ b/start.py
+@@ -5,7 +5,7 @@ import sys
+ import subprocess
+ from argparse import ArgumentParser
+ 
+-def get_option(game_level, game_time, mode, random_seed, drop_interval, resultlogjson, train_yaml, predict_weight, user_name, ShapeListMax, BlockNumMax, art_config_filepath):
++def get_option(game_level, game_time, mode, nextShapeMode, random_seed, drop_interval, resultlogjson, train_yaml, predict_weight, user_name, ShapeListMax, BlockNumMax, art_config_filepath):
+     argparser = ArgumentParser()
+     argparser.add_argument('-l', '--game_level', type=int,
+                            default=game_level,
+@@ -16,6 +16,9 @@ def get_option(game_level, game_time, mode, random_seed, drop_interval, resultlo
+     argparser.add_argument('-m', '--mode', type=str,
+                            default=mode,
+                            help='Specify mode (keyboard/gamepad/sample/art/train/predict/train_sample/predict_sample/train_sample2/predict_sample2) if necessary')
++    argparser.add_argument('--nextShapeMode', type=str,
++                           default=nextShapeMode,
++                           help='Specify nextShapeMode (default/hate) if necessary')
+     argparser.add_argument('-r', '--random_seed', type=int,
+                            default=random_seed,
+                            help='Specify random seed if necessary') 
+@@ -60,6 +63,7 @@ def start():
+     GAME_LEVEL = 1
+     GAME_TIME = 180
+     IS_MODE = "default"
++    IS_NEXTSHAPEMODE = "default"
+     IS_SAMPLE_CONTROLL = "n"
+     INPUT_RANDOM_SEED = -1
+     INPUT_DROP_INTERVAL = -1
+@@ -76,6 +80,7 @@ def start():
+     args = get_option(GAME_LEVEL,
+                       GAME_TIME,
+                       IS_MODE,
++                      IS_NEXTSHAPEMODE,
+                       INPUT_RANDOM_SEED,
+                       INPUT_DROP_INTERVAL,
+                       RESULT_LOG_JSON,
+@@ -91,6 +96,8 @@ def start():
+         GAME_TIME = args.game_time
+     if args.mode in ("keyboard", "gamepad", "sample", "art", "train", "predict", "train_sample", "predict_sample", "train_sample2", "predict_sample2"):
+         IS_MODE = args.mode
++    if args.nextShapeMode in ("default", "hate"):
++        IS_NEXTSHAPEMODE = args.nextShapeMode
+     if args.random_seed >= 0:
+         INPUT_RANDOM_SEED = args.random_seed
+     if args.drop_interval > 0:
+@@ -148,6 +155,7 @@ def start():
+     print('game_time: ' + str(GAME_TIME))
+     print('RANDOM_SEED: ' + str(RANDOM_SEED))
+     print('IS_MODE :' + str(IS_MODE))
++    print('IS_NEXTSHAPEMODE :' + str(IS_NEXTSHAPEMODE))
+     print('OBSTACLE_HEIGHT: ' + str(OBSTACLE_HEIGHT))
+     print('OBSTACLE_PROBABILITY: ' + str(OBSTACLE_PROBABILITY))
+     print('USER_NAME: ' + str(USER_NAME))
+@@ -167,6 +175,7 @@ def start():
+         + ' ' + '--obstacle_probability' + ' ' + str(OBSTACLE_PROBABILITY) \
+         + ' ' + '--drop_interval' + ' ' + str(DROP_INTERVAL) \
+         + ' ' + '--mode' + ' ' + str(IS_MODE) \
++        + ' ' + '--nextShapeMode' + ' ' + str(IS_NEXTSHAPEMODE) \
+         + ' ' + '--user_name' + ' ' + str(USER_NAME) \
+         + ' ' + '--resultlogjson' + ' ' + str(RESULT_LOG_JSON) \
+         + ' ' + '--train_yaml' + ' ' + str(TRAIN_YAML) \
