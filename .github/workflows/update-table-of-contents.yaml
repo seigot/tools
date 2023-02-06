@@ -10,6 +10,9 @@ jobs:
     name: UpdateTOC
     runs-on: ubuntu-20.04
     steps:
+      - name: test step
+        run:
+          echo "repository_owner:${GITHUB_REPOSITORY_OWNER}"
       - name: TOC Generator
         uses: technote-space/toc-generator@v3
         with:
