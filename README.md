@@ -8,7 +8,8 @@
     - [test3](#test3)
       - [test4](#test4)
     - [test5](#test5)
-  - [test6](#test6)
+    - [test6](#test6)
+    - [test7](#test7)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
