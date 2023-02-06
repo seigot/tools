@@ -10,10 +10,6 @@ jobs:
     name: UpdateTOC
     runs-on: ubuntu-20.04
     steps:
-      - name: test step
-        run:
-          echo "repository_owner:${GITHUB_REPOSITORY_OWNER}"
-          echo "repository_owner:${{ github.repository_owner }}"
       - name: TOC Generator
         uses: technote-space/toc-generator@v3
         if: github.repository_owner == 'seigot'
