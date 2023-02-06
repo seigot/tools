@@ -13,9 +13,10 @@ jobs:
       - name: test step
         run:
           echo "repository_owner:${GITHUB_REPOSITORY_OWNER}"
+          echo "repository_owner:${{ github.repository_owner }}"
       - name: TOC Generator
         uses: technote-space/toc-generator@v3
-        if: ${GITHUB_REPOSITORY_OWNER} == 'seigot'
+        if: github.repository_owner == 'seigot'
         with:
           # 目次を更新するファイル
           TARGET_PATHS: README.md
