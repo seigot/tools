@@ -1,0 +1,149 @@
+diff --git a/game_manager/game_manager.py b/game_manager/game_manager.py
+index 88c9109..70d9f6a 100644
+--- a/game_manager/game_manager.py
++++ b/game_manager/game_manager.py
+@@ -126,7 +126,7 @@ class Game_Manager(QMainWindow):
+                           self.art_config_filepath)
+         if args.game_time >= 0:
+             self.game_time = args.game_time
+-        if args.mode in ("keyboard", "gamepad", "sample", "art", "train", "predict", "train_sample", "predict_sample", "train_sample2", "predict_sample2"):
++        if args.mode in ("keyboard", "gamepad", "sample", "art", "train", "predict", "train_sample", "predict_sample", "train_sample2", "predict_sample2", "train_sample3", "predict_sample3"):
+             self.mode = args.mode
+         if args.nextShapeMode in ("default", "hate"):
+             self.nextShapeMode = args.nextShapeMode
+@@ -336,6 +336,12 @@ class Game_Manager(QMainWindow):
+                     from machine_learning.block_controller_train_sample2 import BLOCK_CONTROLLER_TRAIN_SAMPLE2 as BLOCK_CONTROLLER_TRAIN
+                     self.nextMove = BLOCK_CONTROLLER_TRAIN.GetNextMove(nextMove, GameStatus,yaml_file="config/train_sample2.yaml",weight=self.predict_weight)
+                     
++                elif self.mode == "train_sample3" or self.mode == "predict_sample3":
++                    # sample train/predict
++                    # import block_controller_train_sample, it's necessary to install pytorch to use.
++                    from machine_learning.block_controller_train_sample3 import BLOCK_CONTROLLER_TRAIN_SAMPLE3 as BLOCK_CONTROLLER_TRAIN
++                    self.nextMove = BLOCK_CONTROLLER_TRAIN.GetNextMove(nextMove, GameStatus,yaml_file=self.train_yaml,weight=self.predict_weight)
++                    
+                 elif self.mode == "train" or self.mode == "predict":
+                     # train/predict
+                     # import block_controller_train, it's necessary to install pytorch to use.
+diff --git a/game_manager/machine_learning/block_controller_train_sample3.py b/game_manager/machine_learning/block_controller_train_sample3.py
+index b91b2b6..abbf382 100644
+--- a/game_manager/machine_learning/block_controller_train_sample3.py
++++ b/game_manager/machine_learning/block_controller_train_sample3.py
+@@ -90,7 +90,7 @@ class Block_Controller(object):
+ 
+         ########
+         ## 学習の場合
+-        if self.mode=="train" or self.mode=="train_sample" or self.mode=="train_sample2":
++        if self.mode=="train" or self.mode=="train_sample" or self.mode=="train_sample2" or self.mode=="train_sample3":
+             # ouput dir として日付ディレクトリ作成
+             dt = datetime.now()
+             self.output_dir = self.result_warehouse+ dt.strftime("%Y-%m-%d-%H-%M-%S")
+@@ -141,7 +141,7 @@ class Block_Controller(object):
+         # ログファイル設定
+         ########
+         # 推論の場合
+-        if self.mode=="predict" or self.mode=="predict_sample":
++        if self.mode=="predict" or self.mode=="predict_sample" or self.mode=="predict_sample2" or self.mode=="predict_sample3":
+             self.log = self.output_dir+"/log_predict.txt"
+             self.log_score = self.output_dir+"/score_predict.txt"
+             self.log_reward = self.output_dir+"/reward_predict.txt"
+@@ -320,7 +320,7 @@ class Block_Controller(object):
+ 
+         ####################
+         # 推論の場合 推論ウェイトを torch　で読み込み model に入れる。
+-        if self.mode=="predict" or self.mode=="predict_sample":
++        if self.mode=="predict" or self.mode=="predict_sample" or self.mode=="predict_sample2" or self.mode=="predict_sample3":
+             print("Load {}...".format(predict_weight))
+             # 推論インスタンス作成
+             self.model = torch.load(predict_weight)
+@@ -479,7 +479,7 @@ class Block_Controller(object):
+     # 経験学習のために episode_memory を replay_memory 追加
+     ####################################
+     def stack_replay_memory(self):
+-        if self.mode=="train" or self.mode=="train_sample" or self.mode=="train_sample2":
++        if self.mode=="train" or self.mode=="train_sample" or self.mode=="train_sample2" or self.mode=="train_sample3":
+             self.score += self.score_list[5]
+ 
+             #[next_state, reward, next2_state, done]
+@@ -506,7 +506,7 @@ class Block_Controller(object):
+         ##############################
+         ## 学習の場合
+         ##############################
+-        if self.mode=="train" or self.mode=="train_sample" or self.mode=="train_sample2":
++        if self.mode=="train" or self.mode=="train_sample" or self.mode=="train_sample2" or self.mode=="train_sample3":
+             # リセット時にスコア計算し episode memory に penalty 追加
+             # replay_memory に episode memory 追加
+             self.stack_replay_memory()
+@@ -705,7 +705,7 @@ class Block_Controller(object):
+     ####################################
+     def reset_state(self):
+         ## 学習の場合
+-        if self.mode=="train" or self.mode=="train_sample" or self.mode=="train_sample2": 
++        if self.mode=="train" or self.mode=="train_sample" or self.mode=="train_sample2" or self.mode=="train_sample3": 
+             ## 最高点,500 epoch おきに保存
+             if self.score > self.max_score or self.epoch % 500 == 0:
+                 torch.save(self.model, "{}/tetris_epoch{}_score{}.pt".format(self.weight_dir,self.epoch,self.score))
+@@ -1482,7 +1482,7 @@ class Block_Controller(object):
+         # 学習の場合
+         ###############################################
+         ###############################################
+-        if self.mode=="train" or self.mode=="train_sample" or self.mode=="train_sample2":
++        if self.mode=="train" or self.mode=="train_sample" or self.mode=="train_sample2" or self.mode=="train_sample3":
+             #### init parameter
+             # epsilon = 学習結果から乱数で変更する割合対象
+             # num_decay_epochs より前までは比例で初期 epsilon から減らしていく
+@@ -1734,7 +1734,7 @@ class Block_Controller(object):
+         # 推論 の場合
+         ###############################################
+         ###############################################
+-        elif self.mode == "predict" or self.mode == "predict_sample":
++        elif self.mode == "predict" or self.mode == "predict_sample" or self.mode=="predict_sample2" or self.mode=="predict_sample3":
+             ##############
+             # model 切り替え
+             if self.weight2_available:
+diff --git a/start.py b/start.py
+index ad2a8cc..e7d80b6 100644
+--- a/start.py
++++ b/start.py
+@@ -15,7 +15,7 @@ def get_option(game_level, game_time, mode, nextShapeMode, random_seed, drop_int
+                            help='Specify game time(s), if specify -1, do endless loop')
+     argparser.add_argument('-m', '--mode', type=str,
+                            default=mode,
+-                           help='Specify mode (keyboard/gamepad/sample/art/train/predict/train_sample/predict_sample/train_sample2/predict_sample2) if necessary')
++                           help='Specify mode (keyboard/gamepad/sample/art/train/predict/train_sample/predict_sample/train_sample2/predict_sample2/train_sample3/predict_sample3) if necessary')
+     argparser.add_argument('--nextShapeMode', type=str,
+                            default=nextShapeMode,
+                            help='Specify nextShapeMode (default/hate) if necessary')
+@@ -64,7 +64,6 @@ def start():
+     GAME_TIME = 180
+     IS_MODE = "default"
+     IS_NEXTSHAPEMODE = "default"
+-    IS_SAMPLE_CONTROLL = "n"
+     INPUT_RANDOM_SEED = -1
+     INPUT_DROP_INTERVAL = -1
+     DROP_INTERVAL = 1000          # drop interval
+@@ -94,9 +93,9 @@ def start():
+         GAME_LEVEL = args.game_level
+     if args.game_time >= 0 or args.game_time == -1:
+         GAME_TIME = args.game_time
+-    if args.mode in ("keyboard", "gamepad", "sample", "art", "train", "predict", "train_sample", "predict_sample", "train_sample2", "predict_sample2"):
++    if len(args.mode) != 0:
+         IS_MODE = args.mode
+-    if args.nextShapeMode in ("default", "hate"):
++    if len(args.nextShapeMode) != 0:
+         IS_NEXTSHAPEMODE = args.nextShapeMode
+     if args.random_seed >= 0:
+         INPUT_RANDOM_SEED = args.random_seed
+@@ -117,6 +116,13 @@ def start():
+     if len(args.art_config_filepath) != 0:
+         ART_CONFIG = args.art_config_filepath
+ 
++    if IS_MODE not in ("default", "keyboard", "gamepad", "sample", "art", "train", "predict", "train_sample", "predict_sample", "train_sample2", "predict_sample2", "train_sample3", "predict_sample3"):
++        print("invalid mode: ", IS_MODE)
++        return
++    if IS_NEXTSHAPEMODE not in ("default", "hate"):
++        print("invalid nextshapemode: ", IS_NEXTSHAPEMODE)
++        return
++
+     ## set field parameter for level 1
+     RANDOM_SEED = 0            # random seed for field
+     OBSTACLE_HEIGHT = 0        # obstacle height (blocks)
