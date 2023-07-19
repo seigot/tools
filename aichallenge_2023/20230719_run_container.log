@@ -1,1 +1,136 @@
-t
+ubuntu@ubuntu-FRONTIER:~/aichallenge2023-sim/docker$ bash run_container.sh
+Extension volume doesn't support default arguments. Please extend it.
+Active extensions ['network', 'nvidia', 'privileged', 'volume', 'x11', 'user']
+Step 1/6 : FROM golang:1.19 as detector
+ ---> 6bf7ba70b6b4
+Step 2/6 : RUN git clone -q https://github.com/dekobon/distro-detect.git &&     cd distro-detect &&     git checkout -q 5f5b9c724b9d9a117732d2a4292e6288905734e1 &&     CGO_ENABLED=0 go build .
+ ---> Using cache
+ ---> 90d1aaaf6844
+Step 3/6 : FROM aichallenge-train
+ ---> 7018b8c21fcb
+Step 4/6 : COPY --from=detector /go/distro-detect/distro-detect /tmp/detect_os
+ ---> 1b69d742c1f7
+Step 5/6 : ENTRYPOINT [ "/tmp/detect_os", "-format", "json-one-line" ]
+ ---> Running in f6dc224b89ac
+Removing intermediate container f6dc224b89ac
+ ---> a78398183e90
+Step 6/6 : CMD [ "" ]
+ ---> Running in b3997747b266
+Removing intermediate container b3997747b266
+ ---> 816bfc1715a9
+Successfully built 816bfc1715a9
+Successfully tagged rocker:os_detect_aichallenge-train
+running,  docker run -it --rm 816bfc1715a9
+output:  {"name":"Ubuntu","id":"ubuntu","version":"22.04","lsb_release":{"DISTRIB_CODENAME":"jammy","DISTRIB_DESCRIPTION":"Ubuntu 22.04.2 LTS","DISTRIB_ID":"Ubuntu","DISTRIB_RELEASE":"22.04"},"os_release":{"BUG_REPORT_URL":"https://bugs.launchpad.net/ubuntu/","HOME_URL":"https://www.ubuntu.com/","ID":"ubuntu","ID_LIKE":"debian","NAME":"Ubuntu","PRETTY_NAME":"Ubuntu 22.04.2 LTS","PRIVACY_POLICY_URL":"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy","SUPPORT_URL":"https://help.ubuntu.com/","UBUNTU_CODENAME":"jammy","VERSION":"22.04.2 LTS (Jammy Jellyfish)","VERSION_CODENAME":"jammy","VERSION_ID":"22.04"}}
+
+Writing dockerfile to /tmp/tmpuzlpgygo/Dockerfile
+vvvvvv
+# Preamble from extension [network]
+
+# Preamble from extension [nvidia]
+# Ubuntu 16.04 with nvidia-docker2 beta opengl support
+FROM nvidia/opengl:1.0-glvnd-devel-ubuntu18.04 as glvnd
+
+# Preamble from extension [privileged]
+
+# Preamble from extension [volume]
+
+# Preamble from extension [x11]
+
+# Preamble from extension [user]
+
+
+FROM aichallenge-train
+USER root
+# Snippet from extension [network]
+
+# Snippet from extension [nvidia]
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libglvnd0 \
+    libgl1 \
+    libglx0 \
+    libegl1 \
+    libgles2 \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=glvnd /usr/share/glvnd/egl_vendor.d/10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+
+
+
+
+ENV NVIDIA_VISIBLE_DEVICES ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES:-all}
+
+# Snippet from extension [privileged]
+
+# Snippet from extension [volume]
+
+# Snippet from extension [x11]
+
+# Snippet from extension [user]
+# make sure sudo is installed to be able to give user sudo access in docker
+RUN if ! command -v sudo >/dev/null; then \
+      apt-get update \
+      && apt-get install -y sudo \
+      && apt-get clean; \
+    fi
+
+RUN existing_user_by_uid=`getent passwd "1000" | cut -f1 -d: || true` && \
+    if [ -n "${existing_user_by_uid}" ]; then userdel -r "${existing_user_by_uid}"; fi && \
+    existing_user_by_name=`getent passwd "ubuntu" | cut -f1 -d: || true` && \
+    existing_user_uid=`getent passwd "ubuntu" | cut -f3 -d: || true` && \
+    if [ -n "${existing_user_by_name}" ]; then find / -uid ${existing_user_uid} -exec chown -h 1000 {} + || true ; find / -gid ${existing_user_uid} -exec chgrp -h 1000 {} + || true ; fi && \
+    if [ -n "${existing_user_by_name}" ]; then userdel -r "${existing_user_by_name}"; fi && \
+    existing_group_by_gid=`getent group "1000" | cut -f1 -d: || true` && \
+    if [ -z "${existing_group_by_gid}" ]; then \
+      groupadd -g "1000" "ubuntu"; \
+    fi && \
+    useradd --no-log-init --no-create-home --uid "1000" -s /bin/bash -c "ubuntu,,," -g "1000" -d "/home/ubuntu" "ubuntu" && \
+    echo "ubuntu ALL=NOPASSWD: ALL" >> /etc/sudoers.d/rocker
+
+# Making sure a home directory exists if we haven't mounted the user's home directory explicitly
+RUN mkdir -p "$(dirname "/home/ubuntu")" && mkhomedir_helper ubuntu
+# Commands below run as the developer user
+USER ubuntu
+WORKDIR /home/ubuntu
+
+
+^^^^^^
+Building docker file with arguments:  {'path': '/tmp/tmpuzlpgygo', 'rm': True, 'nocache': False, 'pull': False}
+building > Step 1/12 : FROM nvidia/opengl:1.0-glvnd-devel-ubuntu18.04 as glvnd
+building >  ---> 9d806b36b807
+building > Step 2/12 : FROM aichallenge-train
+building >  ---> 7018b8c21fcb
+building > Step 3/12 : USER root
+building >  ---> Using cache
+building >  ---> 52fa61b171ec
+building > Step 4/12 : RUN apt-get update && apt-get install -y --no-install-recommends     libglvnd0     libgl1     libglx0     libegl1     libgles2     && rm -rf /var/lib/apt/lists/*
+building >  ---> Using cache
+building >  ---> f0fd3379a27e
+building > Step 5/12 : COPY --from=glvnd /usr/share/glvnd/egl_vendor.d/10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+building >  ---> Using cache
+building >  ---> fb36d2105c47
+building > Step 6/12 : ENV NVIDIA_VISIBLE_DEVICES ${NVIDIA_VISIBLE_DEVICES:-all}
+building >  ---> Using cache
+building >  ---> 373b830b1021
+building > Step 7/12 : ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES:-all}
+building >  ---> Using cache
+building >  ---> 80fc6946d1fb
+building > Step 8/12 : RUN if ! command -v sudo >/dev/null; then       apt-get update       && apt-get install -y sudo       && apt-get clean;     fi
+building >  ---> Using cache
+building >  ---> 41eb16294c22
+building > Step 9/12 : RUN existing_user_by_uid=`getent passwd "1000" | cut -f1 -d: || true` &&     if [ -n "${existing_user_by_uid}" ]; then userdel -r "${existing_user_by_uid}"; fi &&     existing_user_by_name=`getent passwd "ubuntu" | cut -f1 -d: || true` &&     existing_user_uid=`getent passwd "ubuntu" | cut -f3 -d: || true` &&     if [ -n "${existing_user_by_name}" ]; then find / -uid ${existing_user_uid} -exec chown -h 1000 {} + || true ; find / -gid ${existing_user_uid} -exec chgrp -h 1000 {} + || true ; fi &&     if [ -n "${existing_user_by_name}" ]; then userdel -r "${existing_user_by_name}"; fi &&     existing_group_by_gid=`getent group "1000" | cut -f1 -d: || true` &&     if [ -z "${existing_group_by_gid}" ]; then       groupadd -g "1000" "ubuntu";     fi &&     useradd --no-log-init --no-create-home --uid "1000" -s /bin/bash -c "ubuntu,,," -g "1000" -d "/home/ubuntu" "ubuntu" &&     echo "ubuntu ALL=NOPASSWD: ALL" >> /etc/sudoers.d/rocker
+building >  ---> Using cache
+building >  ---> 31030101e18e
+building > Step 10/12 : RUN mkdir -p "$(dirname "/home/ubuntu")" && mkhomedir_helper ubuntu
+building >  ---> Using cache
+building >  ---> a8aec9dea5e8
+building > Step 11/12 : USER ubuntu
+building >  ---> Using cache
+building >  ---> fa6a3daaf1c2
+building > Step 12/12 : WORKDIR /home/ubuntu
+building >  ---> Using cache
+building >  ---> 4736aa0bcb14
+building > Successfully built 4736aa0bcb14
+Executing command: 
+docker run --rm -it --network host   --gpus all --privileged -v /home/ubuntu/aichallenge2023-sim/docker/aichallenge:/aichallenge  -e DISPLAY -e TERM   -e QT_X11_NO_MITSHM=1   -e XAUTHORITY=/tmp/.dockerrp0gzvp0.xauth -v /tmp/.dockerrp0gzvp0.xauth:/tmp/.dockerrp0gzvp0.xauth   -v /tmp/.X11-unix:/tmp/.X11-unix   -v /etc/localtime:/etc/localtime:ro  4736aa0bcb14 
+ubuntu@ubuntu-FRONTIER:~$ 
