@@ -6,8 +6,8 @@
 #
 # 以下を実行すれば動く想定
 #   cd ${HOME}/aichallenge2023-sim
-#   wget 
-#   wget 
+#   wget https://raw.githubusercontent.com/seigot/tools/master/aichallenge_2023/autorun.sh
+#   wget https://raw.githubusercontent.com/seigot/tools/master/aichallenge_2023/stop.sh
 #   bash autorun.sh  # 2回目以降はここだけ実行
 #
 # 以下を前提としている
