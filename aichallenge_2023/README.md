@@ -43,5 +43,12 @@ Time	rawDistanceSocre	distanceScore	task3Duration	isOutsideLane	isTimeout	hasCol
 20230806101014_seigot_main	33.3776	31.7087	3.20045	false	false	true	false	false	true	false
 20230806101355_seigot_main	33.5419	31.8648	3.19995	false	false	true	false	false	true	false
 20230806101737_seigot_main	33.4703	31.7968	3.19987	false	false	true	false	false	true	false
+20230806102119_seigot_main	33.5021	31.827	3.19994	false	false	true	false	false	true	false
+20230806102500_seigot_main	33.5126	31.837	3.1991	false	false	true	false	false	true	false
+20230806102842_seigot_main	33.3896	31.7201	3.20017	false	false	true	false	false	true	false
+20230806103224_seigot_main	33.4781	31.8042	3.19981	false	false	true	false	false	true	false
+20230806103605_seigot_main	33.5385	31.8616	3.19992	false	false	true	false	false	true	false
+20230806103947_seigot_main	33.5385	31.8616	3.19992	false	false	true	false	false	true	false
+20230806104329_seigot_main	33.5927	31.9131	3.39991	false	false	true	false	false	true	false
 ...
 ```
