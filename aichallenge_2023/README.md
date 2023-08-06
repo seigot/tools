@@ -1,11 +1,47 @@
 
+以前からやりたいと言っていたパラメータ自動評価環境メモ
 
+```
+step1. 誰かのaichallenge2023リポジトリをgit cloneする
+step2. AWSIM/autowareをビルドして実行×10回くらい
+step3. step2実行時の評価結果をどこかに記録する
+```
 
+のうち、step2/step3 の部分を作成してみたもの（実体はシェルスクリプト）   
+よかったら実行してみて下さいー、これで数十回の連続実行が楽になるはずです。
 
-`result.json`は以下のようになる
+リポジトリURL  
+https://github.com/seigot/tools/tree/master/aichallenge_2023
+
+```
+autorun.sh
+stop.sh
+```
+
+#### 実行方法
+
+前提条件
+- README.mdに沿って事前準備完了していること
+- 各種インストールが完了していること
+- 地図データ(pcd,osm)のコピーが完了していること
+- autowareのサンプルコードの手動実行が確認できていること
+
+コマンド
+
+```
+cd ${HOME}/aichallenge2023-sim
+wget https://raw.githubusercontent.com/seigot/tools/master/aichallenge_2023/autorun.sh
+wget https://raw.githubusercontent.com/seigot/tools/master/aichallenge_2023/stop.sh
+bash autorun.sh #二回目以降はここだけ実行
+```
+
+結果(`result.json`)は以下のようになる
 
 ```
 ~/aichallenge2023-sim$ cat result.json 
 Time	rawDistanceSocre	distanceScore	task3Duration	isOutsideLane	isTimeout	hasCollided	hasExceededSpeedLimit	hasFinishedTask1	hasFinishedTask2	hasFinishedTask3
 20230806101014_seigot_main	33.3776	31.7087	3.20045	false	false	true	false	false	true	false
+20230806101355_seigot_main	33.5419	31.8648	3.19995	false	false	true	false	false	true	false
+20230806101737_seigot_main	33.4703	31.7968	3.19987	false	false	true	false	false	true	false
+...
 ```
