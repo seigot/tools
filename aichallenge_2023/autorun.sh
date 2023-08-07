@@ -112,20 +112,28 @@ function run_autoware(){
 	# retry..
 	sleep 10
     done
+
     if [ ! -e ${RESULT_JSON} ]; then
-	echo -e "Time\trawDistanceSocre\tdistanceScore\ttask3Duration\tisOutsideLane\tisTimeout\thasCollided\thasExceededSpeedLimit\thasFinishedTask1\thasFinishedTask2\thasFinishedTask3" > ${RESULT_JSON}
+	echo -e "Player\trawDistanceSocre\tdistanceScore\ttask3Duration\tisOutsideLane\tisTimeout\thasCollided\thasExceededSpeedLimit\thasFinishedTask1\thasFinishedTask2\thasFinishedTask3" > ${RESULT_JSON}
     fi
     TODAY=`date +"%Y%m%d%I%M%S"`
     OWNER=`git remote -v | grep fetch | cut -d"/" -f4`
     BRANCH=`git branch | cut -d" " -f 2`	    
     echo -e "${TODAY}_${OWNER}_${BRANCH}\t${VAL1}\t${VAL2}\t${VAL3}\t${VAL4}\t${VAL5}\t${VAL6}\t${VAL7}\t${VAL8}\t${VAL9}\t${VAL10}" >> ${RESULT_JSON}
+    echo -e "${TODAY}_${OWNER}_${BRANCH}\t${VAL1}\t${VAL2}\t${VAL3}\t${VAL4}\t${VAL5}\t${VAL6}\t${VAL7}\t${VAL8}\t${VAL9}\t${VAL10}"
 
     # finish..
     bash stop.sh
 }
 
+function preparation(){
+    # リポジトリ設定など必要であれば実施（仮）
+    echo "do_nothing"
+}
+
 function do_game(){
     SLEEP_SEC=$1
+    preparation
     run_awsim
     run_autoware ${SLEEP_SEC}
 }
