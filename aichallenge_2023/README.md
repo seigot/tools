@@ -54,3 +54,5 @@ Time	rawDistanceSocre	distanceScore	task3Duration	isOutsideLane	isTimeout	hasCol
 20230806104329_seigot_main	33.5927	31.9131	3.39991	false	false	true	false	false	true	false
 ...
 ```
+
+`distanceScore`が伸びるようにパラメータ調整や各種工夫に励めばOK
