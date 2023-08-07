@@ -90,6 +90,8 @@ function run_autoware(){
     RESULT_JSON="result.json" #"${HOME}/result.json"
     RESULT_TMP_JSON="result_tmp.json" #"${HOME}/result_tmp.json"
     GET_RESULT_LOOP_TIMES=10
+    VAL1="-1" VAL2="-1" VAL3="-1" VAL4="false" VAL5="false"
+    VAL6="false" VAL7="false" VAL8="false" VAL9="false" VAL10="false"
     for ((jj=0; jj<${GET_RESULT_LOOP_TIMES}; jj++));
     do
 	docker exec ${AUTOWARE_ROCKER_NAME} cat /aichallenge/result.json > ${RESULT_TMP_JSON}
@@ -105,19 +107,18 @@ function run_autoware(){
 	    VAL8=`jq .hasFinishedTask1 ${RESULT_TMP_JSON}`
 	    VAL9=`jq .hasFinishedTask2 ${RESULT_TMP_JSON}`
 	    VAL10=`jq .hasFinishedTask3 ${RESULT_TMP_JSON}`
-	    if [ ! -e ${RESULT_JSON} ]; then
-		echo -e "Time\trawDistanceSocre\tdistanceScore\ttask3Duration\tisOutsideLane\tisTimeout\thasCollided\thasExceededSpeedLimit\thasFinishedTask1\thasFinishedTask2\thasFinishedTask3" > ${RESULT_JSON}
-	    fi
-	    TODAY=`date +"%Y%m%d%I%M%S"`
-	    OWNER=`git remote -v | grep fetch | cut -d"/" -f4`
-	    BRANCH=`git branch | cut -d" " -f 2`	    
-	    echo -e "${TODAY}_${OWNER}_${BRANCH}\t${VAL1}\t${VAL2}\t${VAL3}\t${VAL4}\t${VAL5}\t${VAL6}\t${VAL7}\t${VAL8}\t${VAL9}\t${VAL10}" >> ${RESULT_JSON}
-	    
 	    break
 	fi
 	# retry..
 	sleep 10
     done
+    if [ ! -e ${RESULT_JSON} ]; then
+	echo -e "Time\trawDistanceSocre\tdistanceScore\ttask3Duration\tisOutsideLane\tisTimeout\thasCollided\thasExceededSpeedLimit\thasFinishedTask1\thasFinishedTask2\thasFinishedTask3" > ${RESULT_JSON}
+    fi
+    TODAY=`date +"%Y%m%d%I%M%S"`
+    OWNER=`git remote -v | grep fetch | cut -d"/" -f4`
+    BRANCH=`git branch | cut -d" " -f 2`	    
+    echo -e "${TODAY}_${OWNER}_${BRANCH}\t${VAL1}\t${VAL2}\t${VAL3}\t${VAL4}\t${VAL5}\t${VAL6}\t${VAL7}\t${VAL8}\t${VAL9}\t${VAL10}" >> ${RESULT_JSON}
 
     # finish..
     bash stop.sh
