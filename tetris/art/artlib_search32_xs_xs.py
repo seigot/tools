@@ -59,6 +59,7 @@ def search_filledboard(board):
         adj_zero = adj_zero_from_testboard(board = testboard)
 
         rnd = 1
+        # 6個分探索する(2つ分は事前に探索済みのため)
         for block in range(6):
             adj = []
             rnd += 1
@@ -78,19 +79,21 @@ def search_filledboard(board):
 
     return False
 
-       
+# はみ出ていないかどうかチェック
+# board_initに元々9(番兵)を与えていた部分が別の数値に変わっていたらはみ出ていたと判定する
+# 下側をチェックする
 def check_bottom(currentboard):
     check = False
     if currentboard[4][x1+1] == 1 and currentboard[4].count(1) == 1:
         check = True
     return check
-
+# 上側をチェックする
 def check_top(currentboard):
     check = False
     if currentboard[0][x2+1] == 8 and currentboard[0].count(8) == 1:
         check = True
     return check
-
+# 左右の端をチェックする
 def check_sides(currentboard):
     for i in range(len(currentboard)):
         if currentboard[i][0] != 9:
@@ -98,7 +101,8 @@ def check_sides(currentboard):
         if currentboard[i][len(currentboard[i])-1] != 9:
             return False
     return True
-
+# ブロック全体を見渡して、1(下側),8(上側)が期待通りはまっているかチェックする
+# 期待通りであれば4となる
 def check_1and8(currentboard):
     one,eight = 0,0
     for y in range(len(currentboard)):
@@ -120,7 +124,7 @@ def fit_shapes(board):
     testboards = find_shape2(boards = testboards)
     return testboards
 
-
+# shape1が下側の行に全てハマる組みわせを全て見つけ出す
 def find_shape1(board):
     applicable_board = []
     # The block to fill the bottom row would appear no further than two x-coords away from the ref point
@@ -141,6 +145,7 @@ def find_shape1(board):
                 
     return applicable_board
 
+# shape1が上側の行に全てハマる組みわせを全て見つけ出す
 def find_shape2(boards):
     applicable_board = []
     for testboard_ in boards:
@@ -159,7 +164,9 @@ def find_shape2(boards):
                     applicable_board.append(testboard)
 
     return applicable_board
-
+# 10*3のブロックに着目する
+# board_init上、既にブロックを仮置きしている部分は9を与える
+# NSWE分の大きさが入る座標は+1を与える（ここがよくわからない）
 def adj_zero_from_testboard(board):
     adj_zero = copy.deepcopy(adj_zero_init)
     for dot_ in range(len(adj_zero)):
@@ -174,7 +181,7 @@ def adj_zero_from_testboard(board):
                     adj_zero[dot_] += 1
     return adj_zero
 
-
+# 何をするのか..
 def fill_most_isolated(rnd,testboard,adj_zero, adj):
     isolated = 0
     count = 0
@@ -193,7 +200,7 @@ def fill_most_isolated(rnd,testboard,adj_zero, adj):
 
     return testboard, adj_zero, adj
 
-
+# 何をするのか..
 def fill_isolated_from_adj(rnd,testboard,adj_zero, adj):
     isolated = 0
     testdot_ = 4
@@ -219,7 +226,7 @@ def fill_testboard(rnd, testboard, isolated):
     testboard[yaxis][xaxis] = rnd
     return testboard
 
-
+# 何をするのか..
 def fill_adj_and_adj_zero(isolated, adj_zero, adj):
     # "9" as dummy figure if the cell is already filled
     adj_zero[isolated] = 9
@@ -244,6 +251,7 @@ def fill_adj_and_adj_zero(isolated, adj_zero, adj):
     adj.sort()
     return adj_zero,adj
 
+# 何をするのか..
 def find_constraint(board):
     constraint = [set() for i in range(10)]
     for x in range(10):
@@ -259,6 +267,7 @@ def find_constraint(board):
         constraint[s].discard(9)
     return constraint
 
+# 何をするのか..
 def find_shapeorder(board,constraint):
     used = [False for i in range(9)]
     # Better to place them from both sides to avoid unexpected game overs
@@ -285,6 +294,7 @@ def find_shapeorder(board,constraint):
     shapeorder.remove(9)
     return shapeorder
 
+# 何をするのか..
 def find_dotorder(board,shapeorder):
     dotorder = [[] for i in range(8)]
     for y in range(5):
