@@ -61,6 +61,7 @@ def search_filledboard(board):
         rnd = 1
         # 6個分探索する(2つ分は事前に探索済みのため)
         for block in range(6):
+            # adj: 現在着目している座標から次に移動するときに候補となる座標（のリスト）
             adj = []
             rnd += 1
             # Place a dot at where most likely to be deadlock
@@ -166,7 +167,7 @@ def find_shape2(boards):
     return applicable_board
 # 10*3のブロックに着目する
 # board_init上、既にブロックを仮置きしている部分は9を与える
-# NSWE分の大きさが入る座標は+1を与える（ここがよくわからない）
+# NSWE(上下左右)をみて隣接する空欄ブロックの数をカウントする（後の処理で必要となる気がする）
 def adj_zero_from_testboard(board):
     adj_zero = copy.deepcopy(adj_zero_init)
     for dot_ in range(len(adj_zero)):
@@ -182,51 +183,67 @@ def adj_zero_from_testboard(board):
     return adj_zero
 
 # 何をするのか..
+# 最も孤立した（奥まっている）座標から探索した方がdeadlockになりにくいと思うので、
+# その座標を探しだして探索の基準にする。
+# output:
+#  testboard: 探索途中の盤面
+#  adj_zero:  NSWE(上下左右)をみて隣接する空欄ブロックの数をカウントしたもの
+#  adj: 現在着目している座標から次に移動するときに候補となる座標（のリスト）
 def fill_most_isolated(rnd,testboard,adj_zero, adj):
     isolated = 0
     count = 0
     testdot_ = 4
     endflag = False
     for eachdot_ in adj_zero:
+        # eachdot(上下左右に隣接する0の数)が最も小さい場所(もっとも孤立した(奥まっている)座標を探す)
+        # 最も孤立した座標を基準に探索開始した方がdeadlockになりにくい（気がする）
         if testdot_ >= eachdot_ :
             testdot_ = eachdot_
             isolated = count
         count += 1
     # Place a dot at where most stuck
     testboard = fill_testboard(rnd = rnd, testboard = testboard, isolated = isolated)
+    # testboardを更新したので、adj、adj_zeroの更新が必要なのでここで実施する
     # Update adj_zero, the number of blank cells adjecent to each cell
     # Update adj, indexes of cells adjecent to dots that have been placed in each round
     adj_zero,adj = fill_adj_and_adj_zero(isolated = isolated, adj_zero = adj_zero, adj = adj)
 
     return testboard, adj_zero, adj
 
-# 何をするのか..
+# adjのうち、最も孤立した（奥まっている）座標から順番に探索する
+# adj: 現在着目している座標から次に移動するときに候補となる座標（のリスト）
 def fill_isolated_from_adj(rnd,testboard,adj_zero, adj):
     isolated = 0
     testdot_ = 4
     # Choose the most isolated cell from adj
+    # adj(探索候補の座標リストから)最もdeadlockになりにくい（気がする）座標を探し出す
     for eachdot_ in adj:
         if testdot_ >= adj_zero[eachdot_] :
             testdot_ = adj_zero[eachdot_]
             isolated = eachdot_
+    # 探索候補から削除（探索対象になったのでもはや候補ではない）
     # Remove the chosen from adj
     adj.remove(isolated)
 
+    # Place a dot
     testboard = fill_testboard(rnd = rnd, testboard = testboard, isolated = isolated)
+    # testboardを更新したので、adj、adj_zeroの更新が必要なのでここで実施する
     # Update adj_zero, the number of blank cells adjecent to each cell
     # Update adj, indexes of cells adjecent to dots that have been placed in each round
     adj_zero,adj = fill_adj_and_adj_zero(isolated = isolated, adj_zero = adj_zero, adj = adj)
 
     return testboard, adj_zero, adj
 
-
+# Place a dot
 def fill_testboard(rnd, testboard, isolated):
     xaxis = isolated % 10 + 1
     yaxis = isolated // 10 + 1
     testboard[yaxis][xaxis] = rnd
     return testboard
 
-# 何をするのか..
+# adj、adj_zeroの更新が必要な場合に更新する
+# Update adj_zero, the number of blank cells adjecent to each cell
+# Update adj, indexes of cells adjecent to dots that have been placed in each round
 def fill_adj_and_adj_zero(isolated, adj_zero, adj):
     # "9" as dummy figure if the cell is already filled
     adj_zero[isolated] = 9
@@ -251,37 +268,55 @@ def fill_adj_and_adj_zero(isolated, adj_zero, adj):
     adj.sort()
     return adj_zero,adj
 
-# 何をするのか..
+# 制約を求める
+# 自分より先に落ちるべきミノ（=一部分でも自分より下にあるミノ）を列挙しています
+# input:
+#    board: 盤面(ここではtetris artの探索対象の組み合わせを数字で表すことに成功した盤面をさしているはず)
+# output: 
+#    constraint 制約の集合
+#               
 def find_constraint(board):
-    constraint = [set() for i in range(10)]
+    constraint = [set() for i in range(10)] # 0~9までの値(x座標ではなく、1~8はミノを置く順番、0は出現しないはず、9は番兵)
     for x in range(10):
         # Prior is a set of figures that have appeared in each column
+        # x座標毎に、縦列の下から上にかけて探索する.（=一部分でも自分より下にあるミノを列挙するため）
         prior = set()
         for y in range(4): 
             prior.add(board[4-y][x+1])
             # For each figure get the figures that should be placed before it
             constraint[board[4-y][x+1]] = constraint[board[4-y][x+1]].union(prior)
     for s in range(len(constraint)):
+        # 自分と9(=番兵)は制約から外しておく（制約ではないので）
         # Exclude from the constraint the figure itself as well as 9 as sentinel
         constraint[s].discard(s)
         constraint[s].discard(9)
     return constraint
 
-# 何をするのか..
+# 求めた制約を元にorderを決める
+# 自分より先に落ちるべきミノが無いものから順に選んでいきます。
+# 選択されたミノは、他のミノにとっての「自分より先に落ちるべきミノ」から削除されます
+# output:
+#  shapeorder 置く番号の順番
 def find_shapeorder(board,constraint):
+    # 1~8はミノを置く順番に対応したフラグ
     used = [False for i in range(9)]
     # Better to place them from both sides to avoid unexpected game overs
+    # できるだけ両端から置くことを試みると変な置き方を回避できる事が期待できる(これはすごいノウハウな気がする)
     x_order = [1,10,2,9,3,8,4,7,5,6]
     shapeorder = []
     while used.count(False) > 0:
         for x in x_order:
             revisit = False
             for y in range(4):
+                # 下から順番に置けないか検討する
                 shape = board[4 - y][x]
                 # A shape can only be placed if all blocks to be placed have been placed.
+                # まだ置けてなくて特に置き順の制約がないブロックであれば最初に置く
                 if used[shape-1] == False and constraint[shape] == set():
+                    # 最初に置く扱いにしてusedフラグを更新する
                     shapeorder.append(shape)
                     used[shape-1] = True
+                    # ここのブロックは置く扱いにしたので置く順番の制約から外す
                     # A figure is no longer a constraint if it have been placed
                     for s in range(len(constraint)):
                         constraint[s].discard(shape)
@@ -297,6 +332,7 @@ def find_shapeorder(board,constraint):
 # 何をするのか..
 def find_dotorder(board,shapeorder):
     dotorder = [[] for i in range(8)]
+    # boardの盤面をみてdotの並びに変換する
     for y in range(5):
         for x in range(len(board[y])):
             shape = board[y][x]
