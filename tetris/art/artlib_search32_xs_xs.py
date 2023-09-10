@@ -329,10 +329,12 @@ def find_shapeorder(board,constraint):
     shapeorder.remove(9)
     return shapeorder
 
-# 何をするのか..
+# shapeorder 置く番号の順番から、
+# 相対的なdotの並びに変換する
+# dotの内最も番号が若いものを0としたとき、それを基準として相対的な位置(1次元)を記憶する(width=10としている)
 def find_dotorder(board,shapeorder):
     dotorder = [[] for i in range(8)]
-    # boardの盤面をみてdotの並びに変換する
+    # boardの盤面をみてshape毎にdotの並びに変換する
     for y in range(5):
         for x in range(len(board[y])):
             shape = board[y][x]
@@ -344,6 +346,9 @@ def find_dotorder(board,shapeorder):
         ans.append(dotorder[shape-1])
     return ans
 
+# art modeのformatに変換する
+# art modeは(x,rotate)を扱うのでこの座標に変換する
+# 尚xはミノのindexを指す
 def convert_json_format(dot):
     flag = False
     while flag == False:
@@ -356,14 +361,19 @@ def convert_json_format(dot):
                 if dot_relative[shape][rotate] == dot4:
                     ans.append(shape)
                     ans.append(rotate)
-                    ans.append((dot[4]-dot[0]) % 10)
-                    ans.append(1)
+                    ans.append((dot[4]-dot[0]) % 10) # debug用?
+                    ans.append(1) # debug用?
                     return ans
+        # ズレてるかもしれないので補正?
         for i in range(4):
             dot[i] -= 1 
+        # 見つからない場合は探索終了(-13は探索の限界?)
         if min(dot) <= -13:
             flag = True
 
+# Convert indexes of four dots into shape index, rotation and the x-coord of ref point
+# Subtract each index by its smallest to simplify later calculations
+# The fourth element of each list, previously the smallest index, is used to obtain x-coord of each refpoint
 def adjust_dotorder_for_smallest(dotorder):
     for i in range(len(dotorder)):
         smallest = min(dotorder[i])
