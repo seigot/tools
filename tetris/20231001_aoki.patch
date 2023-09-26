@@ -1,0 +1,10 @@
+diff --git a/game_manager/block_controller.py b/game_manager/block_controller.py
+index 21d9df1..885df5f 100644
+--- a/game_manager/block_controller.py
++++ b/game_manager/block_controller.py
+@@ -307,4 +307,4 @@ class Block_Controller(object):
+         return score
+ 
+ 
+-BLOCK_CONTROLLER_SAMPLE = Block_Controller()
++BLOCK_CONTROLLER = Block_Controller()
