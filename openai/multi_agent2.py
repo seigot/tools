@@ -44,14 +44,18 @@ workflow = SequentialWorkflow(
 
 # Run the workflow
 out = workflow.run(
-    "You are the leader of the residents of an apartment. \
-    Information is shared through circular boards. \
-    When the circular board is handed over, you must check the appropriate box before passing it on to the next person. \
-    Please encourage residents to check the circular board in turn and ask them to check the appropriate box in the markdown table below. \
-    | resident No. | answer | \
-    | ---- | ---- | \
-    | resident1 |  | \
-    | resident2 |  | \
-    | resident3 |  | "
+    "# 自治会総会の出欠連絡 \
+    **概要**  \
+    来月のお祭りに向けて、自治会総会を開催します。  \
+    出欠欄の記入後、次の方へ回覧して下さい。  \
+    **日時**: 2024年9月10日 18:00  \
+    **場所**: 自治会館  \
+    --- \
+    ## 出欠欄 \
+    - **住人1**: [ ] 出席  [ ] 欠席  \
+    - **住人2**: [ ] 出席  [ ] 欠席  \
+    - **住人3**: [ ] 出席  [ ] 欠席  \
+    --- \
+    **回覧板を次の方へお回しください。** "
 )
 print(out)
