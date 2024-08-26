@@ -1,6 +1,6 @@
-Check List
+チェックリスト
 
 ## Item
-- **Front**: [ ] OK  [ ] NG reason --> []
-- **Left** : [ ] OK  [ ] NG reason --> []
-- **Right**: [ ] OK  [ ] NG reason --> []
+- **正面**: [ ] OK  [ ] NG 理由[]
+- **左側** : [ ] OK  [ ] NG 理由[]
+- **右側**: [ ] OK  [ ] NG 理由[]
