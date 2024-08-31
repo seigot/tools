@@ -22,8 +22,6 @@ print('input url: ' + str(URL))
 # -- http post 
 json_open = open(args.file, 'r')
 json_load = json.load(json_open)
-data = json_load
-#data = {"name": "Jane Smith", "email": "janesmith@example.com", "job": "Data Scientist"}
-json_data = json.dumps(data)
+json_data = json.dumps(json_load)
 response = requests.post(URL, data=json_data)
 print(response.text)
