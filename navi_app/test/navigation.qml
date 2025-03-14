@@ -9,11 +9,124 @@ ApplicationWindow {
     visible: true
     width: 800
     height: 600
-    title: "Qt ナビゲーションアプリ"
+    title: "Qt Navigation App"
     
-    property var startCoordinate: QtPositioning.coordinate(35.6812, 139.7671) // 東京駅
-    property var destinationCoordinate: QtPositioning.coordinate(35.6585, 139.7454) // 東京タワー
+    // Language setting (ja:Japanese, en:English) - default to English
+    property string currentLanguage: "en"
+    
+    // Language-specific texts
+    property var texts: {
+        "ja": {
+            "windowTitle": "Qt ナビゲーションアプリ",
+            "nextInstruction": "次の指示:",
+            "calculateRoute": "ルート計算",
+            "startDemo": "デモ開始",
+            "stopDemo": "デモ停止",
+            "resetPosition": "位置リセット",
+            "showPoints": "ポイント表示",
+            "remaining": "残り距離:",
+            "language": "言語",
+            "start": "出発",
+            "destination": "目的地",
+            "defaultInstruction": "ルートを計算してください",
+            "locationPresetTitle": "ルート選択",
+            "japanGroup": "日本",
+            "tokyoRoute": "東京駅 → 東京タワー",
+            "shibuyaRoute": "渋谷 → 原宿",
+            "shinjukuRoute": "新宿 → 池袋",
+            "californiaGroup": "カリフォルニア",
+            "mvRoute": "マウンテンビュー → パロアルト",
+            "mv_sjRoute": "マウンテンビュー → サンノゼ",
+            "mv_sfRoute": "マウンテンビュー → サンフランシスコ"
+        },
+        "en": {
+            "windowTitle": "Qt Navigation App",
+            "nextInstruction": "Next instruction:",
+            "calculateRoute": "Calculate Route",
+            "startDemo": "Start Demo",
+            "stopDemo": "Stop Demo",
+            "resetPosition": "Reset Position",
+            "showPoints": "Show Points",
+            "remaining": "Distance remaining:",
+            "language": "Language",
+            "start": "Start",
+            "destination": "Destination",
+            "defaultInstruction": "Please calculate a route",
+            "locationPresetTitle": "Select Route",
+            "japanGroup": "Japan",
+            "tokyoRoute": "Tokyo Station → Tokyo Tower",
+            "shibuyaRoute": "Shibuya → Harajuku",
+            "shinjukuRoute": "Shinjuku → Ikebukuro",
+            "californiaGroup": "California",
+            "mvRoute": "Mountain View → Palo Alto",
+            "mv_sjRoute": "Mountain View → San Jose",
+            "mv_sfRoute": "Mountain View → San Francisco"
+        }
+    }
+
+    // Japan coordinates
+    property var japanCoordinates: {
+        "tokyo_station": QtPositioning.coordinate(35.6812, 139.7671),
+        "tokyo_tower": QtPositioning.coordinate(35.6585, 139.7454),
+        "shibuya": QtPositioning.coordinate(35.6580, 139.7016),
+        "harajuku": QtPositioning.coordinate(35.6702, 139.7027),
+        "shinjuku": QtPositioning.coordinate(35.6938, 139.7034),
+        "ikebukuro": QtPositioning.coordinate(35.7295, 139.7109)
+    }
+    
+    // California coordinates
+    property var californiaCoordinates: {
+        "san_francisco": QtPositioning.coordinate(37.7749, -122.4194),
+        "pier39": QtPositioning.coordinate(37.8087, -122.4098),
+        "mountain_view": QtPositioning.coordinate(37.3861, -122.0839),
+        "palo_alto": QtPositioning.coordinate(37.4419, -122.1430),
+        "san_jose": QtPositioning.coordinate(37.3382, -121.8863),
+        "santa_clara": QtPositioning.coordinate(37.3541, -121.9552)
+    }
+    
+    // Default to Mountain View coordinates
+    property var startCoordinate: californiaCoordinates.mountain_view
+    property var destinationCoordinate: californiaCoordinates.palo_alto
     property bool navigationActive: false
+    
+    // Get text for the current language
+    function getText(key) {
+        return texts[currentLanguage][key];
+    }
+    
+    // Change language function
+    function changeLanguage(lang) {
+        if (lang === "ja" || lang === "en") {
+            currentLanguage = lang;
+            navController.setLanguage(lang);
+            window.title = getText("windowTitle");
+        }
+    }
+    
+    // Set default language to English on initialization
+    Component.onCompleted: {
+        changeLanguage("en");
+        
+        // Set initial index for location presets to Mountain View -> Palo Alto
+        // Use a slight delay to ensure the model is loaded
+        presetInitTimer.start();
+    }
+    
+    // Timer to initialize the preset selection
+    Timer {
+        id: presetInitTimer
+        interval: 100
+        repeat: false
+        onTriggered: {
+            // Find the index for the Mountain View -> Palo Alto option
+            for (let i = 0; i < routeModel.count; i++) {
+                if (routeModel.get(i).value === "mv") {
+                    locationPresets.currentIndex = i;
+                    break;
+                }
+            }
+        }
+    }
     
     Plugin {
         id: osmPlugin
@@ -29,7 +142,7 @@ ApplicationWindow {
         anchors.fill: parent
         spacing: 0
         
-        // ナビゲーションヘッダー
+        // Navigation header
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 80
@@ -45,14 +158,14 @@ ApplicationWindow {
                     spacing: 5
                     
                     Label {
-                        text: "次の指示:"
+                        text: getText("nextInstruction")
                         color: "white"
                         font.pixelSize: 14
                     }
                     
                     Label {
                         id: instructionLabel
-                        text: "ルートを計算してください"
+                        text: getText("defaultInstruction")
                         color: "white"
                         font.pixelSize: 18
                         font.bold: true
@@ -65,7 +178,7 @@ ApplicationWindow {
                     spacing: 5
                     
                     Label {
-                        text: "残り距離:"
+                        text: getText("remaining")
                         color: "white"
                         font.pixelSize: 14
                     }
@@ -81,16 +194,16 @@ ApplicationWindow {
             }
         }
         
-        // マップ
+        // Map
         Map {
             id: map
             Layout.fillWidth: true
             Layout.fillHeight: true
             plugin: osmPlugin
             center: startCoordinate
-            zoomLevel: 14
+            zoomLevel: 13  // Adjusted for Mountain View
             
-            // 現在位置を示すマーカー
+            // Current position marker
             MapQuickItem {
                 id: currentLocationMarker
                 coordinate: startCoordinate
@@ -107,7 +220,7 @@ ApplicationWindow {
                 }
             }
             
-            // 出発点のマーカー
+            // Start point marker
             MapQuickItem {
                 id: startMarker
                 coordinate: startCoordinate
@@ -119,7 +232,7 @@ ApplicationWindow {
                         source: "qrc:///marker-green.png"
                         width: 32
                         height: 32
-                        visible: false // 画像がない場合
+                        visible: false // If no image
                     }
                     Rectangle {
                         width: 20
@@ -131,14 +244,14 @@ ApplicationWindow {
                         visible: !startIcon.visible
                     }
                     Text {
-                        text: "出発"
+                        text: getText("start")
                         font.pixelSize: 12
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
                 }
             }
             
-            // 目的地のマーカー
+            // Destination marker
             MapQuickItem {
                 id: destinationMarker
                 coordinate: destinationCoordinate
@@ -150,7 +263,7 @@ ApplicationWindow {
                         source: "qrc:///marker-red.png"
                         width: 32
                         height: 32
-                        visible: false // 画像がない場合
+                        visible: false // If no image
                     }
                     Rectangle {
                         width: 20
@@ -162,26 +275,26 @@ ApplicationWindow {
                         visible: !destIcon.visible
                     }
                     Text {
-                        text: "目的地"
+                        text: getText("destination")
                         font.pixelSize: 12
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
                 }
             }
             
-            // ルートを表示するポリライン
+            // Route polyline
             MapPolyline {
                 id: routeLine
                 line.width: 5
                 line.color: "#3498db"
             }
             
-            // ルートポイントをマーカーとして表示（デバッグ用）
+            // Route points list model
             ListModel {
                 id: routePointsModel
             }
             
-            // ルートポイントマーカーのコンポーネント
+            // Route point marker component
             Component {
                 id: routePointDelegate
                 MapQuickItem {
@@ -192,7 +305,7 @@ ApplicationWindow {
                     sourceItem: Column {
                         spacing: 2
                         
-                        // ポイント番号と指示
+                        // Point number and instruction
                         Rectangle {
                             id: pointRect
                             width: pointNumberText.width > 20 ? pointNumberText.width + 10 : 30
@@ -212,7 +325,7 @@ ApplicationWindow {
                             }
                         }
                         
-                        // 指示テキスト（ある場合のみ表示）
+                        // Instruction text (only if present)
                         Rectangle {
                             id: instructionRect
                             visible: instruction !== ""
@@ -237,14 +350,14 @@ ApplicationWindow {
                 }
             }
             
-            // 地図に表示されるルートポイントのマーカー群
+            // Map view for route points markers
             MapItemView {
                 id: routePointsView
                 model: routePointsModel
                 delegate: routePointDelegate
             }
             
-            // 地図を長押しで目的地を変更
+            // Long press to change destination
             MouseArea {
                 anchors.fill: parent
                 onPressAndHold: {
@@ -255,7 +368,7 @@ ApplicationWindow {
             }
         }
         
-        // コントロールパネル
+        // Control panel
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 60
@@ -267,54 +380,56 @@ ApplicationWindow {
                 spacing: 10
                 
                 Button {
-                    text: "ルート計算"
+                    text: getText("calculateRoute")
                     Layout.preferredWidth: 120
                     onClicked: {
+                        // Calculate route based on current start and destination
                         navController.calculateRoute(startCoordinate, destinationCoordinate)
                     }
                 }
                 
                 Button {
                     id: demoButton
-                    text: "デモ開始"
+                    text: getText("startDemo")
                     Layout.preferredWidth: 120
-                    enabled: true  // 常に有効にして、ルートがない場合はコントローラー側で対応
+                    enabled: true  // Always enabled, controller handles missing routes
                     onClicked: {
                         if (!navigationActive) {
-                            // ルートがない場合は計算を試みる
+                            // Try to calculate route if none exists
                             if (routeLine.path.length === 0) {
-                                console.log("ルートがないのでまず計算します")
+                                console.log("No route yet, calculating first...")
                                 navController.calculateRoute(startCoordinate, destinationCoordinate)
-                                // 少し待ってからシミュレーション開始
+                                // Wait a bit then start simulation
                                 demoStartTimer.restart()
                             } else {
-                                console.log("直接デモを開始します（ルートあり）")
+                                console.log("Starting demo directly (route exists)")
                                 try {
-                                    // 標準方法を試す
+                                    // Try standard method
                                     navController.startSimulation()
                                 } catch (e) {
-                                    console.log("標準方法で失敗、代替方法を試みます: " + e)
-                                    // 失敗したら代替方法を試す
+                                    console.log("Failed with standard method, trying alternative: " + e)
+                                    // Try fallback method
                                     navController.manualStartDemo()
                                 }
                                 navigationActive = true
-                                text = "デモ停止"
+                                text = getText("stopDemo")
                             }
                         } else {
                             navController.stopSimulation()
                             navigationActive = false
-                            text = "デモ開始"
+                            text = getText("startDemo")
                         }
                     }
                 }
                 
                 Button {
-                    text: "位置リセット"
+                    text: getText("resetPosition")
                     Layout.preferredWidth: 120
                     onClicked: {
                         if (navigationActive) {
                             navController.stopSimulation()
                             navigationActive = false
+                            demoButton.text = getText("startDemo")
                         }
                         currentLocationMarker.coordinate = startCoordinate
                         map.center = startCoordinate
@@ -323,10 +438,26 @@ ApplicationWindow {
                 
                 CheckBox {
                     id: showPointsCheckbox
-                    text: "ポイント表示"
+                    text: getText("showPoints")
                     checked: true
                     onCheckedChanged: {
                         routePointsView.visible = checked
+                    }
+                }
+                
+                ComboBox {
+                    id: languageSelector
+                    Layout.preferredWidth: 100
+                    model: ListModel {
+                        id: langModel
+                        ListElement { text: "English"; value: "en" }
+                        ListElement { text: "日本語"; value: "ja" }
+                    }
+                    textRole: "text"
+                    currentIndex: currentLanguage === "en" ? 0 : 1
+                    onActivated: {
+                        let lang = langModel.get(currentIndex).value;
+                        changeLanguage(lang);
                     }
                 }
                 
@@ -336,33 +467,132 @@ ApplicationWindow {
                 
                 ComboBox {
                     id: locationPresets
-                    Layout.preferredWidth: 150
-                    model: ["東京駅 → 東京タワー", "渋谷 → 原宿", "新宿 → 池袋"]
-                    onCurrentIndexChanged: {
-                        if (currentIndex === 0) {
-                            startCoordinate = QtPositioning.coordinate(35.6812, 139.7671)
-                            destinationCoordinate = QtPositioning.coordinate(35.6585, 139.7454)
-                        } else if (currentIndex === 1) {
-                            startCoordinate = QtPositioning.coordinate(35.6580, 139.7016)
-                            destinationCoordinate = QtPositioning.coordinate(35.6702, 139.7027)
-                        } else if (currentIndex === 2) {
-                            startCoordinate = QtPositioning.coordinate(35.6938, 139.7034)
-                            destinationCoordinate = QtPositioning.coordinate(35.7295, 139.7109)
-                        }
+                    Layout.preferredWidth: 180
+                    textRole: "text"
+                    
+                    // Model creation function
+                    function updateModel() {
+                        let presetModel = [
+                            // Header: California (moved to top since it's the default region)
+                            {text: "--- " + getText("californiaGroup") + " ---", value: "header2", isHeader: true},
+                            {text: getText("mvRoute"), value: "mv", 
+                                startLat: californiaCoordinates.mountain_view.latitude, 
+                                startLng: californiaCoordinates.mountain_view.longitude,
+                                endLat: californiaCoordinates.palo_alto.latitude, 
+                                endLng: californiaCoordinates.palo_alto.longitude},
+                            {text: getText("mv_sjRoute"), value: "mv_sj", 
+                                startLat: californiaCoordinates.mountain_view.latitude, 
+                                startLng: californiaCoordinates.mountain_view.longitude,
+                                endLat: californiaCoordinates.san_jose.latitude, 
+                                endLng: californiaCoordinates.san_jose.longitude},
+                            {text: getText("mv_sfRoute"), value: "mv_sf", 
+                                startLat: californiaCoordinates.mountain_view.latitude, 
+                                startLng: californiaCoordinates.mountain_view.longitude,
+                                endLat: californiaCoordinates.san_francisco.latitude, 
+                                endLng: californiaCoordinates.san_francisco.longitude},
+                                
+                            // Header: Japan (moved below California)
+                            {text: "--- " + getText("japanGroup") + " ---", value: "header1", isHeader: true},
+                            {text: getText("tokyoRoute"), value: "tokyo", 
+                                startLat: japanCoordinates.tokyo_station.latitude, 
+                                startLng: japanCoordinates.tokyo_station.longitude,
+                                endLat: japanCoordinates.tokyo_tower.latitude, 
+                                endLng: japanCoordinates.tokyo_tower.longitude},
+                            {text: getText("shibuyaRoute"), value: "shibuya", 
+                                startLat: japanCoordinates.shibuya.latitude, 
+                                startLng: japanCoordinates.shibuya.longitude,
+                                endLat: japanCoordinates.harajuku.latitude, 
+                                endLng: japanCoordinates.harajuku.longitude},
+                            {text: getText("shinjukuRoute"), value: "shinjuku", 
+                                startLat: japanCoordinates.shinjuku.latitude, 
+                                startLng: japanCoordinates.shinjuku.longitude,
+                                endLat: japanCoordinates.ikebukuro.latitude, 
+                                endLng: japanCoordinates.ikebukuro.longitude}
+                        ];
                         
-                        startMarker.coordinate = startCoordinate
-                        destinationMarker.coordinate = destinationCoordinate
-                        currentLocationMarker.coordinate = startCoordinate
-                        map.center = startCoordinate
+                        // Clear and rebuild the model
+                        routeModel.clear();
+                        for (let i = 0; i < presetModel.length; i++) {
+                            routeModel.append(presetModel[i]);
+                        }
+                    }
+                    
+                    // Use a ListModel for the routes
+                    model: ListModel {
+                        id: routeModel
+                    }
+                    
+                    // Initialize the model
+                    Component.onCompleted: {
+                        locationPresets.updateModel();
+                    }
+                    
+                    // Update on language change
+                    Connections {
+                        target: window
+                        function onCurrentLanguageChanged() {
+                            locationPresets.updateModel();
+                        }
+                    }
+                    
+                    // Handle route selection
+                    onActivated: {
+                        let item = routeModel.get(currentIndex);
+                        if (!item.isHeader) {
+                            // Create proper QGeoCoordinate objects from lat/lng values
+                            let start = QtPositioning.coordinate(item.startLat, item.startLng);
+                            let end = QtPositioning.coordinate(item.endLat, item.endLng);
+                            
+                            // Store current selection values
+                            startCoordinate = start;
+                            destinationCoordinate = end;
+                            
+                            // Update markers
+                            startMarker.coordinate = startCoordinate;
+                            destinationMarker.coordinate = destinationCoordinate;
+                            currentLocationMarker.coordinate = startCoordinate;
+                            
+                            // Adjust zoom level and center map
+                            if (item.value.startsWith("sf") || item.value.startsWith("mv") || item.value.startsWith("sj")) {
+                                map.zoomLevel = 13;  // Wider view for California
+                            } else {
+                                map.zoomLevel = 14;  // Closer zoom for Japanese urban areas
+                            }
+                            map.center = startCoordinate;
+                            
+                            // Recalculate the route with new coordinates
+                            navController.calculateRoute(startCoordinate, destinationCoordinate);
+                            
+                            // If navigation is active, stop it since we're changing route
+                            if (navigationActive) {
+                                navController.stopSimulation();
+                                navigationActive = false;
+                                demoButton.text = getText("startDemo");
+                            }
+                        }
+                    }
+                    
+                    // Header items are not selectable
+                    delegate: ItemDelegate {
+                        id: routeDelegate
+                        text: model.text
+                        font.bold: model.isHeader
+                        enabled: !model.isHeader  // Headers should be disabled but visible
+                        width: locationPresets.width
+                        height: 30
+                        
+                        background: Rectangle {
+                            color: model.isHeader ? "#e0e0e0" : (routeDelegate.highlighted ? "#d0d0ff" : "white")
+                        }
                     }
                 }
             }
         }
     }
     
-    // 距離表示を更新する関数
+    // Distance display update function
     function updateDistanceDisplay(distance) {
-        // 数値を適切に処理
+        // Process the number properly
         var dist = Number(distance);
         
         if (dist > 1000) {
@@ -371,71 +601,71 @@ ApplicationWindow {
             distanceLabel.text = Math.round(dist) + " m";
         }
         
-        // 値の変更を視覚的に示すため、簡単なアニメーション効果を追加
-        distanceLabel.color = "#ffcc00";  // 一時的に色を変更
+        // Visual feedback for value change
+        distanceLabel.color = "#ffcc00";  // Temporarily change color
         distanceResetTimer.restart();
     }
     
-    // 距離表示のリセットタイマー
+    // Distance label reset timer
     Timer {
         id: distanceResetTimer
-        interval: 300  // 300ms後に元の色に戻す
+        interval: 300  // Return to original color after 300ms
         repeat: false
         onTriggered: {
-            distanceLabel.color = "white"  // 元の色に戻す
+            distanceLabel.color = "white"  // Return to original color
         }
     }
     
-    // ルート計算後にデモを開始するためのタイマー
+    // Timer to start demo after route calculation
     Timer {
         id: demoStartTimer
-        interval: 1000  // 1秒後に開始
+        interval: 1000  // Start after 1 second
         repeat: false
         onTriggered: {
-            console.log("デモ開始タイマー終了: ルートポイント数=" + routeLine.path.length)
+            console.log("Demo start timer finished: route points=" + routeLine.path.length)
             if (routeLine.path.length > 0) {
                 try {
-                    // 標準方法を試す
+                    // Try standard method
                     navController.startSimulation()
                 } catch (e) {
-                    console.log("タイマーでの開始に失敗、代替方法を試みます: " + e)
-                    // 失敗したら代替方法を試す
+                    console.log("Failed to start with timer, trying alternative: " + e)
+                    // Try fallback method
                     navController.manualStartDemo()
                 }
                 navigationActive = true
-                demoButton.text = "デモ停止"
+                demoButton.text = getText("stopDemo")
             } else {
-                // ルートが計算されなかった場合は再試行する
-                console.log("ルートがありません。フォールバックルートを使用")
+                // Try again with fallback route if no route was calculated
+                console.log("No route found. Using fallback route")
                 navController.calculateRoute(startCoordinate, destinationCoordinate)
-                // さらに少し待ってから再試行
+                // Wait a bit longer and retry
                 demoRetryTimer.restart()
             }
         }
     }
     
-    // ルート計算失敗時の再試行タイマー
+    // Retry timer for route calculation failures
     Timer {
         id: demoRetryTimer
-        interval: 1500  // 1.5秒後に再試行
+        interval: 1500  // Try again after 1.5 seconds
         repeat: false
         onTriggered: {
-            // 強制的にフォールバックルートで開始
-            console.log("デモを強制開始: ルートポイント数=" + routeLine.path.length)
+            // Force start with fallback route
+            console.log("Force starting demo: route points=" + routeLine.path.length)
             try {
-                // 標準方法を試す
+                // Try standard method
                 navController.startSimulation()
             } catch (e) {
-                console.log("強制開始に失敗、代替方法を試みます: " + e)
-                // 失敗したら代替方法を試す
+                console.log("Failed to force start, trying alternative: " + e)
+                // Try fallback method
                 navController.manualStartDemo()
             }
             navigationActive = true
-            demoButton.text = "デモ停止"
+            demoButton.text = getText("stopDemo")
         }
     }
     
-    // ルートが見つかった時に呼び出される
+    // Connections to the controller
     Connections {
         target: navController
         
@@ -446,24 +676,24 @@ ApplicationWindow {
             }
             routeLine.path = path
             
-            // 地図を適切にズームして表示
+            // Zoom to fit the route
             map.fitViewportToMapItems()
             
-            // 最初の指示を表示
+            // Display the first instruction
             if (instructions.length > 0) {
                 instructionLabel.text = instructions[0].text
             }
             
-            // ルートポイントのマーカーモデルはデバッグ情報が届いたら表示
+            // Route point markers will be added when debug info is received
         }
         
         function onRouteDebugInfo(debugInfo) {
-            console.log("ルートデバッグ情報を受信: " + debugInfo.length + "ポイント");
+            console.log("Received route debug info: " + debugInfo.length + " points");
             
-            // 既存のマーカーをクリア
+            // Clear existing markers
             routePointsModel.clear();
             
-            // 新しいデバッグポイントを追加
+            // Add new debug points
             for (var i = 0; i < debugInfo.length; i++) {
                 var point = debugInfo[i];
                 routePointsModel.append({
@@ -475,7 +705,7 @@ ApplicationWindow {
                 });
             }
             
-            console.log("マーカーモデルに " + routePointsModel.count + " 個のポイントを追加しました");
+            console.log("Added " + routePointsModel.count + " points to marker model");
         }
         
         function onPositionUpdated(coordinate) {
@@ -488,13 +718,25 @@ ApplicationWindow {
         }
         
         function onRemainingDistance(distance) {
-            console.log("残り距離を受信: " + distance + "m");
+            console.log("Received distance: " + distance + "m");
             updateDistanceDisplay(distance);
         }
         
         function onUpdateDistance(meters) {
-            console.log("代替距離を受信: " + meters + "m");
+            console.log("Received alternative distance: " + meters + "m");
             updateDistanceDisplay(meters);
+        }
+        
+        function onLanguageChanged(language) {
+            // Update UI when language changes
+            currentLanguage = language;
+            window.title = getText("windowTitle");
+            
+            // Update other UI text
+            demoButton.text = navigationActive ? getText("stopDemo") : getText("startDemo");
+            
+            // Update route dropdown
+            locationPresets.updateModel();
         }
     }
 }
