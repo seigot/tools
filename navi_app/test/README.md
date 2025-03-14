@@ -80,9 +80,48 @@ classDiagram
     QML_UI --> NavigationController: Slots
 ```
 
-## シーケンス図
+## アプリケーションフロー
 
-### ルート計算とナビゲーション開始
+```mermaid
+flowchart TD
+    subgraph Initialization
+        A[アプリケーション起動] --> B[NavigationControllerの初期化]
+        B --> C[QMLエンジン起動]
+        C --> D[デフォルトルート計算]
+    end
+    
+    subgraph RouteCalculation
+        E[ルート選択/計算] --> F{API呼び出し成功?}
+        F -->|Yes| G[ルートデータ処理]
+        F -->|No| H[フォールバックルート生成]
+        G --> I[ルート表示]
+        H --> I
+    end
+    
+    subgraph Navigation
+        J[ナビゲーション開始] --> K[出発アナウンス]
+        K --> L[位置更新ループ]
+        L --> M{目的地到着?}
+        M -->|No| N[次の指示確認]
+        N --> O[残り距離計算]
+        O --> L
+        M -->|Yes| P[到着アナウンス]
+        P --> Q[ナビゲーション停止]
+    end
+    
+    subgraph LanguageChange
+        R[言語選択] --> S[UI言語変更]
+        S --> T[音声言語変更]
+        T --> U[再計算が必要ならルート更新]
+    end
+    
+    D --> E
+    I --> J
+    Q --> E
+    U --> E
+```
+
+## シーケンス図
 
 ```mermaid
 sequenceDiagram
@@ -92,44 +131,79 @@ sequenceDiagram
     participant ORS as OpenRouteService API
     participant TTS as 音声エンジン
     
-    User->>UI: ルート選択/計算要求
-    UI->>NC: calculateRoute(start, end)
-    NC->>ORS: API呼び出し
-    ORS-->>NC: ルートデータ返却
+    User->>UI: アプリケーション起動
+    UI->>NC: 初期化
+    NC->>NC: 音声エンジン初期化
+    UI->>NC: calculateRoute(DEFAULT_START, DEFAULT_END)
+    NC->>ORS: ルート計算リクエスト
+    ORS-->>NC: ルートデータ
+    NC-->>UI: routeFound シグナル
+    UI->>UI: ルート表示
+    
+    User->>UI: ルートプリセット選択
+    UI->>UI: QGeoCoordinate生成
+    UI->>NC: calculateRoute(new_start, new_end)
+    NC->>ORS: ルート計算リクエスト
+    ORS-->>NC: ルートデータ
     NC-->>UI: routeFound シグナル
     UI->>UI: ルート表示更新
     
     User->>UI: デモ開始ボタン押下
     UI->>NC: startSimulation()
-    NC->>TTS: 出発案内
-    NC->>NC: moveToNextPosition() タイマー開始
-    loop ナビゲーション中
-        NC->>NC: moveToNextPosition()
-        NC->>UI: positionUpdated シグナル
-        NC->>NC: checkNextInstruction()
-        NC->>TTS: 次の案内
-        NC->>UI: nextInstruction シグナル
-        NC->>UI: remainingDistance シグナル
-    end
-    NC->>TTS: 到着案内
-    NC->>NC: stopSimulation()
+    NC->>TTS: 出発案内読み上げ
+    NC->>NC: タイマー開始
 ```
 
-### 言語切り替え
+## アーキテクチャ構成
 
 ```mermaid
-sequenceDiagram
-    participant User as ユーザー
-    participant UI as QML UI
-    participant NC as NavigationController
-    participant TTS as 音声エンジン
+graph TB
+    subgraph UI Layer
+        QML["QML UI (navigation.qml)"]
+        Map["OpenStreetMap"]
+        UI_Controls["UI Controls"]
+    end
     
-    User->>UI: 言語選択
-    UI->>UI: getText() で翻訳テキスト取得
-    UI->>NC: setLanguage()
-    NC->>TTS: 言語に合った音声設定
-    NC-->>UI: languageChanged シグナル
-    UI->>UI: UIテキスト更新
+    subgraph Controller Layer
+        NC["NavigationController"]
+        SignalHandler["Signal Handling"]
+        EventProcessing["Event Processing"]
+    end
+    
+    subgraph Service Layer
+        RouteSvc["Route Services"]
+        TTS["Text-to-Speech"]
+        Lang["Localization"]
+    end
+    
+    subgraph External Services
+        ORS["OpenRouteService API"]
+        OSM["OpenStreetMap Tiles"]
+    end
+    
+    QML --> Map
+    QML --> UI_Controls
+    QML <--> NC
+    
+    NC --> SignalHandler
+    NC --> EventProcessing
+    
+    NC --> RouteSvc
+    NC --> TTS
+    NC --> Lang
+    
+    RouteSvc --> ORS
+    Map --> OSM
+    
+    classDef ui fill:#d4f0f0,stroke:#333,stroke-width:1px;
+    classDef controller fill:#f9d5e5,stroke:#333,stroke-width:1px;
+    classDef service fill:#eeeeee,stroke:#333,stroke-width:1px;
+    classDef external fill:#e7f9d5,stroke:#333,stroke-width:1px;
+    
+    class QML,Map,UI_Controls ui;
+    class NC,SignalHandler,EventProcessing controller;
+    class RouteSvc,TTS,Lang service;
+    class ORS,OSM external;
 ```
 
 ## 主要コンポーネント
@@ -156,6 +230,32 @@ QMLで記述されたユーザーインターフェースは、以下のコン�
 - 言語選択
 - 指示表示と距離表示
 
+## 機能一覧
+
+### コア機能
+
+| 機能 | 説明 | 主要実装クラス/メソッド | 
+|------|------|------------------------|
+| ルート計算 | OpenRouteService APIを使用して経路を計算 | `NavigationController.calculateRoute()` |
+| 経路案内 | ターンバイターン方式のナビゲーション | `NavigationController.moveToNextPosition(), checkNextInstruction()` |
+| 音声ガイダンス | 指示と方向を音声で案内 | `NavigationController.speakInstruction()` |
+| マルチ言語対応 | 英語・日本語UIと音声案内 | `NavigationController.setLanguage()`, `QML getText()` |
+| 地図表示 | OpenStreetMapを利用した地図表示 | `QML Map` コンポーネント |
+| ルートシミュレーション | デモモードでルート上を移動 | `NavigationController.startSimulation()` |
+
+### ユーザーインターフェース機能
+
+| 機能 | 説明 | 主要実装 |
+|------|------|---------|
+| ルート選択 | プリセットされたルートから選択 | `QML ComboBox` と `updateModel()` |
+| 言語切替 | 英語と日本語の切替 | `changeLanguage()` と `languageSelector` |
+| 音声切替 | 言語に応じた音声選択 | `setLanguage()` 内の音声選択ロジック |
+| 指示表示 | 次の指示をヘッダに表示 | `onNextInstruction()` と `instructionLabel` |
+| 距離表示 | 残り距離をリアルタイム表示 | `onRemainingDistance()`, `updateDistanceDisplay()` |
+| マーカー表示 | 現在位置とルートのマーカー表示 | `MapQuickItem` と `MapPolyline` |
+| デモコントロール | シミュレーション開始/停止 | `startDemo`, `stopDemo` ボタン |
+| 地図操作 | 拡大/縮小、移動、目的地変更 | `Map` と `MouseArea` |
+
 ## インストールと実行
 
 ### 必要条件
@@ -177,31 +277,6 @@ pip install -r requirements.txt
 ```bash
 python main.py
 ```
-
-## 主要機能
-
-1. **ルート計算**: OpenRouteService APIを使用して出発地から目的地までの最適ルートを計算
-2. **音声ガイダンス**: Text-to-Speech技術を使用した、ターンバイターン方式の音声案内
-3. **マルチ言語対応**: 英語と日本語のインターフェースと音声案内
-4. **ルートシミュレーション**: リアルタイムのルート移動シミュレーション
-5. **プリセットルート**: 頻繁に使用されるルートのプリセット
-   - Mountain View → Palo Alto
-   - Mountain View → San Jose
-   - Mountain View → San Francisco
-   - 東京駅 → 東京タワー
-   - 渋谷 → 原宿
-   - 新宿 → 池袋
-6. **カスタム目的地**: 地図上の長押しによる目的地変更
-7. **リアルタイム距離表示**: 残りの距離をリアルタイムで表示
-
-## 技術スタック
-
-- **フロントエンド**: QML/Qt Quick
-- **バックエンド**: Python/PyQt5
-- **地図データ**: OpenStreetMap
-- **ルート計算**: OpenRouteService API
-- **音声合成**: pyttsx3
-- **HTTP通信**: requests
 
 ## カスタマイズ
 
