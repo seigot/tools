@@ -6,8 +6,6 @@ QtNavigation Appは、PyQt5を使用して開発されたオープンソース�
 
 アプリケーションはデスクトップ環境で動作し、カリフォルニア（アメリカ）と日本のプリセットされた場所の間のルート案内をサポートします。また、言語設定を英語と日本語の間で切り替えることが可能です。
 
-![アプリケーションのスクリーンショット（イメージ）]()
-
 ## 特徴
 
 - OpenStreetMapを使用した地図表示
@@ -31,7 +29,7 @@ graph TD
     UI --> |表示| Map[OpenStreetMap]
     Controller --> |更新通知| UI
     
-    subgraph QML UI Components
+    subgraph QMLComponents[QML UI Components]
         MapView[地図表示]
         RouteView[ルート表示]
         Controls[コントロールボタン]
@@ -39,7 +37,11 @@ graph TD
         LocationPresets[プリセット位置]
     end
     
-    UI --- QML UI Components
+    UI --- MapView
+    UI --- RouteView
+    UI --- Controls
+    UI --- LanguageSelector
+    UI --- LocationPresets
 ```
 
 ## アプリケーション構造
@@ -84,40 +86,32 @@ classDiagram
 
 ```mermaid
 flowchart TD
-    subgraph Initialization
-        A[アプリケーション起動] --> B[NavigationControllerの初期化]
-        B --> C[QMLエンジン起動]
-        C --> D[デフォルトルート計算]
-    end
+    A[アプリケーション起動] --> B[NavigationControllerの初期化]
+    B --> C[QMLエンジン起動]
+    C --> D[デフォルトルート計算]
     
-    subgraph RouteCalculation
-        E[ルート選択/計算] --> F{API呼び出し成功?}
-        F -->|Yes| G[ルートデータ処理]
-        F -->|No| H[フォールバックルート生成]
-        G --> I[ルート表示]
-        H --> I
-    end
+    D --> E[ルート選択/計算]
+    E --> F{API呼び出し成功?}
+    F -->|Yes| G[ルートデータ処理]
+    F -->|No| H[フォールバックルート生成]
+    G --> I[ルート表示]
+    H --> I
     
-    subgraph Navigation
-        J[ナビゲーション開始] --> K[出発アナウンス]
-        K --> L[位置更新ループ]
-        L --> M{目的地到着?}
-        M -->|No| N[次の指示確認]
-        N --> O[残り距離計算]
-        O --> L
-        M -->|Yes| P[到着アナウンス]
-        P --> Q[ナビゲーション停止]
-    end
+    I --> J[ナビゲーション開始]
+    J --> K[出発アナウンス]
+    K --> L[位置更新ループ]
+    L --> M{目的地到着?}
+    M -->|No| N[次の指示確認]
+    N --> O[残り距離計算]
+    O --> L
+    M -->|Yes| P[到着アナウンス]
+    P --> Q[ナビゲーション停止]
     
-    subgraph LanguageChange
-        R[言語選択] --> S[UI言語変更]
-        S --> T[音声言語変更]
-        T --> U[再計算が必要ならルート更新]
-    end
-    
-    D --> E
-    I --> J
     Q --> E
+    
+    R[言語選択] --> S[UI言語変更]
+    S --> T[音声言語変更]
+    T --> U[再計算が必要ならルート更新]
     U --> E
 ```
 
@@ -158,52 +152,19 @@ sequenceDiagram
 
 ```mermaid
 graph TB
-    subgraph UI Layer
-        QML["QML UI (navigation.qml)"]
-        Map["OpenStreetMap"]
-        UI_Controls["UI Controls"]
-    end
+    QML["QML UI (navigation.qml)"] --> Map["OpenStreetMap"]
+    QML --> UI_Controls["UI Controls"]
+    QML <--> NC["NavigationController"]
     
-    subgraph Controller Layer
-        NC["NavigationController"]
-        SignalHandler["Signal Handling"]
-        EventProcessing["Event Processing"]
-    end
+    NC --> SignalHandler["Signal Handling"]
+    NC --> EventProcessing["Event Processing"]
     
-    subgraph Service Layer
-        RouteSvc["Route Services"]
-        TTS["Text-to-Speech"]
-        Lang["Localization"]
-    end
+    NC --> RouteSvc["Route Services"]
+    NC --> TTS["Text-to-Speech"]
+    NC --> Lang["Localization"]
     
-    subgraph External Services
-        ORS["OpenRouteService API"]
-        OSM["OpenStreetMap Tiles"]
-    end
-    
-    QML --> Map
-    QML --> UI_Controls
-    QML <--> NC
-    
-    NC --> SignalHandler
-    NC --> EventProcessing
-    
-    NC --> RouteSvc
-    NC --> TTS
-    NC --> Lang
-    
-    RouteSvc --> ORS
-    Map --> OSM
-    
-    classDef ui fill:#d4f0f0,stroke:#333,stroke-width:1px;
-    classDef controller fill:#f9d5e5,stroke:#333,stroke-width:1px;
-    classDef service fill:#eeeeee,stroke:#333,stroke-width:1px;
-    classDef external fill:#e7f9d5,stroke:#333,stroke-width:1px;
-    
-    class QML,Map,UI_Controls ui;
-    class NC,SignalHandler,EventProcessing controller;
-    class RouteSvc,TTS,Lang service;
-    class ORS,OSM external;
+    RouteSvc --> ORS["OpenRouteService API"]
+    Map --> OSM["OpenStreetMap Tiles"]
 ```
 
 ## 主要コンポーネント
