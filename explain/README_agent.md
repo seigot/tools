@@ -1,9 +1,9 @@
-## ■ Slide 1 (Title)
+### ■ Slide 1 (Title)
 
 In this time, We have two Reseach Requests.  
 First one is about "Automotive AI Agents".  
 
-## ■ Slide 2 (Background & Overview)
+### ■ Slide 2 (Background & Overview)
 
 Fist of all, I'll explain about the background and overview of this research.  
 - In general, The use of AI or AI agents in embedded systems are moving from experimental to practical phase.  
@@ -18,7 +18,7 @@ Fist one is "AI agent use cases" on embedded devices.
   - And also, AI Agent performance customization methods means conversational context tuning while talking with chat AI agent.
 In addition, we'd like to clarify AI model like LLM and SLM which work on the embedded systems and combination with ai agents.  
 
-## ■ Slide 3 (Research Items)
+### ■ Slide 3 (Research Items)
 
 The slide show the details of the research items.  
 The study is organized into three major parts.  
@@ -34,13 +34,13 @@ And, About AI Models.
    - Model architectures, such as Transformers
    - Supported frameworks and hardware platforms
 
-## ■ Slide 4 (Result Format)
+### ■ Slide 4 (Result Format)
 
 This slide shows the result format of the this research.    
 リクエストとして、詳細情報に加えて、結果を一覧表に整理してほしい。  
 これは活用判断をする際に役立ちます。  
 
-## ■ Slide 5 (AI Agent Example)
+### ■ Slide 5 (AI Agent Example)
 
 Let us now look at a practical example.  
 This slide introduces NIO’s in-vehicle AI assistant, NOMI.  
@@ -53,7 +53,7 @@ In addition, companies such as Mpathic.ai provide solutions for improving AI age
 • Evaluation  
 • Behavioral calibration for high-risk and safety-critical environments  
 
-## ■ Slide 6 (AI Model Example)
+### ■ Slide 6 (AI Model Example)
 Next, we examine an AI model example.  
 This slide presents Google’s Gemma model running on MediaTek platforms.  
 MediaTek technologies, including:  
@@ -67,6 +67,6 @@ These technologies provide:
 • Reduced dependence on cloud connectivity  
 Such capabilities are particularly important for automotive applications, where low latency and high reliability are critical.  
 
-## ■ Slide 7 (Closing)
+### ■ Slide 7 (Closing)
 
 That's all. If you have any questions, please let me know. 
