@@ -39,22 +39,22 @@ And Third, About AI Models.
 ### ■ Slide 4 (Result Format)
 
 This slide shows the result summary table of this research.  
-I would like you to make the summary table as results in addition to the research detail.  
-The summary table is helpful to consider and compare the options and for future decision-making.  
+In addition to research details, I would like you to organize the results into a summary table.  
+The summary table will be helpful for our future decision-making.  
 
 ### ■ Slide 5 (AI Agent Example)
 
-Here are the brief example of practival use cases align with this research.  
-On the left slide is NIO’s in-vehicle AI assistant, NOMI. NOMI provides natural communication exeperiences for the driver.  
+Here are a few examples/use cases align with this research.   
+On the left is NIO's in-vehicle AI assistant, NOMI. NOMI provides natural conversation exeperiences for the driver.  
 The other side is Mpathic.ai.  
-Mpathic.ai provides AI model Training/Evaluation/Performance calibration tuning platform for conversational AI agent.  
+Mpathic.ai provides AI model Performance calibration platform for conversational AI agent.  
 
 ### ■ Slide 6 (AI Model Example)
 
-The last slide is the brief example of AI Model.  
-One of the great example is Google’s Gemma on MediaTek platforms.  
-I believe that most AI agents are expected to operate on edge devices.  
-So We'd like to clarify which AI models are used by edge-based AI agents as much as possible.  
+This last slide shows an example of an AI model.  
+One example is Google Gemma running on MediaTek platforms.  
+I believe that most AI agents are expected to work on edge devices.  
+So We'd like to clarify a variety of AI models used by edge-based AI agents.  
 
 ### ■ Slide 7 (Closing)
 
