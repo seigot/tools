@@ -12,10 +12,10 @@ Fist of all, I'll explain about the background and overview of this research.
   
 In research overview, There're two main targets.  
 Fist one is "AI agent use cases" on embedded devices.  
-  - In this section means, AI agent means..;
-      - In-vehicle conversational agents like NOMI, which is deployed in chinese EV NIO, or 
-      - In-car commerce agents like SoundHound AI
-  - And also, AI Agent performance customization methods means conversational context tuning while talking with chat AI agent.
+  - In this section means, AI agent means..  
+      - In-vehicle conversational agents like NOMI, which is deployed in chinese EV NIO, or  
+      - In-car commerce agents like SoundHound AI  
+  - And also, AI Agent performance customization methods means conversational context tuning while talking with chat AI agent.  
 In addition, we'd like to clarify AI model like LLM and SLM which work on the embedded systems and combination with ai agents.  
 
 ### ■ Slide 3 (Research Items)
@@ -30,42 +30,29 @@ In terms of AI Agent Customization.
    - Functional safety requirements.  
    - Ethical safety measures, including guardrails, prompt controls, and behavioral tuning.  
 And, About AI Models.  
-   - Model names and categories like LLMs and SLMs
-   - Model architectures, such as Transformers
-   - Supported frameworks and hardware platforms
+   - Model names and categories like LLMs and SLMs  
+   - Model architectures, such as Transformers  
+   - Supported frameworks and hardware platforms  
 
 ### ■ Slide 4 (Result Format)
 
-This slide shows the result format of the this research.    
-リクエストとして、詳細情報に加えて、結果を一覧表に整理してほしい。  
-これは活用判断をする際に役立ちます。  
+This slide shows the result summary table of this research.  
+I would like you to make the summary table as results in addition to the research detail.  
+The summary table is helpful to consider and compare the options and for future decision-making.  
 
 ### ■ Slide 5 (AI Agent Example)
 
-Let us now look at a practical example.  
-This slide introduces NIO’s in-vehicle AI assistant, NOMI.  
-Following the global rise of ChatGPT, NIO introduced NOMI GPT in 2024, integrating large language model capabilities into the platform.  
-Key enhancements include:  
-• Safer interactions  
-• More natural and human-like conversations  
-In addition, companies such as Mpathic.ai provide solutions for improving AI agent performance through:  
-• Training  
-• Evaluation  
-• Behavioral calibration for high-risk and safety-critical environments  
+Here are the brief example of practival use cases align with this research.  
+On the left slide is NIO’s in-vehicle AI assistant, NOMI. NOMI provides natural communication exeperiences for the driver.  
+The other side is Mpathic.ai.  
+Mpathic.ai provides AI model Training/Evaluation/Performance calibration tuning platform for conversational AI agent.  
 
 ### ■ Slide 6 (AI Model Example)
-Next, we examine an AI model example.  
-This slide presents Google’s Gemma model running on MediaTek platforms.  
-MediaTek technologies, including:  
-• NPUs
-• NeuroPilot
-• LiteRT
-enable efficient AI execution on embedded devices.  
-These technologies provide:  
-• Low power consumption  
-• Real-time inference  
-• Reduced dependence on cloud connectivity  
-Such capabilities are particularly important for automotive applications, where low latency and high reliability are critical.  
+
+The last slide is the brief example of AI Model.  
+One of the great example is Google’s Gemma on MediaTek platforms.  
+I believe that most AI agents are expected to operate on edge devices.  
+So We'd like to clarify which AI models are used by edge-based AI agents as much as possible.  
 
 ### ■ Slide 7 (Closing)
 
