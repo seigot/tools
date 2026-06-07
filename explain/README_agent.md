@@ -15,7 +15,7 @@ The first one is, "AI agent use cases" on embedded devices.
   - In this part, AI agent is kind of ..  
       - In-vehicle conversational agents like NOMI, deployed in chinese EV NIO vehicles
       - In-car commerce agents like SoundHound AI 
-  - and also, AI Agent performance customization methods are important, like conversation optimization for conversational AI agents.
+  - and also, AI Agent performance customization methods are important, like conversation optimization for conversational AI agents.  
 In addition, we'd like to clarify the AI models, like LLMs and SLMs, running on embedded systems and work together with AI agents.
 
 ### ■ Slide 3 (Research Items)
