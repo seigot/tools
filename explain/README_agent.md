@@ -1,6 +1,6 @@
 ### ■ Slide 1 (Title)
 
-Today, I have two research requests.  
+Today, we have two research requests.  
 The first one is about Automotive AI Agents.  
 
 ### ■ Slide 2 (Background & Overview)
