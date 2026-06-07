@@ -23,15 +23,15 @@ In addition, we'd like to clarify the AI models, like LLMs and SLMs, running on 
 The slide show the details of the research items.  
 The study is organized into three major parts.  
 
-In terms of AI Agents.  
+First, In terms of AI Agents.  
    - Clarify, AI Agent name, the role of AI Agent, Inputs and outputs, ...  
 
-In terms of AI Agent Customization.  
+Second, In terms of AI Agent Customization.  
    - Clarify the solution Platforms,  
    - Functional safety requirements.  
    - Ethical safety measures, including guardrails, prompt controls, and behavioral tuning.  
 
-And, About AI Models.  
+And Third, About AI Models.  
    - Model names and categories like LLMs and SLMs  
    - Model architectures, such as Transformers  
    - Supported frameworks and hardware platforms  
