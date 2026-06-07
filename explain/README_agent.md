@@ -12,7 +12,7 @@ First of all, I'd like to explain the background and overview of this research.
   
 We focuses on two main parts In this research.  
 The first one is, "AI agent use cases" on embedded devices.  
-  - In this section, AI agent means..  
+  - In this part, AI agent is kind of ..  
       - In-vehicle conversational agents like NOMI, deployed in chinese EV NIO vehicles
       - In-car commerce agents like SoundHound AI 
   - and also, AI Agent performance customization methods are important, like conversation optimization for conversational AI agents.
