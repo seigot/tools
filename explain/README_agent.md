@@ -17,7 +17,7 @@ The first one is, "AI agent use cases" on embedded devices.
       - In-car commerce agents like SoundHound AI 
   - and also, AI Agent performance customization methods are important, like conversation optimization for conversational AI agents.
   
-In addition, we'd like to clarify the AI models, like LLMs and SLMs, running on embedded systems and work together with AI agents.
+In addition, we'd like to clarify the AI models for embedded systems, work together with AI agents like SLMs(Small Language Models).  
 
 ### ■ Slide 3 (Research Items)
 
