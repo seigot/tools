@@ -24,7 +24,7 @@ In addition, we'd like to clarify the AI models for embedded systems, work toget
 The slide show the details of the research items.  There're three major parts.  
 
 First, In terms of AI Agents.  
-   - Clarify, AI Agent name, the role of AI Agent, Inputs and outputs, ...  
+   - Clarify, AI Agent name, the role of AI Agent, Inputs and outputs for ai agent, ...  
 
 Second, In terms of AI Agent Customization.  
    - Clarify the solution Platforms,  
