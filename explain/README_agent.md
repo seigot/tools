@@ -21,8 +21,7 @@ In addition, we'd like to clarify the AI models for embedded systems, work toget
 
 ### ■ Slide 3 (Research Items)
 
-The slide show the details of the research items.  
-The study is organized into three major parts.  
+The slide show the details of the research items.  There're three major parts.  
 
 First, In terms of AI Agents.  
    - Clarify, AI Agent name, the role of AI Agent, Inputs and outputs, ...  
