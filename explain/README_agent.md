@@ -7,7 +7,7 @@ The first one is about Automotive AI Agents.
 
 First of all, I'd like to explain the background and overview of this research.  
 - In general, the use of AI and AI agents in embedded systems is moving from the experimental phase to the practical phase.  
-- More specifically, In the automotive industry, AI agents are expected to significantly improve the driving experience.
+- More specifically, In the automotive industry, AI agents are expected to improve the driving experience significantly.
 - The main objective in this research is to clarify "Competitive AI use cases", "AI Agent Customization methods", "AI models used in production".
   
 In this research, we focuses on two main parts.  
