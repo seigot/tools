@@ -1,22 +1,22 @@
 ### ■ Slide 1 (Title)
 
-In this time, We have two Reseach Requests.  
-First one is about "Automotive AI Agents".  
+Today, I have two research requests.  
+The first one is about Automotive AI Agents.  
 
 ### ■ Slide 2 (Background & Overview)
 
-Fist of all, I'll explain about the background and overview of this research.  
-- In general, The use of AI or AI agents in embedded systems are moving from experimental to practical phase.  
-- Specifically in the automotive industry, AI agents are expected to improve the driving experiences.  
+First of all, I'd like to explain the background and overview of this research.  
+- In general, the use of AI and AI agents in embedded systems is moving from the experimental phase to the practical phase.  
+- More specifically, In the automotive industry, AI agents are expected to significantly improve the driving experience.
 - The main objective in this research is to clarify "Competitive AI use cases", "AI Agent Customization methods", "AI models used in production".
   
-In research overview, There're two main targets.  
-Fist one is "AI agent use cases" on embedded devices.  
-  - In this section means, AI agent means..  
-      - In-vehicle conversational agents like NOMI, which is deployed in chinese EV NIO, or  
-      - In-car commerce agents like SoundHound AI  
-  - And also, AI Agent performance customization methods means conversational context tuning while talking with chat AI agent.  
-In addition, we'd like to clarify AI model like LLM and SLM which work on the embedded systems and combination with ai agents.  
+In this research, There are two main research targets.  
+The first one is, "AI agent use cases" on embedded devices.  
+  - In this section, AI agent means..  
+      - In-vehicle conversational agents like NOMI, deployed in chinese EV NIO vehicles
+      - In-car commerce agents like SoundHound AI 
+  - and also, AI Agent performance customization methods is importans, like conversation optimization for conversational AI agents.
+In addition, we'd like to clarify the AI models, like LLMs and SLMs, running on embedded systems and work together with AI agents.
 
 ### ■ Slide 3 (Research Items)
 
@@ -25,10 +25,12 @@ The study is organized into three major parts.
 
 In terms of AI Agents.  
    - Clarify, AI Agent name, the role of AI Agent, Inputs and outputs, ...  
+
 In terms of AI Agent Customization.  
    - Clarify the solution Platforms,  
    - Functional safety requirements.  
    - Ethical safety measures, including guardrails, prompt controls, and behavioral tuning.  
+
 And, About AI Models.  
    - Model names and categories like LLMs and SLMs  
    - Model architectures, such as Transformers  
