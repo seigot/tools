@@ -1,20 +1,14 @@
-```
-"Competitive AI use cases", "AI Agent Customization methods", "AI models used in production"
-```
-
----
-
 ### ■ Slide 1 (Title)
 
 Today, we have two research requests.  
-The first one is about Automotive AI Agents.  
+The first one is about AI Agents for Automotive.  
 
 ### ■ Slide 2 (Background & Overview)
 
 First of all, I'd like to explain the background and overview of this research.  
 - In general, the use of AI and AI agents in embedded systems is moving from the experimental phase to the practical phase.  
 - More specifically, In the automotive industry, AI agents are expected to improve the driving experience significantly.
-- The main objective in this research is to clarify "Competitive AI use cases", "AI Agent Customization methods", "AI models used in production".
+- The main objective in this research is to clarify "Practical AI use cases", "AI Agent Customization methods", "AI models used in production".
   
 We focuses on two main parts In this research.  
 The first one is, "AI agent use cases" on embedded devices.  
