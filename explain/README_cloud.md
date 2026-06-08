@@ -56,8 +56,8 @@ The right side is dSPACE. dSPACE provides hardware verification solution for QNX
 
 ### ■ Slide 6 (cloudnative usecase2)
 
-This last slide shows an example of an   
-One example is PAVE 360 automotive. PAVE360 automotive provides comprehensive automotive system verification plarform.  
+This last slide shows another example of PAVE 360 automotive.  
+PAVE360 automotive provides comprehensive automotive system verification plarform.  
 PAVE360 automotive is not just for IVI, PAVE360 supports ADAS/Autonomous evaluation, includes hardware verifications.  
 
 ### ■ Slide 7 (Closing)
