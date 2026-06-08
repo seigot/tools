@@ -1,14 +1,3 @@
-```
-First of all, I'd like to explain the background and overview of this research.  
-- As Software Defined Vehicle is getting popular, automotive software is becoming large and complex.  
-- Improving development efficiency while maintaining high quality is a major challenge for the automotive industry.  
-- To address the challenges, to adopt "cloud-native" development is one of the key solutions.  
-
-Cloud-based validation using virtual devices and thermal simulation
-```
-
----
-
 ### ■ Slide 1 (Title)
 
 This presentation is about a research request on cloud-native development tools.  
