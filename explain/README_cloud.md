@@ -13,9 +13,10 @@ This research focuses on two main areas.
 The first one is, "Platforms and toolchains for cloud-native automotive development"  
   - In this part, We'd like to conduct in-depth research on virtual platforms used in the automotive industry.  
       - for example. QNX is one of the major virtual platform in automotive industory and other company's verification solutions are adopted on QNX platform.  
-      - In addition, speficically we would like to focus on thermal simulation for automotive hardware.  
-The second one is the use-cases not limited to the automotive industory.   
-  - For example, if there are similar use cases of cloud-native development in smartphone development or other industry, these're also the scope of this research.  
+      - In addition, we would like to speficically focus on thermal simulation for automotive hardware.  
+
+The second one is the cloud-native use-cases not limited to the automotive industory.   
+  - For example, if there are similar use cases in smartphone application development, these're also the scope in this research.  
 
 ### ■ Slide 3 (Research Items)
 
