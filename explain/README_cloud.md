@@ -22,31 +22,27 @@ The second one is the cloud-native use-cases not limited to the automotive indus
 
 This table shows the details of the research items. There are three major parts.  
 
-First, In terms of Cloud native development platform.  
-   - Please clarify, solution name, usecases, and the others.  
-
-Second, In terms of ToolChains.  
-   - Clarify the name of the tool, and also the execution environments / clout native platform should be clarified.  
-
-And Third, cloud-based Hardware verification.  
-   - some solution could provide Hardware verification function like thermal simulation.
-   - We'd like to clarify how many of companies release such functions on cloudnative platform.
+First one is Cloud-native platform.  
+Second is the ToolChains.  
+And Third one, cloud-based Hardware verification solutions.  
+   - Nowadays some companies provide Hardware verification function like themal simulation on cloud-basis.  
+   - We'd like to clarify how many of hardware verification solutions are adapted on cloudnative platform.  
 
 ### ■ Slide 4 (Result Format)
 
-This slide shows the result summary table of this research.  
+This slide shows the summary table of this research.  
 In addition to research details, I would like you to organize the results into a summary table.  
 The summary table will be helpful for our future decision-making.  
 
 ### ■ Slide 5 (cloudnative usecase1)
 
 Here are a few examples/use cases align with this research.  
-On the left is QNX's virtual platform QNX Cabin. QNX Cabin is one of the popular virtual platforms used in automotive industory.  
+The left side is QNX's virtual platform QNX Cabin. QNX Cabin is one of the popular virtual platforms used in automotive industory.  
 The right side is dSPACE. dSPACE provides hardware verification solution for QNX Cabin.  
 
 ### ■ Slide 6 (cloudnative usecase2)
 
-This last slide shows another example of PAVE 360 automotive.  
+This last slide is the example of what I've seen in CES 2026.  
 PAVE360 automotive provides comprehensive automotive system verification plarform.  
 This is not just for IVI, PAVE360 supports ADAS/Autonomous evaluation, includes hardware verifications.  
 
