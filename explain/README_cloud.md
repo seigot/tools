@@ -12,10 +12,10 @@ First of all, I'd like to explain the background and overview of this research.
 This research focuses on two main areas.  
 The first one is, "Platforms and toolchains for cloud-native automotive development"  
   - In this part, We'd like to conduct in-depth research on virtual platforms used in the automotive industry.  
-      - for example. QNX is one of the major virtual platform in automotive industory and other company's verification solutions are adopted on QNX platform.  
-      - In addition, we would like to speficically focus on thermal simulation for automotive hardware.  
+      - for example. QNX is one of the major virtual platform in automotive industry and other company's verification solutions are adopted on QNX platform.  
+      - In addition, we would like to specifically focus on thermal simulation for automotive hardware.  
 
-The second one is the cloud-native use-cases not limited to the automotive industory.   
+The second one is the cloud-native use-cases not limited to the automotive industry.   
   - For example, if there are similar use cases in smartphone application development, these're also the scope in this research.  
 
 ### ■ Slide 3 (Research Items)
@@ -37,7 +37,7 @@ The summary table will be helpful for our future decision-making.
 ### ■ Slide 5 (cloudnative usecase1)
 
 Here are a few examples/use cases align with this research.  
-The left side is QNX's virtual platform QNX Cabin. QNX Cabin is one of the popular virtual platforms used in automotive industory.  
+The left side is QNX's virtual platform QNX Cabin. QNX Cabin is one of the popular virtual platforms used in automotive industry.  
 The right side is dSPACE. dSPACE provides hardware verification solution for QNX Cabin.  
 
 ### ■ Slide 6 (cloudnative usecase2)
