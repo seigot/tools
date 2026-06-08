@@ -50,9 +50,9 @@ The summary table will be helpful for our future decision-making.
 
 ### ■ Slide 5 (cloudnative usecase1)
 
-Here are a few examples/use cases align with this research.   
-On the left is QNX's virtual platform QNX Cabin. QNX Cabin provides this is one of the popular... .  
-The right side is dSPACE. dSPACE provides hardware verification solution for QNX Cabin.   
+Here are a few examples/use cases align with this research.  
+On the left is QNX's virtual platform QNX Cabin. QNX Cabin is one of the popular virtual platforms used in automotive industory.  
+The right side is dSPACE. dSPACE provides hardware verification solution for QNX Cabin.  
 
 ### ■ Slide 6 (cloudnative usecase2)
 
