@@ -17,36 +17,32 @@ The first one is, "AI agent use cases" on embedded devices.
       - In-car commerce agents like SoundHound AI 
   - and also, AI Agent performance customization methods are important, like conversation optimization for conversational AI agents.
   
-In addition, the AI models for embedded systems are also in our research target.  
+In addition, the AI models for embedded systems are also in the scope of our research.  
 The key focus is on LLMs and SLMs (Small Language Models) running on edge devices, which are used together with AI agents.  
 
 ### ■ Slide 3 (Research Items)
 
-The slide show the details of the research items.  There're three major parts.  
+The slide show the details of the research items. There're three main parts.  
 
 First, In terms of AI Agents.  
    - Clarify, AI Agent name, the role of AI Agent, Inputs and outputs for ai agent, ...  
 
 Second, In terms of AI Agent Customization.  
-   - Clarify the solution Platforms,  
-   - Functional safety requirements.  
-   - Ethical safety measures, including guardrails, prompt controls, and behavioral tuning.  
+   - Performance optimization platform includes Functional safety, Ethical safety are the scops in thia area.
 
-And Third, About AI Models.  
-   - Model names and categories like LLMs and SLMs  
-   - Model architectures, such as Transformers  
-   - Supported frameworks and hardware platforms  
+And Third, is about AI Models.  
+   - Model names, Model architectures, Supported hardware platforms are the scops in thia area.  
 
 ### ■ Slide 4 (Result Format)
 
 This slide shows the result summary table of this research.  
 In addition to research details, I would like you to organize the results into a summary table.  
-The summary table will be helpful for our future decision-making.  
+The summary table will be helpful for our future decision-making processes.  
 
 ### ■ Slide 5 (AI Agent Example)
 
 Here are a few examples/use cases align with this research.   
-On the left is NIO's in-vehicle AI assistant, NOMI. NOMI provides natural conversation exeperiences for the driver.  
+On the left side is NIO's in-vehicle AI assistant NOMI. NOMI provides natural conversation exeperiences for the driver.  
 The right side is Mpathic.ai.  
 Mpathic.ai provides AI model Performance calibration platform for conversational AI agent.  
 
@@ -54,8 +50,7 @@ Mpathic.ai provides AI model Performance calibration platform for conversational
 
 This last slide shows an example of an AI model.  
 One example is Google Gemma running on MediaTek platforms.  
-I believe that most AI agents are expected to work on edge devices.  
-So We'd like to clarify a variety of AI models used by edge-based AI agents.  
+I believe that most AI agents are expected to work on edge devices, and AI models used by edge-based AI agents are the key focuses.  
 
 ### ■ Slide 7 (Closing)
 
