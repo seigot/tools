@@ -11,7 +11,7 @@ Cloud-based validation using virtual devices and thermal simulation
 
 ### ■ Slide 1 (Title)
 
-The presentation slide is for cloud-native development tools, research requests.  
+This presentation is about a research request on cloud-native development tools.  
 
 ### ■ Slide 2 (Background & Overview)
 
