@@ -60,6 +60,8 @@ jobs:
           git clone https://github.com/seigot/tetris
           cd tetris
           pip install -r requirements.txt
+          # predict_sample imports torch, tensorboardX and yaml, none of which are in tetris requirements.txt. torch is capped below 2.6 because sample_weight.pt is a pickled DeepQNetwork and torch.load defaults to weights_only=True from 2.6 on, which refuses it.
+          pip install "torch<2.6" tensorboardX pyyaml
           python start.py -m predict_sample -l 2 -t 5 --predict_weight weight/DQN/sample_weight.pt -f $HOME/result_dqn.json
 
       - name: tetris_MLP_sample
@@ -71,5 +73,6 @@ jobs:
           git clone https://github.com/seigot/tetris
           cd tetris
           pip install -r requirements.txt
+          pip install "torch<2.6" tensorboardX pyyaml
           python start.py -m predict_sample2 -l 2 -t 5 --predict_weight weight/MLP/sample_weight.pt -f $HOME/result_mlp.json
 
